@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// PhotoRole is what the pipeline decided a photo is for.
+enum PhotoRole {
+  PHOTO_ROLE_UNSPECIFIED = 0;
+  // Carries identity of a subject: wristband, work order, door number, plate.
+  PHOTO_ROLE_IDENTITY = 1;
+  // A document whose fields are extracted: report, form, invoice.
+  PHOTO_ROLE_DOCUMENT = 2;
+  // The work itself: wound, knee, wall crack.
+  PHOTO_ROLE_CONTENT = 3;
+  // Blurry, accidental or duplicate; folded away, never deleted.
+  PHOTO_ROLE_JUNK = 4;
+}
+
+enum PhotoStatus {
+  PHOTO_STATUS_UNSPECIFIED = 0;
+  PHOTO_STATUS_AWAITING_UPLOAD = 1;
+  PHOTO_STATUS_UPLOADED = 2;
+  PHOTO_STATUS_PROCESSING = 3;
+  PHOTO_STATUS_PROCESSED = 4;
+  PHOTO_STATUS_FAILED = 5;
+}
+
+// AssignmentState says how a photo got (or did not get) its subject.
+enum AssignmentState {
+  ASSIGNMENT_STATE_UNSPECIFIED = 0;
+  // Filed automatically with high confidence.
+  ASSIGNMENT_STATE_AUTO = 1;
+  // A candidate subject is proposed; needs one tap to confirm.
+  ASSIGNMENT_STATE_SUGGESTED = 2;
+  // A person chose or confirmed the subject.
+  ASSIGNMENT_STATE_MANUAL = 3;
+  // No subject yet; sits in the inbox.
+  ASSIGNMENT_STATE_UNASSIGNED = 4;
+}
+
+enum TagSource {
+  TAG_SOURCE_UNSPECIFIED = 0;
+  TAG_SOURCE_AI = 1;
+  TAG_SOURCE_USER = 2;
+}
+
+message GeoPoint {
+  double latitude = 1;
+  double longitude = 2;
+  double accuracy_meters = 3;
+}
+
+// BoundingBox is normalized to [0,1] with origin at the top-left.
+message BoundingBox {
+  float x = 1;
+  float y = 2;
+  float width = 3;
+  float height = 4;
+}
+
+message BarcodeObservation {
+  // Lowercase symbology such as "code128", "qr", "pdf417", "ean13".
+  // Platform names like "VNBarcodeSymbologyCode128" are also accepted.
+  string symbology = 1;
+  string payload = 2;
+}
+
+message TextObservation {
+  string text = 1;
+  float confidence = 2;
+  BoundingBox box = 3;
+}
+
+// OnDeviceAnalysis is what the phone already computed for free before upload.
+message OnDeviceAnalysis {
+  repeated BarcodeObservation barcodes = 1;
+  repeated TextObservation text = 2;
+  // Higher is sharper; the scale is defined by the client implementation.
+  float sharpness = 3;
+  int32 face_count = 4;
+  // Hex-encoded perceptual hash for near-duplicate detection.
+  string perceptual_hash = 5;
+  bool faces_redacted = 6;
+  // Where the photo's main subject is (the most salient object), so a
+  // comparison of how subjects look can leave the background out.
+  BoundingBox subject_box = 7;
+}
+
+message Subject {
+  string id = 1;
+  string type_key = 2;
+  string display_name = 3;
+  map<string, string> identity = 4;
+  string parent_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  int32 photo_count = 7;
+  // A photo to show it by in lists: one a person filed there, else the
+  // latest. Set where subjects are listed.
+  Photo cover = 8;
+  // What one told apart by look looks like in full, one feature per line:
+  // written from its photos, or by a person.
+  string profile = 9;
+  // A person wrote it; it is not rewritten from photos.
+  bool profile_by_person = 10;
+}
+
+message Tag {
+  string key = 1;
+  float confidence = 2;
+  TagSource source = 3;
+}
+
+message Photo {
+  string id = 1;
+  string session_id = 2;
+  string subject_id = 3;
+  AssignmentState assignment = 4;
+  float assignment_confidence = 5;
+  PhotoRole role = 6;
+  PhotoStatus status = 7;
+  google.protobuf.Timestamp captured_at = 8;
+  string uploaded_by = 9;
+  repeated Tag tags = 10;
+  map<string, string> extracted_fields = 11;
+  string description = 12;
+  // Short-lived signed URL for viewing the original.
+  string view_url = 13;
+  // Subject proposed when assignment is SUGGESTED.
+  string suggested_subject_id = 14;
+  // Short-lived signed URL of a small JPEG for lists and grids; empty until
+  // the photo is indexed.
+  string thumbnail_url = 15;
+}
+
+// How many photos have a tag.
+message TagCount {
+  string key = 1;
+  int32 count = 2;
+}

@@ -1,0 +1,20 @@
+version: v2
+plugins:
+  # Go: local plugins, pinned to go.mod by `make tools`.
+  - local: protoc-gen-go
+    out: backend/gen
+    opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: backend/gen
+    opt: paths=source_relative
+  # Swift: remote plugins pinned to the same versions as the iOS packages
+  # (ios/project.yml). Bump both together.
+  - remote: buf.build/apple/swift:v1.38.1
+    out: ios/Pidex/Gen
+    opt: Visibility=Internal
+  - remote: buf.build/connectrpc/swift:v1.2.2
+    out: ios/Pidex/Gen
+    opt:
+      - Visibility=Internal
+      - GenerateAsyncMethods=true
+      - GenerateCallbackMethods=false

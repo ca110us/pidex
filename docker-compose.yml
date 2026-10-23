@@ -1,0 +1,22 @@
+name: pidex
+
+services:
+  postgres:
+    build: ./deploy/postgres
+    image: pidex-postgres:17
+    environment:
+      POSTGRES_USER: pidex
+      POSTGRES_PASSWORD: pidex
+      POSTGRES_DB: pidex
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pidex"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres-data:

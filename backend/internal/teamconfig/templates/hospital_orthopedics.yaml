@@ -1,0 +1,55 @@
+name: Orthopedics department
+industry: healthcare
+language: en
+description: Patient photos in an orthopedics or trauma department, identified by hospital wristband.
+strictness: strict
+privacy: high
+date_order: mdy
+subject_types:
+  - key: patient
+    name: Patient
+    carriers: >-
+      Hospital wristband (usually a barcode plus printed name, date of birth and
+      MRN), bed card, or a printed chart label sticker.
+    identity_fields:
+      - { key: name, name: Name, kind: person_name }
+      - { key: dob, name: Date of birth, kind: date }
+      - { key: mrn, name: MRN, kind: id, description: Medical record number, pattern: "^[A-Z0-9]{5,12}$" }
+    display_fields: [name, dob]
+    match:
+      # Two identifiers, as required for positive patient identification.
+      min_fields: 2
+    barcode:
+      field: mrn
+      pattern: "^(?:MRN[:\\s-]*)?([A-Z0-9]{5,12})$"
+      # A wristband barcode scan is an accepted positive identification.
+      strong: true
+tags:
+  - { key: side_left, name: Left, group: side }
+  - { key: side_right, name: Right, group: side }
+  - { key: ankle, name: Ankle, group: site }
+  - { key: foot, name: Foot, group: site }
+  - { key: knee, name: Knee, group: site }
+  - { key: hip, name: Hip, group: site }
+  - { key: wrist, name: Wrist, group: site }
+  - { key: hand, name: Hand, group: site }
+  - { key: elbow, name: Elbow, group: site }
+  - { key: shoulder, name: Shoulder, group: site }
+  - { key: spine, name: Spine or back, group: site }
+  - { key: swelling, name: Swelling, group: finding }
+  - { key: bruising, name: Bruising, group: finding }
+  - { key: abrasion, name: Abrasion, group: finding }
+  - { key: laceration, name: Laceration, group: finding }
+  - { key: deformity, name: Visible deformity, group: finding }
+  - { key: surgical_wound, name: Surgical wound, group: finding }
+  - { key: sutures_staples, name: Sutures or staples, group: finding }
+  - { key: drainage, name: Drainage or exudate, group: finding }
+  - { key: cast_splint, name: Cast or splint, group: treatment }
+  - { key: external_fixator, name: External fixator, group: treatment }
+  - { key: dressing, name: Dressing, group: treatment }
+  - { key: imaging_screen, name: Photo of an imaging screen, group: media, description: "A photo of an X-ray, CT or MRI shown on a monitor or film" }
+  - { key: paperwork, name: Paperwork, group: media }
+session:
+  gap_minutes: 15
+  anchor_valid_minutes: 45
+  max_jump_meters: 150

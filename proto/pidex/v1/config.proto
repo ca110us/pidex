@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// ConfigService manages a team's vocabulary: subject types, identity fields,
+// tags and strictness. The engine never hardcodes "patient" or "house".
+service ConfigService {
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);
+  rpc GetActiveConfig(GetActiveConfigRequest) returns (GetActiveConfigResponse);
+  // PublishConfig validates and stores a new version; photos keep the
+  // version they were processed with.
+  rpc PublishConfig(PublishConfigRequest) returns (PublishConfigResponse);
+  // DraftConfig asks a model to write a config from a plain-language
+  // description, or to change an existing one. Nothing is stored: the caller
+  // reviews the draft and publishes it (or creates a team with it).
+  rpc DraftConfig(DraftConfigRequest) returns (DraftConfigResponse);
+  rpc ListConfigVersions(ListConfigVersionsRequest) returns (ListConfigVersionsResponse);
+  // The conversation the collection was set up in, to carry on changing it.
+  rpc GetSetupConversation(GetSetupConversationRequest) returns (GetSetupConversationResponse);
+  // Appends to it: requests, drafts offered, versions published. A new
+  // collection's first messages arrive this way once it exists.
+  rpc AddSetupMessages(AddSetupMessagesRequest) returns (AddSetupMessagesResponse);
+}
+
+message TemplateSummary {
+  string key = 1;
+  string name = 2;
+  string industry = 3;
+  string description = 4;
+}
+
+message ListTemplatesRequest {}
+
+message ListTemplatesResponse {
+  repeated TemplateSummary templates = 1;
+}
+
+message GetActiveConfigRequest {}
+
+message GetActiveConfigResponse {
+  int32 version = 1;
+  string config_json = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message PublishConfigRequest {
+  oneof source {
+    string template_key = 1;
+    string config_json = 2;
+    // Publishes a copy of an earlier version as the newest one.
+    int32 restore_version = 3;
+  }
+}
+
+message PublishConfigResponse {
+  int32 version = 1;
+  string config_json = 2;
+}
+
+message DraftConfigRequest {
+  // What the team photographs, or what to change, in any language.
+  string description = 1;
+  // Config to change. Empty means the team's active config, or a config
+  // from scratch when for_new_team is set.
+  string base_config_json = 2;
+  // The draft is for a new team, so it is not compared with this team's
+  // active config.
+  bool for_new_team = 3;
+  // How the user said subjects are told apart: "code" (they carry a label,
+  // tag or number) or "appearance" (they carry none). Empty lets the model
+  // choose from the description.
+  string identify_by = 4;
+}
+
+message DraftConfigResponse {
+  string config_json = 1;
+  // What the config does, or what changed, in the description's language.
+  string summary = 2;
+  // How to try the config with a phone, in the description's language.
+  repeated string test_tips = 3;
+  // Changes that affect photos and subjects already filed, such as a removed
+  // subject type or identity field. Structured so each app can word them in
+  // its user's language.
+  repeated ConfigChange warnings = 5;
+  reserved 4;
+}
+
+enum ConfigChangeKind {
+  CONFIG_CHANGE_KIND_UNSPECIFIED = 0;
+  CONFIG_CHANGE_KIND_SUBJECT_TYPE_REMOVED = 1;
+  CONFIG_CHANGE_KIND_FIELD_REMOVED = 2;
+  // from and to are the old and new field kinds.
+  CONFIG_CHANGE_KIND_FIELD_KIND_CHANGED = 3;
+  CONFIG_CHANGE_KIND_FIELD_PATTERN_CHANGED = 4;
+  // from and to are the old and new number of fields that must match.
+  CONFIG_CHANGE_KIND_MIN_FIELDS_RAISED = 5;
+  CONFIG_CHANGE_KIND_BARCODE_REMOVED = 6;
+  // from and to are the old and new parent type names.
+  CONFIG_CHANGE_KIND_PARENT_CHANGED = 7;
+  CONFIG_CHANGE_KIND_TAG_REMOVED = 8;
+  // from and to are strict, standard or lenient.
+  CONFIG_CHANGE_KIND_STRICTNESS_CHANGED = 9;
+  CONFIG_CHANGE_KIND_PRIVACY_LOWERED = 10;
+  // from and to are code or appearance.
+  CONFIG_CHANGE_KIND_IDENTIFY_BY_CHANGED = 11;
+}
+
+message ConfigChange {
+  ConfigChangeKind kind = 1;
+  // Display names in the config's own language.
+  string subject_type = 2;
+  string field = 3;
+  string tag = 4;
+  string from = 5;
+  string to = 6;
+  // English wording, for logs and API clients without their own.
+  string message = 7;
+}
+
+message ListConfigVersionsRequest {}
+
+message ConfigVersion {
+  int32 version = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 3;
+  bool active = 4;
+}
+
+message ListConfigVersionsResponse {
+  // Newest first.
+  repeated ConfigVersion versions = 1;
+}
+
+enum SetupRole {
+  SETUP_ROLE_UNSPECIFIED = 0;
+  SETUP_ROLE_USER = 1;
+  SETUP_ROLE_ASSISTANT = 2;
+  // Something that happened: the collection was created, a version
+  // published.
+  SETUP_ROLE_EVENT = 3;
+}
+
+message SetupMessage {
+  string id = 1;
+  SetupRole role = 2;
+  string text = 3;
+  // Assistant: the draft offered.
+  DraftConfigResponse draft = 4;
+  // Event: the version published, if any.
+  int32 config_version = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message GetSetupConversationRequest {}
+
+message GetSetupConversationResponse {
+  // Oldest first.
+  repeated SetupMessage messages = 1;
+}
+
+message AddSetupMessagesRequest {
+  repeated SetupMessage messages = 1;
+}
+
+message AddSetupMessagesResponse {
+  repeated SetupMessage messages = 1;
+}

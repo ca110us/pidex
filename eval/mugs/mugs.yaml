@@ -1,0 +1,22 @@
+name: Mugs
+industry: household
+language: en
+description: A shelf of mugs, filed by mug. They carry no labels; each is recognized by its look.
+strictness: standard
+privacy: standard
+date_order: mdy
+subject_types:
+  - key: mug
+    name: Mug
+    identify_by: appearance
+    carriers: >-
+      The print or decoration: its words exactly, logos, pictures, patterns,
+      glaze colours and where they sit; the mug's shape, handle, rim, foot
+      and material; chips, stains and wear.
+    identity_fields:
+      - { key: name, name: Name, kind: text }
+    display_fields: [name]
+tags:
+  - { key: front, name: Front, group: side }
+  - { key: back, name: Back, group: side }
+  - { key: in_use, name: In use, group: how }

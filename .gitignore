@@ -1,0 +1,28 @@
+# Local data from the dev S3 and builds
+.data/
+backend/.data/
+/bin/
+# Binaries built with `go build` in backend/.
+/backend/pidex
+/backend/eval*
+!/backend/eval*/
+*.test
+*.out
+.DS_Store
+
+# iOS: the Xcode project is generated from ios/project.yml by XcodeGen
+ios/Pidex.xcodeproj/
+ios/.build/
+xcuserdata/
+DerivedData/
+
+# Eval photos are downloaded by eval/fetch.sh, not committed.
+eval/commons/images/
+eval/appearance/images/
+eval/appearance/descriptions.jsonl
+eval/mugs/images/
+eval/mugs/descriptions.jsonl
+eval/commons/last-run.jsonl
+
+# Personal signing (team, bundle identifier).
+ios/Local.xcconfig

@@ -1,0 +1,29 @@
+name: Pets
+industry: household
+language: en
+description: >-
+  Photos of a household's pets, filed by animal. Pets wear no labels, so each
+  is recognized by how it looks; unsure matches are confirmed with one tap.
+strictness: standard
+privacy: standard
+date_order: mdy
+subject_types:
+  - key: pet
+    name: Pet
+    identify_by: appearance
+    carriers: >-
+      Species and breed, coat colours and pattern, markings on the face, chest,
+      paws and tail, eye colour, ear shape, size, and any collar or tag.
+    identity_fields:
+      - { key: name, name: Name, kind: text }
+    display_fields: [name]
+tags:
+  - { key: sleeping, name: Sleeping, group: activity }
+  - { key: playing, name: Playing, group: activity }
+  - { key: eating, name: Eating, group: activity }
+  - { key: outdoors, name: Outdoors, group: place }
+  - { key: indoors, name: Indoors, group: place }
+  - { key: with_people, name: With people, group: scene }
+  - { key: vet_visit, name: Vet visit, group: care }
+  - { key: grooming, name: Grooming, group: care }
+  - { key: injury, name: Injury or wound, group: care }

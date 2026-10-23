@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "pidex/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// CaptureService is the shooting path. Photo bytes never travel through it:
+// the client gets a signed URL, uploads straight to object storage, then
+// reports completion with whatever it analyzed on device.
+service CaptureService {
+  // CreateUpload is idempotent on client_photo_id, so retries after a
+  // dropped connection return the same photo.
+  rpc CreateUpload(CreateUploadRequest) returns (CreateUploadResponse);
+  rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadResponse);
+  // ResolveAnchor answers "who is this?" from on-device results alone, fast
+  // enough to drive the "Current: <subject>" banner right after the shot.
+  rpc ResolveAnchor(ResolveAnchorRequest) returns (ResolveAnchorResponse);
+  // IdentifyShot answers "who is this?" from a shot still on the phone, by
+  // having the vision model read it, when the phone's own reading could not
+  // tell (a serial number among other text on a screen). Nothing is stored.
+  rpc IdentifyShot(IdentifyShotRequest) returns (IdentifyShotResponse);
+  rpc GetSessionSummary(GetSessionSummaryRequest) returns (GetSessionSummaryResponse);
+}
+
+message CreateUploadRequest {
+  // Generated on the device (UUID) before the shot is queued.
+  string client_photo_id = 1;
+  string content_type = 2;
+  int64 size_bytes = 3;
+  string sha256_hex = 4;
+}
+
+message CreateUploadResponse {
+  string photo_id = 1;
+  string upload_url = 2;
+  map<string, string> upload_headers = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  // True when the bytes were already received on an earlier attempt.
+  bool already_uploaded = 5;
+}
+
+message CompleteUploadRequest {
+  string photo_id = 1;
+  string session_id = 2;
+  google.protobuf.Timestamp captured_at = 3;
+  GeoPoint location = 4;
+  OnDeviceAnalysis on_device = 5;
+  // Subject shown in the banner when the shot was taken, if any.
+  string locked_subject_id = 6;
+  // The person picked locked_subject_id on the camera, rather than the
+  // phone reading it: the photo is filed under it as their decision.
+  bool subject_chosen = 7;
+  // Every photo says who it shows: locked_subject_id, or else the
+  // client_photo_id of the shot in this session that identifies it (a
+  // label, or the subject itself for one told apart by its look), which may
+  // be this photo. A photo that does neither is refused.
+  string identity_client_photo_id = 8;
+}
+
+message CompleteUploadResponse {
+  Photo photo = 1;
+}
+
+enum AnchorState {
+  ANCHOR_STATE_UNSPECIFIED = 0;
+  // Nothing identity-like was seen on device.
+  ANCHOR_STATE_NOT_ANCHOR = 1;
+  ANCHOR_STATE_MATCHED = 2;
+  // Identity fields were read but match no existing subject.
+  ANCHOR_STATE_NEW_SUBJECT = 3;
+  // Several subjects fit, or too few fields matched for this team's rules.
+  ANCHOR_STATE_AMBIGUOUS = 4;
+}
+
+message ResolveAnchorRequest {
+  OnDeviceAnalysis on_device = 1;
+}
+
+message IdentifyShotRequest {
+  // The shot, downscaled; at most 2 MB.
+  bytes jpeg = 1;
+  OnDeviceAnalysis on_device = 2;
+  // The id the shot will be uploaded with. What its look was taken for is
+  // kept against it, so a person's answer on the camera teaches the
+  // matcher how far it can be trusted.
+  string client_photo_id = 3;
+}
+
+message IdentifyShotResponse {
+  ResolveAnchorResponse anchor = 1;
+}
+
+message ResolveAnchorResponse {
+  AnchorState state = 1;
+  Subject subject = 2;
+  float confidence = 3;
+  repeated Subject candidates = 4;
+  string subject_type_key = 5;
+  map<string, string> extracted_identity = 6;
+}
+
+message GetSessionSummaryRequest {
+  string session_id = 1;
+}
+
+message SubjectGroup {
+  Subject subject = 1;
+  int32 photo_count = 2;
+  int32 auto_count = 3;
+}
+
+message GetSessionSummaryResponse {
+  repeated SubjectGroup groups = 1;
+  repeated Photo needs_review = 2;
+  int32 junk_count = 3;
+  int32 processing_count = 4;
+  int32 total_count = 5;
+  // Subjects proposed by needs_review photos (suggested_subject_id), so a
+  // client can offer one-tap confirmation without further lookups.
+  repeated Subject suggested_subjects = 6;
+}

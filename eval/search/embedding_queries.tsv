@@ -1,0 +1,25 @@
+# query	fragments of the paths of the photos it should find (comma separated)
+knee x-ray	Lateral_radiograph
+膝关节X光片	Lateral_radiograph
+surgical incision closed with staples	19_Staples,Cdm_hip_staples,Hip_replacement,Knee_Replacement
+用钉子缝合的手术切口	19_Staples,Cdm_hip_staples,Hip_replacement,Knee_Replacement
+bruise on the arm	Black-and-blue,Blood_bruise,Blood_testing_bruise_on_arm_1,Blood_testing_bruise_on_arm_2,Bruise_2
+手臂上的淤青	Black-and-blue,Blood_bruise,Blood_testing_bruise_on_arm_1,Blood_testing_bruise_on_arm_2,Bruise_2
+external fixator	Ilizarov7,Patient_with_external_fixator,Compartment_syndrome
+外固定支架	Ilizarov7,Patient_with_external_fixator,Compartment_syndrome
+deep open wound on the forearm	Self_harm_laceration
+前臂很深的开放性伤口	Self_harm_laceration
+swollen ankle	Schwellung
+脚踝肿了	Schwellung
+wires exposed inside an opened wall	Trimming_a_Wall
+墙里露出来的电线	Trimming_a_Wall
+timber frame under construction	Modern_timber_framing,SCCC_Wood
+木结构框架施工	Modern_timber_framing,SCCC_Wood
+finished drywall before painting	Pine_Grove
+刚装好的石膏板墙	Pine_Grove
+wrist x-ray	Barton,Roentgen
+手腕的X光	Barton,Roentgen
+wound healing badly, red and irritated	Self_harm_laceration_into_hypodermis__reaching_fascia_-_day_20
+伤口愈合不好，发红	Self_harm_laceration_into_hypodermis__reaching_fascia_-_day_20
+pipes inside the wall	Trimming_a_Wall_5,Haltern
+墙里的水管	Trimming_a_Wall_5,Haltern

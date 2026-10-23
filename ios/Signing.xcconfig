@@ -1,0 +1,8 @@
+// Signing defaults for the app target. Personal values (your Apple team and
+// a bundle identifier registered to it) go in Local.xcconfig, which is not
+// committed:
+//
+//   DEVELOPMENT_TEAM = ABCDE12345
+//   PIDEX_BUNDLE_ID = app.pidex.ios.abcde12345
+PIDEX_BUNDLE_ID = app.pidex.ios
+#include? "Local.xcconfig"

@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "pidex/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// SearchService finds photos from plain language. A model only turns the
+// request into filters over the team's own vocabulary; every result is a
+// stored photo, never something the model made up.
+service SearchService {
+  rpc SearchPhotos(SearchPhotosRequest) returns (SearchPhotosResponse);
+  // AskPhotos answers a question from the photos a search finds, citing
+  // them. Off for high-privacy teams.
+  rpc AskPhotos(AskPhotosRequest) returns (AskPhotosResponse);
+}
+
+enum SearchMode {
+  SEARCH_MODE_UNSPECIFIED = 0;
+  // Photos that match.
+  SEARCH_MODE_PHOTOS = 1;
+  // Subjects with no photo that matches ("which units have no
+  // waterproofing photo?").
+  SEARCH_MODE_MISSING = 2;
+}
+
+// SearchFilters is how a request was understood. The app shows it as chips
+// the user can remove, and sends it back to search without a model call.
+message SearchFilters {
+  SearchMode mode = 1;
+  // Text naming a subject ("bed 12", "unit 203"), resolved to subject_ids.
+  string subject_query = 2;
+  repeated string subject_ids = 3;
+  // Mode MISSING: the kind of subject to list. In mode PHOTOS it only
+  // narrows which subjects subject_query can name.
+  string subject_type = 4;
+  // Tags that make a photo relevant. AI tags are often incomplete, so they
+  // rank rather than filter: a photo with none of them still matches by
+  // text. In mode MISSING a subject counts as covered by any of them.
+  repeated string tags = 5;
+  reserved 6;
+  reserved "all_tags", "any_tags";
+  google.protobuf.Timestamp from = 7;
+  google.protobuf.Timestamp to = 8;
+  repeated PhotoRole roles = 9;
+  // What is left to match by meaning, in the request's language.
+  string text = 10;
+  // Every one of tags is required, as when the user picks a tag to filter
+  // by. Tags a model read from a request only rank (see tags).
+  bool tags_required = 11;
+}
+
+message SearchPhotosRequest {
+  // Plain language in any language. Ignored when filters is set.
+  string query = 1;
+  SearchFilters filters = 2;
+  // IANA time zone of the user, for "yesterday" or "last week".
+  string time_zone = 3;
+  int32 page_size = 4;
+  // Skips this many matches: the next page starts where one ended.
+  int32 offset = 5;
+  // Also count, for each tag, the matches that have it: what picking it
+  // too would leave. Only for searches without words, whose matches are all
+  // that pass the filters.
+  bool tag_counts = 6;
+}
+
+message SearchPhotosResponse {
+  SearchFilters filters = 1;
+  // Subjects named in filters, and those of the photos returned.
+  repeated Subject subjects = 2;
+  repeated Photo photos = 3;
+  // Mode MISSING: the subjects without a matching photo.
+  repeated Subject missing = 4;
+  // True when no subject matched filters.subject_query.
+  bool subject_not_found = 5;
+  // How many photos (mode MISSING: subjects) match in all; photos is one
+  // page of them. 0 for a page past the end.
+  int32 total = 6;
+  // With tag_counts: most first.
+  repeated TagCount tag_counts = 7;
+}
+
+message AskPhotosRequest {
+  string question = 1;
+  string time_zone = 2;
+}
+
+message AskPhotosResponse {
+  // In the question's language. Statements cite photos as [1], [2]...
+  string answer = 1;
+  // cited[i] is the photo marked [i+1] in the answer.
+  repeated Photo cited = 2;
+  SearchFilters filters = 3;
+  repeated Subject subjects = 4;
+  // Mode MISSING: answered from the database, not by a model.
+  repeated Subject missing = 5;
+}

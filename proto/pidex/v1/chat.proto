@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "pidex/v1/common.proto";
+import "pidex/v1/search.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// ChatService is finding photos and asking about them as a conversation.
+// Each message may build on the earlier ones ("only last week's", "what
+// about the back?"). Conversations belong to the person who had them and
+// keep references to photos, never copies.
+service ChatService {
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+  // GetConversation returns every message with its photos resolved now, so
+  // links are fresh and photos show their current tags and filing.
+  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse);
+  // SendMessage adds a message to a conversation (a new one when
+  // conversation_id is empty) and returns the reply.
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse);
+}
+
+message Conversation {
+  string id = 1;
+  // The first request, shortened.
+  string title = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+  int32 message_count = 5;
+}
+
+enum ChatRole {
+  CHAT_ROLE_UNSPECIFIED = 0;
+  CHAT_ROLE_USER = 1;
+  CHAT_ROLE_ASSISTANT = 2;
+}
+
+enum ReplyKind {
+  REPLY_KIND_UNSPECIFIED = 0;
+  // Photos that match; text is empty.
+  REPLY_KIND_PHOTOS = 1;
+  // An answer drawn from photos; text cites them as [1], [2]…
+  REPLY_KIND_ANSWER = 2;
+  // Subjects without a matching photo, in missing.
+  REPLY_KIND_MISSING = 3;
+  // The request was not about the photos; nothing was looked up, and the
+  // app says what it can help with.
+  REPLY_KIND_UNRELATED = 4;
+}
+
+message ChatMessage {
+  string id = 1;
+  ChatRole role = 2;
+  string text = 3;
+  // Replies only below.
+  ReplyKind kind = 4;
+  // How the message was understood; editable as chips.
+  SearchFilters filters = 5;
+  // In the order shown; for an answer, photos[i] is the one cited as [i+1].
+  repeated Photo photos = 6;
+  // Subjects the filters name and those of the photos.
+  repeated Subject subjects = 7;
+  repeated Subject missing = 8;
+  bool subject_not_found = 9;
+  google.protobuf.Timestamp created_at = 10;
+  // How many photos matched in all; photos holds the first of them, and
+  // searching again with filters pages through the rest.
+  int32 photo_total = 11;
+}
+
+message ListConversationsRequest {
+  int32 page_size = 1;
+}
+
+message ListConversationsResponse {
+  // Most recently active first.
+  repeated Conversation conversations = 1;
+}
+
+message GetConversationRequest {
+  string id = 1;
+}
+
+message GetConversationResponse {
+  Conversation conversation = 1;
+  repeated ChatMessage messages = 2;
+}
+
+message SendMessageRequest {
+  // Empty starts a new conversation.
+  string conversation_id = 1;
+  string text = 2;
+  // IANA time zone of the user, for "yesterday" or "last week".
+  string time_zone = 3;
+}
+
+message SendMessageResponse {
+  Conversation conversation = 1;
+  ChatMessage message = 2;
+  ChatMessage reply = 3;
+}
+
+message DeleteConversationRequest {
+  string id = 1;
+}
+
+message DeleteConversationResponse {}

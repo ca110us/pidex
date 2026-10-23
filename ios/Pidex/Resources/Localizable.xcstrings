@@ -1,0 +1,3476 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ moves from “%@” to “%@”. Existing subjects keep their old parent.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 从“%2$@”下移到“%3$@”下。已有对象仍保留原来的上级。"
+          }
+        }
+      }
+    },
+    "%@ now needs %@ matching fields instead of %@, so more photos will ask you to confirm.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 现在需要 %2$@ 个字段吻合（原来是 %3$@ 个），所以会有更多照片需要你确认。"
+          }
+        }
+      }
+    },
+    "%@ of %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%@ will be recognized by a label or code instead of by how it looks. Photos already filed stay where they are.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 将改为通过标签或编码识别，不再看外观。已归档的照片保持不变。"
+          }
+        }
+      }
+    },
+    "%@ will be recognized by how it looks instead of by a label. Photos already filed stay where they are.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 将改为通过外观识别，不再需要标签。已归档的照片保持不变。"
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@：%2$@"
+          }
+        }
+      }
+    },
+    "%d photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d 张照片"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%d photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%d photos · %d subjects": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d 张照片 · %2$d 个对象"
+          }
+        }
+      }
+    },
+    "%lld kept on this phone · Upload when done": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张留在手机上 · 拍完点“上传”"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kept on this phone · Upload when done"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld kept on this phone · Upload when done"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld need you": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张需要你处理"
+          }
+        }
+      }
+    },
+    "%lld of %d photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld / %2$d 张照片"
+          }
+        }
+      }
+    },
+    "%lld of these must match before a photo is filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少 %lld 项吻合才会归档照片"
+          }
+        }
+      }
+    },
+    "%lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张照片"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos are still uploading to the collection the camera shoots for. Shoot for another one when they are done.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有 %lld 张照片正在上传到相机当前所在的合集，传完后才能为其他合集拍照。"
+          }
+        }
+      }
+    },
+    "%lld photos are still uploading to the current workspace. Switch when they are done.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有 %lld 张照片正在上传到当前工作区，传完后再切换。"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo is still uploading to the current workspace. Switch when it is done."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos are still uploading to the current workspace. Switch when they are done."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos are still uploading to this collection. Delete it once they are done, so none are left waiting on this phone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有 %lld 张照片正在上传到这个合集。请等上传完成后再删除，免得照片卡在手机上。"
+          }
+        }
+      }
+    },
+    "%lld photos filed in “%@”": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld 张照片已归档到“%2$@”"
+          }
+        }
+      }
+    },
+    "%lld photos not filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张照片未归档"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo not filed"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos not filed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos not identified: choose who, or delete them": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张照片还没有身份：请选择是谁，或删掉"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo not identified: choose who, or delete it"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos not identified: choose who, or delete them"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos not uploaded yet": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有 %lld 张没上传"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo not uploaded yet"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos not uploaded yet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld selected": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已选 %lld 张"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld taken · %lld uploading": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已拍 %1$lld 张 · %2$lld 张上传中"
+          }
+        }
+      }
+    },
+    "%lld taken · all uploaded": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已拍 %lld 张 · 已全部上传"
+          }
+        }
+      }
+    },
+    "%lld uploading": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张上传中"
+          }
+        }
+      }
+    },
+    "%lld. %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld. %2$@"
+          }
+        }
+      }
+    },
+    "A barcode or QR code alone identifies it": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅凭条码或二维码即可确定身份"
+          }
+        }
+      }
+    },
+    "A name you will recognize. If one has it already, these photos go to that one.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "起一个你认得出的名字。如果已经有叫这个名字的，这些照片就归给它。"
+          }
+        }
+      }
+    },
+    "API token (cbk_…)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API 令牌（cbk_…）"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加"
+          }
+        }
+      }
+    },
+    "Add a tag": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加标签"
+          }
+        }
+      }
+    },
+    "Add another team's token to add its collection. Tokens are stored in the Keychain on this device only.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加另一个团队的令牌，就会加入它的合集。令牌只保存在本机的钥匙串中。"
+          }
+        }
+      }
+    },
+    "Add another team's token to shoot for it too. Tokens are stored in the Keychain on this device only.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加另一个团队的令牌，就能同时为它拍照。令牌只保存在本机的钥匙串中。"
+          }
+        }
+      }
+    },
+    "Add collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加合集"
+          }
+        }
+      }
+    },
+    "Add workspace": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加工作区"
+          }
+        }
+      }
+    },
+    "Added by a person": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "人工添加"
+          }
+        }
+      }
+    },
+    "Adding a team's token adds its collection to this iPhone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加团队的令牌，会把它的合集加到这台 iPhone 上。"
+          }
+        }
+      }
+    },
+    "Address": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地址"
+          }
+        }
+      }
+    },
+    "Affects photos already filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会影响已归档的照片"
+          }
+        }
+      }
+    },
+    "All %lld filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张全部归档"
+          }
+        }
+      }
+    },
+    "All collections": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有合集"
+          }
+        }
+      }
+    },
+    "Allow the microphone and speech recognition for Pidex in Settings to dictate.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在“设置”中允许 Pidex 使用麦克风和语音识别，才能语音输入。"
+          }
+        }
+      }
+    },
+    "Another collection once %lld photos are uploaded": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有 %lld 张照片在上传，传完后才能换合集"
+          }
+        }
+      }
+    },
+    "Any language. Say what you photograph, what identifies each one (a label, a tag, a number), and what you will want to find later. For example: “I look after 15 houseplants and want to track their growth and pests. They have no labels yet.”": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用任何语言都可以。说说你要拍什么、靠什么认出每一个（标签、吊牌、编号），以及以后想找什么。例如：“我养了 15 盆绿植，想记录它们的生长和病虫害，目前还没有标签。”"
+          }
+        }
+      }
+    },
+    "Apply changes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用修改"
+          }
+        }
+      }
+    },
+    "Are these %lld %@?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这 %1$lld 张都是%2$@吗？"
+          }
+        }
+      }
+    },
+    "Ask": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提问"
+          }
+        }
+      }
+    },
+    "Ask a question": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提问"
+          }
+        }
+      }
+    },
+    "Ask about your photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "问一个关于照片的问题"
+          }
+        }
+      }
+    },
+    "Ask all collections": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "问所有合集"
+          }
+        }
+      }
+    },
+    "Ask all your collections": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "问问你所有的合集"
+          }
+        }
+      }
+    },
+    "Ask or find photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提问或找照片"
+          }
+        }
+      }
+    },
+    "Ask your team admin for a token. It is stored in the Keychain on this device only.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请向团队管理员索取令牌。令牌只保存在本机的钥匙串中。"
+          }
+        }
+      }
+    },
+    "Ask “%@”": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "问问“%@”"
+          }
+        }
+      }
+    },
+    "Auto": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动判断"
+          }
+        }
+      }
+    },
+    "Barcodes and QR codes are read": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会读取条码和二维码"
+          }
+        }
+      }
+    },
+    "Barcodes no longer identify %@ by “%@”.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "条码不再用“%2$@”来识别%1$@。"
+          }
+        }
+      }
+    },
+    "By a label, tag or number on each": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有标签、条码或编号"
+          }
+        }
+      }
+    },
+    "By how it looks": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按外观识别"
+          }
+        }
+      }
+    },
+    "By how they look": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "靠外观"
+          }
+        }
+      }
+    },
+    "By how they look (no labels)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "靠外观（没有标记）"
+          }
+        }
+      }
+    },
+    "Camera access is off. Enable it in Settings › Pidex.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相机权限已关闭。请在“设置 › Pidex”中打开。"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        }
+      }
+    },
+    "Change": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改"
+          }
+        }
+      }
+    },
+    "Change scenario": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改场景"
+          }
+        }
+      }
+    },
+    "Change something in this draft": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说说这份草稿要改什么"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查…"
+          }
+        }
+      }
+    },
+    "Choose": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择"
+          }
+        }
+      }
+    },
+    "Clear tags": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除标签"
+          }
+        }
+      }
+    },
+    "Clear the choice": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消选择"
+          }
+        }
+      }
+    },
+    "Close camera": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭相机"
+          }
+        }
+      }
+    },
+    "Collections": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "合集"
+          }
+        }
+      }
+    },
+    "Confidence %lld%%": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "置信度 %lld%%"
+          }
+        }
+      }
+    },
+    "Connect": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接"
+          }
+        }
+      }
+    },
+    "Connected to “%@”.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已连接到“%@”。"
+          }
+        }
+      }
+    },
+    "Conversations": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对话记录"
+          }
+        }
+      }
+    },
+    "Could not connect: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法连接：%@"
+          }
+        }
+      }
+    },
+    "Could not read the photo: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取照片：%@"
+          }
+        }
+      }
+    },
+    "Could not recognize this shot: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这张没能识别：%@"
+          }
+        }
+      }
+    },
+    "Could not save the photo: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存照片：%@"
+          }
+        }
+      }
+    },
+    "Could not send the photo: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片没能上传：%@"
+          }
+        }
+      }
+    },
+    "Create collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建合集"
+          }
+        }
+      }
+    },
+    "Create workspace": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建工作区"
+          }
+        }
+      }
+    },
+    "Created “%@”": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”"
+          }
+        }
+      }
+    },
+    "Created “%@”. Its camera opens once your photos finish uploading.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”。照片上传完后就能为它拍照。"
+          }
+        }
+      }
+    },
+    "Created “%@”. Switch to it when your photos finish uploading.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”。照片上传完后再切换过去。"
+          }
+        }
+      }
+    },
+    "Created “%@”. The camera now shoots for it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”，相机现在为它拍照。"
+          }
+        }
+      }
+    },
+    "Created “%@”. You are now shooting for it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”，现在拍的照片都归入它。"
+          }
+        }
+      }
+    },
+    "Creating the collection…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在创建合集…"
+          }
+        }
+      }
+    },
+    "Creating the workspace…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在创建工作区…"
+          }
+        }
+      }
+    },
+    "Current": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前"
+          }
+        }
+      }
+    },
+    "Current: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前：%@"
+          }
+        }
+      }
+    },
+    "Date": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        }
+      }
+    },
+    "Decide from my description": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根据我的描述自动判断"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除"
+          }
+        }
+      }
+    },
+    "Delete %lld photos?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这 %lld 张照片？"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld photo?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete %lld photos?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Delete collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除合集"
+          }
+        }
+      }
+    },
+    "Delete collection…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除合集…"
+          }
+        }
+      }
+    },
+    "Delete for good": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永久删除"
+          }
+        }
+      }
+    },
+    "Delete it and its %d photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连同 %d 张照片一起删除"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete it and its %d photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete it and its %d photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Delete it, keep its %d photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只删除它，保留 %d 张照片"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete it, keep its %d photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Delete it, keep its %d photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Delete photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除照片"
+          }
+        }
+      }
+    },
+    "Delete photo %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除第 %lld 张"
+          }
+        }
+      }
+    },
+    "Delete this photo?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这张照片？"
+          }
+        }
+      }
+    },
+    "Delete “%@”?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除“%@”？"
+          }
+        }
+      }
+    },
+    "Deleted %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已删除 %lld 张照片"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Deleted %lld photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Deleted %lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Deleted “%@” and %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已删除“%1$@”和 %2$lld 张照片"
+          }
+        }
+      }
+    },
+    "Deleted “%@” and everything in it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已删除“%@”及其中的所有内容。"
+          }
+        }
+      }
+    },
+    "Deleted “%@”; %lld photos kept": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已删除“%1$@”，保留了 %2$lld 张照片"
+          }
+        }
+      }
+    },
+    "Delete…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除…"
+          }
+        }
+      }
+    },
+    "Deleting “%@” removes all %lld photos, every subject filed in it, its conversations, its setup and its history, for everyone who uses it. Nothing can be recovered afterwards, not even by support.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除“%1$@”会移除其中全部 %2$lld 张照片、所有已归档的对象、对话、设置和历史版本，所有使用这个合集的人都会看不到。删除后无法找回，客服也无法恢复。"
+          }
+        }
+      }
+    },
+    "Describe the change": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "描述要改的地方"
+          }
+        }
+      }
+    },
+    "Describe the work": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "描述你的工作"
+          }
+        }
+      }
+    },
+    "Describe what you photograph": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "描述你要拍什么"
+          }
+        }
+      }
+    },
+    "Designing the scenario. This takes about 20 seconds.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在设计场景，大约需要 20 秒。"
+          }
+        }
+      }
+    },
+    "Details": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "详细信息"
+          }
+        }
+      }
+    },
+    "Details and tags": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "详细信息和标签"
+          }
+        }
+      }
+    },
+    "Dictation language": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语音输入语言"
+          }
+        }
+      }
+    },
+    "Discard %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "丢弃这 %lld 张"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Discard %lld photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Discard %lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
+    "Each %@ belongs to a %@.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每个%1$@都属于一个%2$@。"
+          }
+        }
+      }
+    },
+    "Each workspace has its own scenario, subjects and photos. Swipe to remove one from this phone; its photos stay on the server.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每个工作区都有自己的场景、对象和照片。左滑可以从这台手机上移除，照片仍保留在服务器上。"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑"
+          }
+        }
+      }
+    },
+    "Enter a full URL, for example http://192.168.1.10:8080": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入完整网址，例如 http://192.168.1.10:8080"
+          }
+        }
+      }
+    },
+    "Every one has a matching photo.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每一个都已经拍到了。"
+          }
+        }
+      }
+    },
+    "Exact code": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "精确编号"
+          }
+        }
+      }
+    },
+    "File under": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档到"
+          }
+        }
+      }
+    },
+    "File under another…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改归到其他…"
+          }
+        }
+      }
+    },
+    "File under…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档到…"
+          }
+        }
+      }
+    },
+    "Filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已归档"
+          }
+        }
+      }
+    },
+    "Filed under": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档到"
+          }
+        }
+      }
+    },
+    "File…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档…"
+          }
+        }
+      }
+    },
+    "Filing %lld of %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档中 %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Filing changes from %@ to %@.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档方式从“%1$@”改为“%2$@”。"
+          }
+        }
+      }
+    },
+    "Find photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找照片"
+          }
+        }
+      }
+    },
+    "Find photos, ask what they show, or what is not photographed yet. Follow-ups build on what came before.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找照片、问照片里有什么，或者还有什么没拍到。后面的话可以接着前面说。"
+          }
+        }
+      }
+    },
+    "For example: “Add a tag for sunburn” or “Remove the flower and fruit tags.” Everything else stays as it is.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "例如：“加一个晒伤标签”或“去掉开花和结果标签”。其他内容保持不变。"
+          }
+        }
+      }
+    },
+    "For: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归给：%@"
+          }
+        }
+      }
+    },
+    "Found %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找到 %lld 张照片"
+          }
+        }
+      }
+    },
+    "From these photos. Answers describe what the photos show; check them before relying on them.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以上回答来自这些照片，只描述照片里能看到的内容，使用前请核对。"
+          }
+        }
+      }
+    },
+    "Full details": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完整设置"
+          }
+        }
+      }
+    },
+    "Generate": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成"
+          }
+        }
+      }
+    },
+    "Hide": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏"
+          }
+        }
+      }
+    },
+    "High privacy: names and IDs stay out of photo descriptions.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高隐私：照片描述中不会出现姓名和编号。"
+          }
+        }
+      }
+    },
+    "History": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "历史版本"
+          }
+        }
+      }
+    },
+    "How do you tell them apart?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "怎么区分每一个？"
+          }
+        }
+      }
+    },
+    "I can only find your photos and answer questions about them.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我只能帮你找照片，或回答和照片有关的问题。"
+          }
+        }
+      }
+    },
+    "ID seen offline — will match when online": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已拍到身份信息（离线），联网后再匹配"
+          }
+        }
+      }
+    },
+    "ID seen — will ask you to confirm": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已拍到身份信息，稍后请你确认"
+          }
+        }
+      }
+    },
+    "Identifies %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "认出是 %@"
+          }
+        }
+      }
+    },
+    "Import a photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入照片"
+          }
+        }
+      }
+    },
+    "In use": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用中"
+          }
+        }
+      }
+    },
+    "Is this %@?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是 %@ 吗？"
+          }
+        }
+      }
+    },
+    "It is removed for everyone, with its tags and its place in conversations. This cannot be undone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有人都将看不到它，标签和对话里引用它的地方也一起删除。删除后无法恢复。"
+          }
+        }
+      }
+    },
+    "Its photos move there, and this one is removed.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它的照片会移过去，这一项随后删除。"
+          }
+        }
+      }
+    },
+    "Just shoot: each one is recognized by its look": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接拍：按外观自动认出是哪一个"
+          }
+        }
+      }
+    },
+    "Keep them for later": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先留着，下次再传"
+          }
+        }
+      }
+    },
+    "Kept photos stay in the collection, filed under nothing, and can be filed again. Deleted photos cannot be recovered.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留的照片留在合集里，变成未归档，可以重新归档；删除的照片无法恢复。"
+          }
+        }
+      }
+    },
+    "Labels, tags or numbers": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签、条码或编号"
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语言"
+          }
+        }
+      }
+    },
+    "Lenient: files photos readily; mistakes are easy to fix.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宽松：积极归档，出错也容易改正。"
+          }
+        }
+      }
+    },
+    "Let its photos write it": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改回根据照片生成"
+          }
+        }
+      }
+    },
+    "Looking through %@…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在翻看 %@…"
+          }
+        }
+      }
+    },
+    "Looking through the photos…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在翻看照片…"
+          }
+        }
+      }
+    },
+    "Looks": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外观"
+          }
+        }
+      }
+    },
+    "Looks like %@: is it?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "看起来像%@，是吗？"
+          }
+        }
+      }
+    },
+    "Looks of %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 的外观"
+          }
+        }
+      }
+    },
+    "Mode": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模式"
+          }
+        }
+      }
+    },
+    "More": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多"
+          }
+        }
+      }
+    },
+    "More languages": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多语言"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称"
+          }
+        }
+      }
+    },
+    "Name it": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "起名"
+          }
+        }
+      }
+    },
+    "Needs you": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要你处理"
+          }
+        }
+      }
+    },
+    "New %@: name": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新的%@：名字"
+          }
+        }
+      }
+    },
+    "New collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建合集"
+          }
+        }
+      }
+    },
+    "New conversation": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新对话"
+          }
+        }
+      }
+    },
+    "New scenario": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建场景"
+          }
+        }
+      }
+    },
+    "New session": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新的拍摄"
+          }
+        }
+      }
+    },
+    "New: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建：%@"
+          }
+        }
+      }
+    },
+    "No ID photo yet: photograph the label, or choose who this is": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有身份照：拍一下标签，或手动选是谁"
+          }
+        }
+      }
+    },
+    "No camera is available on this device.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这台设备没有可用的相机。"
+          }
+        }
+      }
+    },
+    "No conversations yet.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有对话。"
+          }
+        }
+      }
+    },
+    "No microphone is available.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有可用的麦克风。"
+          }
+        }
+      }
+    },
+    "No photos found.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有找到照片。"
+          }
+        }
+      }
+    },
+    "No photos match the question.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有和这个问题相关的照片。"
+          }
+        }
+      }
+    },
+    "No photos match.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有符合条件的照片。"
+          }
+        }
+      }
+    },
+    "No photos yet.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有照片。"
+          }
+        }
+      }
+    },
+    "No photos yet. Tap the camera to start.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有照片。点相机开始拍。"
+          }
+        }
+      }
+    },
+    "No reply.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有回复。"
+          }
+        }
+      }
+    },
+    "Not filed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未归档"
+          }
+        }
+      }
+    },
+    "Not photographed yet": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没拍到"
+          }
+        }
+      }
+    },
+    "Not photographed yet: %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没拍到的：%lld 个"
+          }
+        }
+      }
+    },
+    "Not quite right?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不太对？"
+          }
+        }
+      }
+    },
+    "Not recognized: shoot it again closer, or choose who this is": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没认出来：靠近再拍一张，或手动选是谁"
+          }
+        }
+      }
+    },
+    "Not relevant (hidden)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无关照片（已隐藏）"
+          }
+        }
+      }
+    },
+    "Nothing filed yet": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有归档的照片"
+          }
+        }
+      }
+    },
+    "Nothing in %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 里没有找到"
+          }
+        }
+      }
+    },
+    "Nothing is filed under “%@”, so these photos match the words instead.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有找到名为“%@”的对象，下面是内容相符的照片。"
+          }
+        }
+      }
+    },
+    "Nothing is uploaded until you tap Upload": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点“上传”之前不会上传任何照片"
+          }
+        }
+      }
+    },
+    "One feature a line, such as “black nose” or “a notch in the left ear”. Searches find it by these. What you write here is kept; new photos no longer rewrite it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每行写一个特征，比如“黑鼻子”或“左耳有个缺口”。搜索会用到这些。你写的内容会保留，新照片不会再覆盖它。"
+          }
+        }
+      }
+    },
+    "Only owners and admins can change this collection's scenario.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有所有者和管理员可以修改这个合集的场景。"
+          }
+        }
+      }
+    },
+    "Only owners and admins can change this workspace's scenario.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有所有者和管理员可以修改这个工作区的场景。"
+          }
+        }
+      }
+    },
+    "Other": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不是，选其他"
+          }
+        }
+      }
+    },
+    "Patients' wristbands, serial numbers, door numbers, asset tags: photograph the label first, and the photos after it are filed under it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "病人腕带、序列号、门牌、资产标签：先拍标签，之后的照片都归到它下面。"
+          }
+        }
+      }
+    },
+    "Person name": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "姓名"
+          }
+        }
+      }
+    },
+    "Pets, mugs, plants: just shoot. Each is recognized by its look; when unsure, you confirm with one tap.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宠物、杯子、植物：直接拍，按外观自动认出是哪一个；拿不准时点一下确认。"
+          }
+        }
+      }
+    },
+    "Pets, mugs, plants: no labels on them.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宠物、杯子、植物：身上没有标签。"
+          }
+        }
+      }
+    },
+    "Photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片"
+          }
+        }
+      }
+    },
+    "Photo %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 张"
+          }
+        }
+      }
+    },
+    "Photo %lld, not identified": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 张，没有身份"
+          }
+        }
+      }
+    },
+    "Photo deleted": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片已删除"
+          }
+        }
+      }
+    },
+    "Photo storage is unavailable: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片存储不可用：%@"
+          }
+        }
+      }
+    },
+    "Photograph a label or ID to start": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先拍标签或身份信息"
+          }
+        }
+      }
+    },
+    "Photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片"
+          }
+        }
+      }
+    },
+    "Photos are filed by %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片按%@归档"
+          }
+        }
+      }
+    },
+    "Photos on server": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器上的照片"
+          }
+        }
+      }
+    },
+    "Privacy is lowered: photo descriptions may now include names and IDs.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐私级别降低：照片描述中可能出现姓名和编号。"
+          }
+        }
+      }
+    },
+    "Publish this version": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发布这个版本"
+          }
+        }
+      }
+    },
+    "Published version %d": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已发布第 %d 版"
+          }
+        }
+      }
+    },
+    "Published version %d. New photos use it from now on.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已发布第 %d 版，之后的新照片都按它处理。"
+          }
+        }
+      }
+    },
+    "Publishing…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在发布…"
+          }
+        }
+      }
+    },
+    "Reading…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在识别…"
+          }
+        }
+      }
+    },
+    "Recognized by how it looks. No labels needed: unsure matches ask you to confirm.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按外观识别，不需要贴标签；拿不准时会请你确认。"
+          }
+        }
+      }
+    },
+    "Recognizing…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在识别…"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除"
+          }
+        }
+      }
+    },
+    "Remove from this iPhone": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从这台 iPhone 上移除"
+          }
+        }
+      }
+    },
+    "Removes this filter": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除这个条件"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名"
+          }
+        }
+      }
+    },
+    "Rename %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名 %@"
+          }
+        }
+      }
+    },
+    "Restore": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复"
+          }
+        }
+      }
+    },
+    "Restore version %d?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复第 %d 版？"
+          }
+        }
+      }
+    },
+    "Restored version %d as version %d.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已把第 %1$d 版恢复为第 %2$d 版。"
+          }
+        }
+      }
+    },
+    "Restoring publishes a copy of that version as the newest one. Photos keep the version they were filed with.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复会把那个版本复制一份作为最新版本发布。照片仍保留归档时使用的版本。"
+          }
+        }
+      }
+    },
+    "Same as another…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "和另一个是同一个…"
+          }
+        }
+      }
+    },
+    "Same as the app": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟随 App"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
+          }
+        }
+      }
+    },
+    "Say in the description whether they carry labels or numbers.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在描述里说明它们身上有没有标签或编号。"
+          }
+        }
+      }
+    },
+    "Say in your own words whether they carry labels.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用自己的话说明它们身上有没有标签。"
+          }
+        }
+      }
+    },
+    "Scenario": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "场景"
+          }
+        }
+      }
+    },
+    "Search all collections": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在所有合集中搜索"
+          }
+        }
+      }
+    },
+    "Search in your own words": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用自己的话搜索"
+          }
+        }
+      }
+    },
+    "Search this collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在这个合集里搜索"
+          }
+        }
+      }
+    },
+    "See all %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看全部 %lld 个"
+          }
+        }
+      }
+    },
+    "See all %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看全部 %lld 张"
+          }
+        }
+      }
+    },
+    "Select photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择照片"
+          }
+        }
+      }
+    },
+    "Send": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送"
+          }
+        }
+      }
+    },
+    "Server": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器"
+          }
+        }
+      }
+    },
+    "Server and tokens": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器与令牌"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置"
+          }
+        }
+      }
+    },
+    "Setup": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置"
+          }
+        }
+      }
+    },
+    "Setup conversation": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置对话"
+          }
+        }
+      }
+    },
+    "Shoot for": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍照存到"
+          }
+        }
+      }
+    },
+    "Show": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示"
+          }
+        }
+      }
+    },
+    "Shows the scenario and other workspaces": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看场景和其他工作区"
+          }
+        }
+      }
+    },
+    "Sign-in problem: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录出现问题：%@"
+          }
+        }
+      }
+    },
+    "Snap it. It files itself.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍下，即归位。"
+          }
+        }
+      }
+    },
+    "Speak": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语音输入"
+          }
+        }
+      }
+    },
+    "Speech recognition is not available for this language right now.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这种语言目前无法使用语音识别。"
+          }
+        }
+      }
+    },
+    "Standard: files photos when the ID is clear, asks when in doubt.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标准：身份清楚时自动归档，拿不准时问你。"
+          }
+        }
+      }
+    },
+    "Start over": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新开始"
+          }
+        }
+      }
+    },
+    "Still processing": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍在处理"
+          }
+        }
+      }
+    },
+    "Still uploading": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍在上传"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
+          }
+        }
+      }
+    },
+    "Strict: files a photo only when the ID is certain, otherwise asks you.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "严格：只有确定身份时才归档，否则问你。"
+          }
+        }
+      }
+    },
+    "Subjects": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对象"
+          }
+        }
+      }
+    },
+    "Summary": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "摘要"
+          }
+        }
+      }
+    },
+    "Swipe a tag to remove it. Corrections are kept and the photo is found by them from now on.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左滑可以移除标签。修改会被保留，之后搜索也按修改后的标签来找。"
+          }
+        }
+      }
+    },
+    "Tag “%@” is removed. Photos that have it keep it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签“%@”被移除，已带此标签的照片会保留它。"
+          }
+        }
+      }
+    },
+    "Tags": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签"
+          }
+        }
+      }
+    },
+    "Tags (%lld)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签（%lld）"
+          }
+        }
+      }
+    },
+    "Take photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍照"
+          }
+        }
+      }
+    },
+    "Take photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍照"
+          }
+        }
+      }
+    },
+    "Take photos for %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为“%@”拍照"
+          }
+        }
+      }
+    },
+    "Taken": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍摄时间"
+          }
+        }
+      }
+    },
+    "Tell me what you photograph, what you will want to find later, and how you tell one from another. I will set the collection up, and you can keep changing it here, now or later.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "告诉我你要拍什么、以后想找什么，以及靠什么区分每一个。我来把合集建好；之后想改，随时回到这里接着说。"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文本"
+          }
+        }
+      }
+    },
+    "The app follows your iPhone's language unless you pick one for Pidex in Settings. Scenario names and tags stay in the language they were written in.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 默认跟随 iPhone 的语言，也可以在“设置”里为 Pidex 单独选择。场景里的名称和标签保持创建时的语言。"
+          }
+        }
+      }
+    },
+    "The camera shoots for this collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相机正在为这个合集拍照"
+          }
+        }
+      }
+    },
+    "The microphone could not start: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "麦克风无法启动：%@"
+          }
+        }
+      }
+    },
+    "The model could not produce a valid scenario. Try describing it differently.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型没能生成有效的场景，换一种说法再试试。"
+          }
+        }
+      }
+    },
+    "The model did not answer in time. Try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型没有及时响应，请再试一次。"
+          }
+        }
+      }
+    },
+    "The photo could not be taken: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法拍照：%@"
+          }
+        }
+      }
+    },
+    "They are removed for everyone, with their tags and their place in conversations. This cannot be undone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有人都将看不到它们，标签和对话里引用它们的地方也一起删除。删除后无法恢复。"
+          }
+        }
+      }
+    },
+    "This cannot be undone": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除后无法恢复"
+          }
+        }
+      }
+    },
+    "This is where “%@” was set up. Say what to change, such as a missing tag or another way to tell them apart; nothing changes until you apply it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”就是在这里建的。说说要改什么，比如少了一个标签，或换一种区分方式；点“应用修改”之前不会生效。"
+          }
+        }
+      }
+    },
+    "This server has no model set up for designing scenarios.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这台服务器还没有配置用于设计场景的模型。"
+          }
+        }
+      }
+    },
+    "This session": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次拍摄"
+          }
+        }
+      }
+    },
+    "To keep the photos, export or save them before deleting.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果还想保留照片，请在删除前先导出或保存。"
+          }
+        }
+      }
+    },
+    "Touch and hold to choose the language": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "长按选择语言"
+          }
+        }
+      }
+    },
+    "Try it": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "试试看"
+          }
+        }
+      }
+    },
+    "Type the collection's name to confirm": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输入合集名称以确认"
+          }
+        }
+      }
+    },
+    "Update draft": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新草稿"
+          }
+        }
+      }
+    },
+    "Updating the draft…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在更新草稿…"
+          }
+        }
+      }
+    },
+    "Upload": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上传"
+          }
+        }
+      }
+    },
+    "Upload %lld photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上传这 %lld 张"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Upload %lld photo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Upload %lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Uploading %lld of %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上传中 %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Uploads paused. %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上传已暂停。%@"
+          }
+        }
+      }
+    },
+    "Version %@ (%@)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "版本 %@（%@）"
+          }
+        }
+      }
+    },
+    "Version %d": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %d 版"
+          }
+        }
+      }
+    },
+    "What does your team photograph?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的团队拍什么？"
+          }
+        }
+      }
+    },
+    "What is recognized, tags, history": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "识别方式、标签、历史版本"
+          }
+        }
+      }
+    },
+    "What should change?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要改什么？"
+          }
+        }
+      }
+    },
+    "What tells them apart": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "靠什么区分"
+          }
+        }
+      }
+    },
+    "Which one is it?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是哪一个？"
+          }
+        }
+      }
+    },
+    "Who is this?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是谁？"
+          }
+        }
+      }
+    },
+    "Worked out from what you describe.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根据你的描述自动判断。"
+          }
+        }
+      }
+    },
+    "Workspace": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作区"
+          }
+        }
+      }
+    },
+    "Workspaces": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作区"
+          }
+        }
+      }
+    },
+    "Wristbands, serial numbers, door numbers, asset tags.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "腕带、序列号、门牌、资产标签。"
+          }
+        }
+      }
+    },
+    "Written by you": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由你填写"
+          }
+        }
+      }
+    },
+    "Written from its photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根据照片生成"
+          }
+        }
+      }
+    },
+    "Written from its photos once there are a few. Add what you know, such as a black nose, and searches find it.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有几张照片后会根据照片自动生成。也可以自己补充，比如“黑鼻子”，搜索时就能找到。"
+          }
+        }
+      }
+    },
+    "Yes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是"
+          }
+        }
+      }
+    },
+    "You can switch when %lld photos finish uploading.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张照片上传完后才能切换。"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You can switch when %lld photo finishes uploading."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "You can switch when %lld photos finish uploading."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "lenient": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宽松"
+          }
+        }
+      }
+    },
+    "standard": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标准"
+          }
+        }
+      }
+    },
+    "strict": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "严格"
+          }
+        }
+      }
+    },
+    "“%@” is removed. Its subjects keep their photos, but new photos will not be filed under them.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”被移除。它下面的对象保留原有照片，但新照片不会再归到这里。"
+          }
+        }
+      }
+    },
+    "“%@” of %@ gets a new format rule; values that do not fit it are ignored.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@的“%1$@”有了新的格式规则，不符合的值会被忽略。"
+          }
+        }
+      }
+    },
+    "“%@” of %@ is no longer read or matched. Existing subjects keep the value.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再读取或匹配%2$@的“%1$@”，已有对象保留原值。"
+          }
+        }
+      }
+    },
+    "“%@” of %@ is now matched as %@ instead of %@.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@的“%1$@”现在按“%3$@”匹配（原来是“%4$@”）。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

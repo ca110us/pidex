@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package pidex.v1;
+
+import "pidex/v1/common.proto";
+
+option go_package = "pidex/gen/pidex/v1;pidexv1";
+
+// LibraryService is browsing, correcting and searching what was filed.
+service LibraryService {
+  rpc ListPhotos(ListPhotosRequest) returns (ListPhotosResponse);
+  rpc GetPhoto(GetPhotoRequest) returns (GetPhotoResponse);
+  // AssignPhotos is the correction path; it always wins over the pipeline.
+  rpc AssignPhotos(AssignPhotosRequest) returns (AssignPhotosResponse);
+  rpc UpdatePhotoTags(UpdatePhotoTagsRequest) returns (UpdatePhotoTagsResponse);
+  rpc ListSubjects(ListSubjectsRequest) returns (ListSubjectsResponse);
+  rpc GetSubject(GetSubjectRequest) returns (GetSubjectResponse);
+  rpc CreateSubject(CreateSubjectRequest) returns (CreateSubjectResponse);
+  // Renames a subject, such as one named from its look ("Orange tabby")
+  // when its owner calls it something else.
+  rpc RenameSubject(RenameSubjectRequest) returns (RenameSubjectResponse);
+  // Sets what a subject looks like, as a person sees it ("black nose").
+  // From then on it is theirs: photos no longer rewrite it. Empty hands it
+  // back to be written from photos.
+  rpc SetSubjectProfile(SetSubjectProfileRequest) returns (SetSubjectProfileResponse);
+  // Merges subjects that turned out to be one: their photos move to into.
+  rpc MergeSubjects(MergeSubjectsRequest) returns (MergeSubjectsResponse);
+  // Deletes photos for good: their files, tags and searchable text, their
+  // place in conversations, and subjects made from them alone. Owners and
+  // admins may delete any; members only those they took.
+  rpc DeletePhotos(DeletePhotosRequest) returns (DeletePhotosResponse);
+  // Deletes a subject. Its photos are deleted with it, or kept and left
+  // unfiled. Owners and admins only.
+  rpc DeleteSubject(DeleteSubjectRequest) returns (DeleteSubjectResponse);
+}
+
+message ListPhotosRequest {
+  string subject_id = 1;
+  repeated string tag_keys = 2;
+  repeated AssignmentState assignments = 3;
+  PhotoRole role = 4;
+  int32 page_size = 5;
+  string page_token = 6;
+}
+
+message ListPhotosResponse {
+  repeated Photo photos = 1;
+  string next_page_token = 2;
+}
+
+message GetPhotoRequest {
+  string id = 1;
+}
+
+message GetPhotoResponse {
+  Photo photo = 1;
+}
+
+message AssignPhotosRequest {
+  repeated string photo_ids = 1;
+  string subject_id = 2;
+}
+
+message AssignPhotosResponse {
+  repeated Photo photos = 1;
+}
+
+message UpdatePhotoTagsRequest {
+  string photo_id = 1;
+  repeated string add = 2;
+  repeated string remove = 3;
+}
+
+message UpdatePhotoTagsResponse {
+  Photo photo = 1;
+}
+
+message ListSubjectsRequest {
+  string type_key = 1;
+  // Case-insensitive match on display name or identity values.
+  string query = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListSubjectsResponse {
+  repeated Subject subjects = 1;
+  string next_page_token = 2;
+}
+
+message GetSubjectRequest {
+  string id = 1;
+}
+
+message GetSubjectResponse {
+  Subject subject = 1;
+  // Timeline, oldest first.
+  repeated Photo photos = 2;
+}
+
+message CreateSubjectRequest {
+  string type_key = 1;
+  map<string, string> identity = 2;
+  string parent_id = 3;
+  // Names a subject told apart by appearance, which has no identity to
+  // read. Ignored for other types.
+  string display_name = 4;
+}
+
+message CreateSubjectResponse {
+  Subject subject = 1;
+}
+
+message RenameSubjectRequest {
+  string subject_id = 1;
+  string display_name = 2;
+}
+
+message SetSubjectProfileRequest {
+  string subject_id = 1;
+  string profile = 2;
+}
+
+message SetSubjectProfileResponse {
+  Subject subject = 1;
+}
+
+message RenameSubjectResponse {
+  Subject subject = 1;
+}
+
+message MergeSubjectsRequest {
+  repeated string subject_ids = 1;
+  string into_id = 2;
+}
+
+message MergeSubjectsResponse {
+  Subject subject = 1;
+}
+
+message DeletePhotosRequest {
+  repeated string photo_ids = 1;
+}
+
+message DeletePhotosResponse {
+  int32 deleted_photos = 1;
+  // Subjects made by the system from these photos alone, gone with them.
+  int32 deleted_subjects = 2;
+}
+
+message DeleteSubjectRequest {
+  string subject_id = 1;
+  // Deletes its photos too; otherwise they stay, filed under nothing.
+  bool with_photos = 2;
+}
+
+message DeleteSubjectResponse {
+  int32 deleted_photos = 1;
+  int32 unfiled_photos = 2;
+}

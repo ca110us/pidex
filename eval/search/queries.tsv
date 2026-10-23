@@ -1,0 +1,28 @@
+# template	request	expected
+# expected: comma-separated fragments of the eval photo paths that must be
+# found; "@days:N" also requires them to be taken in the last N days;
+# "missing:a,b" expects mode MISSING listing subjects whose names contain a
+# and b; "subject:a" expects the request to name a subject called a and every
+# photo returned to be filed under it; "notfound" expects the request's
+# subject to be reported as not on file; "none" expects no photos.
+construction_renovation	墙里露出来的电线	Trimming_a_Wall
+construction_renovation	show me the framing work	Modern_timber_framing,SCCC_Wood,Trimming_a_Wall_3
+construction_renovation	石膏板	Pine_Grove
+construction_renovation	the HVAC unit outside	Equipment_installation
+construction_renovation	堆放的管材	Haltern
+construction_renovation	装修好的客厅	Duvar
+construction_renovation	203 号房的照片	subject:203
+construction_renovation	unit 325	subject:325
+construction_renovation	最近一周拍的施工照片	Trimming_a_Wall,Modern_timber_framing,SCCC_Wood,Pine_Grove,Equipment_installation,Haltern,Duvar,156th_CES @days:7
+construction_renovation	哪些户还没拍电气	missing:203,325
+construction_renovation	unit 999 photos	notfound
+hospital_orthopedics	膝关节X光	Lateral_radiograph
+hospital_orthopedics	缝钉的手术切口	19_Staples,Cdm_hip_staples,Hip_replacement,Knee_Replacement
+hospital_orthopedics	bruises	Black-and-blue,Blood_bruise,Blood_testing_bruise,Bruise_2,Schwellung,Bandaged
+hospital_orthopedics	外固定架	Ilizarov7,Patient_with_external_fixator,Compartment_syndrome
+hospital_orthopedics	wrist x-rays	Barton,Roentgen
+hospital_orthopedics	伤口愈合不好，发红	Self_harm_laceration_into_hypodermis__reaching_fascia_-_day_20
+hospital_orthopedics	扫腕带的照片	20130306,Defense.gov,Dominican
+hospital_orthopedics	脚踝肿了	Schwellung
+hospital_orthopedics	最近一周的X光片	Lateral_radiograph,Anteroposterior,Avulsion,Acetabular,Ilizarov7,Barton,Roentgen @days:7
+hospital_orthopedics	hand x-ray	Avulsion

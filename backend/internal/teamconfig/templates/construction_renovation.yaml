@@ -1,0 +1,53 @@
+name: Renovation projects
+industry: construction
+language: en
+description: Site photos for a renovation contractor, filed by project and by unit.
+strictness: lenient
+privacy: standard
+date_order: mdy
+subject_types:
+  - key: project
+    name: Project
+    carriers: >-
+      Site signboard or hoarding with the project name, a work order header, or
+      a QR sticker issued for the project.
+    identity_fields:
+      - { key: project_name, name: Project name, kind: text }
+      - { key: project_code, name: Project code, kind: id, pattern: "^[A-Z0-9-]{3,20}$" }
+    display_fields: [project_name]
+    match:
+      min_fields: 1
+  - key: unit
+    name: Unit
+    parent: project
+    carriers: >-
+      Door number plate, unit number written on a wall or door frame, or a work
+      order sheet listing the building and unit.
+    identity_fields:
+      - { key: building, name: Building, kind: text }
+      - { key: unit_number, name: Unit number, kind: id, pattern: "^[A-Z0-9-]{1,10}$" }
+    display_fields: [building, unit_number]
+    match:
+      min_fields: 1
+tags:
+  - { key: plumbing, name: Plumbing, group: trade }
+  - { key: electrical, name: Electrical, group: trade }
+  - { key: hvac, name: HVAC, group: trade }
+  - { key: framing, name: Framing, group: trade }
+  - { key: drywall, name: Drywall, group: trade }
+  - { key: waterproofing, name: Waterproofing, group: trade }
+  - { key: tiling, name: Tiling, group: trade }
+  - { key: painting, name: Painting, group: trade }
+  - { key: flooring, name: Flooring, group: trade }
+  - { key: concealed_work, name: Concealed work before closing up, group: stage }
+  - { key: in_progress, name: In progress, group: stage }
+  - { key: completed, name: Completed, group: stage }
+  - { key: defect, name: Defect or damage, group: issue }
+  - { key: water_damage, name: Water damage, group: issue }
+  - { key: safety_issue, name: Safety issue, group: issue }
+  - { key: materials, name: Materials delivered, group: other }
+  - { key: paperwork, name: Paperwork, group: other }
+session:
+  gap_minutes: 30
+  anchor_valid_minutes: 0
+  max_jump_meters: 300
