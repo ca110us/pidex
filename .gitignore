@@ -9,6 +9,8 @@ backend/.data/
 *.test
 *.out
 .DS_Store
+__pycache__/
+.venv/
 
 # iOS: the Xcode project is generated from ios/project.yml by XcodeGen
 ios/Pidex.xcodeproj/
