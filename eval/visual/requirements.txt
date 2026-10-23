@@ -1,0 +1,10 @@
+torch
+torchvision
+timm>=1.0
+pillow
+numpy
+huggingface_hub
+safetensors
+opencv-python-headless
+certifi
+lightglue @ git+https://github.com/cvg/LightGlue.git
