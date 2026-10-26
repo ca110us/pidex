@@ -190,6 +190,17 @@ nonisolated struct Pidex_V1_CompleteUploadRequest: @unchecked Sendable {
     set {_uniqueStorage()._identityClientPhotoID = newValue}
   }
 
+  /// What the phone named location (city, landmark…), for finding photos by
+  /// place.
+  var place: Pidex_V1_Place {
+    get {_storage._place ?? Pidex_V1_Place()}
+    set {_uniqueStorage()._place = newValue}
+  }
+  /// Returns true if `place` has been explicitly set.
+  var hasPlace: Bool {_storage._place != nil}
+  /// Clears the value of `place`. Subsequent reads from it will return its default value.
+  mutating func clearPlace() {_uniqueStorage()._place = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -490,7 +501,7 @@ nonisolated extension Pidex_V1_CreateUploadResponse: SwiftProtobuf.Message, Swif
 
 nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".CompleteUploadRequest"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}photo_id\0\u{3}session_id\0\u{3}captured_at\0\u{1}location\0\u{3}on_device\0\u{3}locked_subject_id\0\u{3}subject_chosen\0\u{3}identity_client_photo_id\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}photo_id\0\u{3}session_id\0\u{3}captured_at\0\u{1}location\0\u{3}on_device\0\u{3}locked_subject_id\0\u{3}subject_chosen\0\u{3}identity_client_photo_id\0\u{1}place\0")
 
   fileprivate class _StorageClass {
     var _photoID: String = String()
@@ -501,6 +512,7 @@ nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, Swi
     var _lockedSubjectID: String = String()
     var _subjectChosen: Bool = false
     var _identityClientPhotoID: String = String()
+    var _place: Pidex_V1_Place? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -519,6 +531,7 @@ nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, Swi
       _lockedSubjectID = source._lockedSubjectID
       _subjectChosen = source._subjectChosen
       _identityClientPhotoID = source._identityClientPhotoID
+      _place = source._place
     }
   }
 
@@ -545,6 +558,7 @@ nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, Swi
         case 6: try { try decoder.decodeSingularStringField(value: &_storage._lockedSubjectID) }()
         case 7: try { try decoder.decodeSingularBoolField(value: &_storage._subjectChosen) }()
         case 8: try { try decoder.decodeSingularStringField(value: &_storage._identityClientPhotoID) }()
+        case 9: try { try decoder.decodeSingularMessageField(value: &_storage._place) }()
         default: break
         }
       }
@@ -581,6 +595,9 @@ nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, Swi
       if !_storage._identityClientPhotoID.isEmpty {
         try visitor.visitSingularStringField(value: _storage._identityClientPhotoID, fieldNumber: 8)
       }
+      try { if let v = _storage._place {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -598,6 +615,7 @@ nonisolated extension Pidex_V1_CompleteUploadRequest: SwiftProtobuf.Message, Swi
         if _storage._lockedSubjectID != rhs_storage._lockedSubjectID {return false}
         if _storage._subjectChosen != rhs_storage._subjectChosen {return false}
         if _storage._identityClientPhotoID != rhs_storage._identityClientPhotoID {return false}
+        if _storage._place != rhs_storage._place {return false}
         return true
       }
       if !storagesAreEqual {return false}

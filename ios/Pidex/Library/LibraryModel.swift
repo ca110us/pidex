@@ -17,6 +17,9 @@ final class LibraryModel {
     private(set) var total = 0
     /// With tags picked: how many of the matches have each tag.
     private(set) var tagCounts: [String: Int] = [:]
+    /// The places the collection's photos were taken in, most first, as
+    /// counted before any place or tag was picked.
+    private(set) var places: [Pidex_V1_PlaceCount] = []
     private var loadingMore = false
     private var known: [String: Pidex_V1_Subject] = [:]
     private(set) var working = false
@@ -29,7 +32,7 @@ final class LibraryModel {
     var isFiltered: Bool {
         guard let f = filters else { return false }
         return f.mode == .missing || !f.subjectQuery.isEmpty || !f.subjectIds.isEmpty || !f.tags.isEmpty
-            || f.hasFrom || f.hasTo || !f.text.isEmpty || !f.roles.isEmpty
+            || f.hasFrom || f.hasTo || !f.text.isEmpty || !f.roles.isEmpty || !f.place.isEmpty
     }
 
     /// Loads the scenario and the newest photos; `force` refreshes them
@@ -39,7 +42,8 @@ final class LibraryModel {
             config = try? ScenarioConfig(json: json)
         }
         if (filters == nil && photos.isEmpty) || (force && !isFiltered) {
-            await run { try await self.api.searchPhotos(filters: .init()) }
+            // Counted too, for the row of places to narrow by.
+            await run { try await self.api.searchPhotos(filters: .init(), tagCounts: true) }
         }
     }
 
@@ -51,7 +55,7 @@ final class LibraryModel {
 
     /// Searches again with the given filters, as the user edited them.
     func apply(_ f: Pidex_V1_SearchFilters) async {
-        let counts = f.tagsRequired && f.text.isEmpty
+        let counts = (f.tagsRequired || !f.place.isEmpty) && f.text.isEmpty
         await run { try await self.api.searchPhotos(filters: f, tagCounts: counts) }
     }
 
@@ -59,6 +63,19 @@ final class LibraryModel {
     var pickedTags: [String] {
         guard let f = filters, f.tagsRequired else { return [] }
         return f.tags
+    }
+
+    /// The place picked to narrow by, if any.
+    var pickedPlace: String? {
+        guard let p = filters?.place, !p.isEmpty else { return nil }
+        return p
+    }
+
+    /// Narrows to photos taken in a place, or drops it, keeping picked tags.
+    func toggle(place: String) async {
+        var f = filters.map { $0.tagsRequired || $0.tags.isEmpty ? $0 : Pidex_V1_SearchFilters() } ?? .init()
+        f.place = f.place == place ? "" : place
+        await apply(f)
     }
 
     /// Picks a tag too, or drops it, keeping the other filters.
@@ -148,6 +165,9 @@ final class LibraryModel {
             subjectNotFound = r.subjectNotFound
             total = max(Int(r.total), r.photos.count)
             tagCounts = Dictionary(r.tagCounts.map { ($0.key, Int($0.count)) }, uniquingKeysWith: { a, _ in a })
+            if r.filters.place.isEmpty && r.filters.tags.isEmpty && r.filters.text.isEmpty && r.filters.subjectQuery.isEmpty {
+                places = r.placeCounts
+            }
         } catch {
             self.error = error.localizedDescription
         }

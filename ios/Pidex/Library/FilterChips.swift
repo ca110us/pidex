@@ -67,6 +67,9 @@ struct FilterChips: View {
         for key in filters.tagsRequired ? [] : filters.tags {
             out.append(Chip(id: "tag-" + key, label: model.tagName(key), icon: "tag") { $0.tags.removeAll { $0 == key } })
         }
+        if !filters.place.isEmpty {
+            out.append(Chip(id: "place", label: filters.place, icon: "mappin") { $0.place = "" })
+        }
         if filters.hasFrom || filters.hasTo {
             out.append(Chip(id: "date", label: dateLabel, icon: "calendar") {
                 $0.clearFrom()

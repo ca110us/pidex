@@ -64,6 +64,9 @@ func (s *searchService) SearchPhotos(ctx context.Context, req *connect.Request[p
 	for _, c := range res.TagCounts {
 		out.TagCounts = append(out.TagCounts, &pidexv1.TagCount{Key: c.Key, Count: int32(c.Count)})
 	}
+	for _, c := range res.PlaceCounts {
+		out.PlaceCounts = append(out.PlaceCounts, &pidexv1.PlaceCount{Name: c.Key, Count: int32(c.Count)})
+	}
 	photos, err := s.photosInOrder(ctx, pr.TeamID, res.PhotoIDs)
 	if err != nil {
 		return nil, err
@@ -346,6 +349,9 @@ func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.C
 		if p.SubjectID != nil {
 			fmt.Fprintf(&b, ", %s", names[p.SubjectID.String()])
 		}
+		if where := search.PlaceWords(p.Place); where != "" && cfg.Privacy != teamconfig.PrivacyHigh {
+			fmt.Fprintf(&b, ", at %s", where)
+		}
 		var ts []string
 		for _, t := range tags {
 			if t.PhotoID == p.ID {
@@ -481,7 +487,7 @@ var roleNames = map[pidexv1.PhotoRole]string{
 func filtersProto(f search.Filters, subjects []uuid.UUID) *pidexv1.SearchFilters {
 	out := &pidexv1.SearchFilters{
 		Mode: pidexv1.SearchMode_SEARCH_MODE_PHOTOS, SubjectQuery: f.SubjectQuery, SubjectType: f.SubjectType,
-		Tags: f.Tags, TagsRequired: f.TagsRequired, From: ts(f.From), To: ts(f.To), Text: f.Text,
+		Tags: f.Tags, TagsRequired: f.TagsRequired, From: ts(f.From), To: ts(f.To), Text: f.Text, Place: f.Place,
 	}
 	if f.Mode == search.ModeMissing {
 		out.Mode = pidexv1.SearchMode_SEARCH_MODE_MISSING
@@ -502,11 +508,11 @@ func filtersProto(f search.Filters, subjects []uuid.UUID) *pidexv1.SearchFilters
 // filtersFrom checks filters sent back by the app against the config, as
 // the planner's are.
 func filtersFrom(in *pidexv1.SearchFilters, cfg *teamconfig.Config) (search.Filters, error) {
-	f := search.Filters{Mode: search.ModePhotos, SubjectQuery: strings.TrimSpace(in.SubjectQuery), Text: strings.TrimSpace(in.Text)}
+	f := search.Filters{Mode: search.ModePhotos, SubjectQuery: strings.TrimSpace(in.SubjectQuery), Text: strings.TrimSpace(in.Text), Place: strings.TrimSpace(in.Place)}
 	if in.Mode == pidexv1.SearchMode_SEARCH_MODE_MISSING {
 		f.Mode = search.ModeMissing
 	}
-	if len(f.Text) > maxQueryLen || len(f.SubjectQuery) > maxQueryLen {
+	if len(f.Text) > maxQueryLen || len(f.SubjectQuery) > maxQueryLen || len(f.Place) > maxQueryLen {
 		return f, invalid("filter text is longer than %d characters", maxQueryLen)
 	}
 	for _, id := range in.SubjectIds {

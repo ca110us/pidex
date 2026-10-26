@@ -198,7 +198,7 @@ func TestScenarioPermissionsAndFailures(t *testing.T) {
 		}
 	}
 	team := pidexv1connect.NewTeamServiceClient(e.server.Client(), e.server.URL, withToken(e.token))
-	if _, err := team.CreateTeam(e.ctx, connect.NewRequest(&pidexv1.CreateTeamRequest{ConfigJson: `{"name":"x"}`})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+	if _, err := team.CreateTeam(e.ctx, connect.NewRequest(&pidexv1.CreateTeamRequest{ConfigJson: `{"name":"x","language":"not a language"}`})); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Errorf("creating a team with an invalid config: %v", err)
 	}
 }

@@ -71,8 +71,10 @@ type Result struct {
 	// Total is how many photos (or, for missing, subjects) match in all,
 	// of which the IDs are one page; 0 for a page past the end.
 	Total int
-	// TagCounts, when asked for, are how many matches have each tag.
-	TagCounts []TagCount
+	// TagCounts, when asked for, are how many matches have each tag, and
+	// PlaceCounts how many were taken in each place (its city, else region).
+	TagCounts   []TagCount
+	PlaceCounts []TagCount
 }
 
 type TagCount struct {
@@ -247,6 +249,15 @@ GROUP BY pt.tag_key ORDER BY count(*) DESC, pt.tag_key`, slices.Clone(b.args))
 				return res, err
 			}
 			res.TagCounts = counts
+			places, err := s.tagCounts(ctx, with+`
+SELECT name, count(*) FROM (
+	SELECT coalesce(nullif(ph.place->>'city', ''), nullif(ph.place->>'region', ''), ph.place->>'country') AS name
+	FROM filtered p JOIN photos ph ON ph.id = p.id WHERE ph.place IS NOT NULL
+) x WHERE name IS NOT NULL GROUP BY name ORDER BY count(*) DESC, name LIMIT 20`, slices.Clone(b.args))
+			if err != nil {
+				return res, err
+			}
+			res.PlaceCounts = places
 		}
 		sql = with + "\nSELECT id, count(*) OVER () FROM filtered ORDER BY at DESC LIMIT " + b.arg(limit) + " OFFSET " + b.arg(offset)
 	} else {
@@ -320,6 +331,11 @@ func (b *sqlBuilder) photoConditions(f Filters, qvec *pgvector.Vector, missingDi
 	if f.TagsRequired && len(f.Tags) > 0 && f.Mode == ModePhotos {
 		conds = append(conds, `NOT EXISTS (SELECT 1 FROM unnest(`+b.arg(f.Tags)+`::text[]) t(k)
 		WHERE NOT EXISTS (SELECT 1 FROM photo_tags pt WHERE pt.photo_id = p.id AND pt.tag_key = t.k AND NOT pt.rejected))`)
+	}
+	if f.Place != "" {
+		// Any part of where it was taken: "Dalian" matches the city
+		// "Dalian" or "大连市" written so, a landmark matches its name.
+		conds = append(conds, "EXISTS (SELECT 1 FROM jsonb_each_text(coalesce(p.place, '{}'::jsonb)) kv WHERE kv.value ILIKE "+b.arg("%"+escapeLike(f.Place)+"%")+")")
 	}
 	if f.From != nil {
 		conds = append(conds, "coalesce(p.captured_at, p.created_at) >= "+b.arg(*f.From))

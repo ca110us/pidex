@@ -243,8 +243,11 @@ type CompleteUploadRequest struct {
 	// label, or the subject itself for one told apart by its look), which may
 	// be this photo. A photo that does neither is refused.
 	IdentityClientPhotoId string `protobuf:"bytes,8,opt,name=identity_client_photo_id,json=identityClientPhotoId,proto3" json:"identity_client_photo_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// What the phone named location (city, landmark…), for finding photos by
+	// place.
+	Place         *Place `protobuf:"bytes,9,opt,name=place,proto3" json:"place,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CompleteUploadRequest) Reset() {
@@ -331,6 +334,13 @@ func (x *CompleteUploadRequest) GetIdentityClientPhotoId() string {
 		return x.IdentityClientPhotoId
 	}
 	return ""
+}
+
+func (x *CompleteUploadRequest) GetPlace() *Place {
+	if x != nil {
+		return x.Place
+	}
+	return nil
 }
 
 type CompleteUploadResponse struct {
@@ -825,7 +835,7 @@ const file_pidex_v1_capture_proto_rawDesc = "" +
 	"\x10already_uploaded\x18\x05 \x01(\bR\x0falreadyUploaded\x1a@\n" +
 	"\x12UploadHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x83\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xaa\x03\n" +
 	"\x15CompleteUploadRequest\x12\x19\n" +
 	"\bphoto_id\x18\x01 \x01(\tR\aphotoId\x12\x1d\n" +
 	"\n" +
@@ -836,7 +846,8 @@ const file_pidex_v1_capture_proto_rawDesc = "" +
 	"\ton_device\x18\x05 \x01(\v2\x1a.pidex.v1.OnDeviceAnalysisR\bonDevice\x12*\n" +
 	"\x11locked_subject_id\x18\x06 \x01(\tR\x0flockedSubjectId\x12%\n" +
 	"\x0esubject_chosen\x18\a \x01(\bR\rsubjectChosen\x127\n" +
-	"\x18identity_client_photo_id\x18\b \x01(\tR\x15identityClientPhotoId\"?\n" +
+	"\x18identity_client_photo_id\x18\b \x01(\tR\x15identityClientPhotoId\x12%\n" +
+	"\x05place\x18\t \x01(\v2\x0f.pidex.v1.PlaceR\x05place\"?\n" +
 	"\x16CompleteUploadResponse\x12%\n" +
 	"\x05photo\x18\x01 \x01(\v2\x0f.pidex.v1.PhotoR\x05photo\"O\n" +
 	"\x14ResolveAnchorRequest\x127\n" +
@@ -924,8 +935,9 @@ var file_pidex_v1_capture_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),     // 14: google.protobuf.Timestamp
 	(*GeoPoint)(nil),                  // 15: pidex.v1.GeoPoint
 	(*OnDeviceAnalysis)(nil),          // 16: pidex.v1.OnDeviceAnalysis
-	(*Photo)(nil),                     // 17: pidex.v1.Photo
-	(*Subject)(nil),                   // 18: pidex.v1.Subject
+	(*Place)(nil),                     // 17: pidex.v1.Place
+	(*Photo)(nil),                     // 18: pidex.v1.Photo
+	(*Subject)(nil),                   // 19: pidex.v1.Subject
 }
 var file_pidex_v1_capture_proto_depIdxs = []int32{
 	12, // 0: pidex.v1.CreateUploadResponse.upload_headers:type_name -> pidex.v1.CreateUploadResponse.UploadHeadersEntry
@@ -933,33 +945,34 @@ var file_pidex_v1_capture_proto_depIdxs = []int32{
 	14, // 2: pidex.v1.CompleteUploadRequest.captured_at:type_name -> google.protobuf.Timestamp
 	15, // 3: pidex.v1.CompleteUploadRequest.location:type_name -> pidex.v1.GeoPoint
 	16, // 4: pidex.v1.CompleteUploadRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	17, // 5: pidex.v1.CompleteUploadResponse.photo:type_name -> pidex.v1.Photo
-	16, // 6: pidex.v1.ResolveAnchorRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	16, // 7: pidex.v1.IdentifyShotRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	8,  // 8: pidex.v1.IdentifyShotResponse.anchor:type_name -> pidex.v1.ResolveAnchorResponse
-	0,  // 9: pidex.v1.ResolveAnchorResponse.state:type_name -> pidex.v1.AnchorState
-	18, // 10: pidex.v1.ResolveAnchorResponse.subject:type_name -> pidex.v1.Subject
-	18, // 11: pidex.v1.ResolveAnchorResponse.candidates:type_name -> pidex.v1.Subject
-	13, // 12: pidex.v1.ResolveAnchorResponse.extracted_identity:type_name -> pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
-	18, // 13: pidex.v1.SubjectGroup.subject:type_name -> pidex.v1.Subject
-	10, // 14: pidex.v1.GetSessionSummaryResponse.groups:type_name -> pidex.v1.SubjectGroup
-	17, // 15: pidex.v1.GetSessionSummaryResponse.needs_review:type_name -> pidex.v1.Photo
-	18, // 16: pidex.v1.GetSessionSummaryResponse.suggested_subjects:type_name -> pidex.v1.Subject
-	1,  // 17: pidex.v1.CaptureService.CreateUpload:input_type -> pidex.v1.CreateUploadRequest
-	3,  // 18: pidex.v1.CaptureService.CompleteUpload:input_type -> pidex.v1.CompleteUploadRequest
-	5,  // 19: pidex.v1.CaptureService.ResolveAnchor:input_type -> pidex.v1.ResolveAnchorRequest
-	6,  // 20: pidex.v1.CaptureService.IdentifyShot:input_type -> pidex.v1.IdentifyShotRequest
-	9,  // 21: pidex.v1.CaptureService.GetSessionSummary:input_type -> pidex.v1.GetSessionSummaryRequest
-	2,  // 22: pidex.v1.CaptureService.CreateUpload:output_type -> pidex.v1.CreateUploadResponse
-	4,  // 23: pidex.v1.CaptureService.CompleteUpload:output_type -> pidex.v1.CompleteUploadResponse
-	8,  // 24: pidex.v1.CaptureService.ResolveAnchor:output_type -> pidex.v1.ResolveAnchorResponse
-	7,  // 25: pidex.v1.CaptureService.IdentifyShot:output_type -> pidex.v1.IdentifyShotResponse
-	11, // 26: pidex.v1.CaptureService.GetSessionSummary:output_type -> pidex.v1.GetSessionSummaryResponse
-	22, // [22:27] is the sub-list for method output_type
-	17, // [17:22] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	17, // 5: pidex.v1.CompleteUploadRequest.place:type_name -> pidex.v1.Place
+	18, // 6: pidex.v1.CompleteUploadResponse.photo:type_name -> pidex.v1.Photo
+	16, // 7: pidex.v1.ResolveAnchorRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
+	16, // 8: pidex.v1.IdentifyShotRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
+	8,  // 9: pidex.v1.IdentifyShotResponse.anchor:type_name -> pidex.v1.ResolveAnchorResponse
+	0,  // 10: pidex.v1.ResolveAnchorResponse.state:type_name -> pidex.v1.AnchorState
+	19, // 11: pidex.v1.ResolveAnchorResponse.subject:type_name -> pidex.v1.Subject
+	19, // 12: pidex.v1.ResolveAnchorResponse.candidates:type_name -> pidex.v1.Subject
+	13, // 13: pidex.v1.ResolveAnchorResponse.extracted_identity:type_name -> pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
+	19, // 14: pidex.v1.SubjectGroup.subject:type_name -> pidex.v1.Subject
+	10, // 15: pidex.v1.GetSessionSummaryResponse.groups:type_name -> pidex.v1.SubjectGroup
+	18, // 16: pidex.v1.GetSessionSummaryResponse.needs_review:type_name -> pidex.v1.Photo
+	19, // 17: pidex.v1.GetSessionSummaryResponse.suggested_subjects:type_name -> pidex.v1.Subject
+	1,  // 18: pidex.v1.CaptureService.CreateUpload:input_type -> pidex.v1.CreateUploadRequest
+	3,  // 19: pidex.v1.CaptureService.CompleteUpload:input_type -> pidex.v1.CompleteUploadRequest
+	5,  // 20: pidex.v1.CaptureService.ResolveAnchor:input_type -> pidex.v1.ResolveAnchorRequest
+	6,  // 21: pidex.v1.CaptureService.IdentifyShot:input_type -> pidex.v1.IdentifyShotRequest
+	9,  // 22: pidex.v1.CaptureService.GetSessionSummary:input_type -> pidex.v1.GetSessionSummaryRequest
+	2,  // 23: pidex.v1.CaptureService.CreateUpload:output_type -> pidex.v1.CreateUploadResponse
+	4,  // 24: pidex.v1.CaptureService.CompleteUpload:output_type -> pidex.v1.CompleteUploadResponse
+	8,  // 25: pidex.v1.CaptureService.ResolveAnchor:output_type -> pidex.v1.ResolveAnchorResponse
+	7,  // 26: pidex.v1.CaptureService.IdentifyShot:output_type -> pidex.v1.IdentifyShotResponse
+	11, // 27: pidex.v1.CaptureService.GetSessionSummary:output_type -> pidex.v1.GetSessionSummaryResponse
+	23, // [23:28] is the sub-list for method output_type
+	18, // [18:23] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_capture_proto_init() }

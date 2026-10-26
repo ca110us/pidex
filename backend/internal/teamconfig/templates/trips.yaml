@@ -1,0 +1,24 @@
+name: Trips
+industry: personal
+language: en
+description: >-
+  Photos from trips and outings, kept by where and when they were taken rather
+  than by who or what they show: each is grouped by its place and day from
+  the phone's location and clock, and found by place, day or what it shows.
+strictness: lenient
+privacy: standard
+date_order: mdy
+subject_types: []
+tags:
+  - { key: scenery, name: Scenery, group: what }
+  - { key: food, name: Food and drink, group: what }
+  - { key: people, name: People, group: what }
+  - { key: selfie, name: Selfie, group: what }
+  - { key: building, name: Buildings and streets, group: what }
+  - { key: beach, name: Beach and sea, group: what }
+  - { key: mountains, name: Mountains, group: what }
+  - { key: museum, name: Museum or exhibit, group: what }
+  - { key: transport, name: "Trains, planes and roads", group: what }
+  - { key: night, name: At night, group: when }
+  - { key: ticket, name: Tickets and receipts, group: what }
+  - { key: sign, name: Signs, group: what }

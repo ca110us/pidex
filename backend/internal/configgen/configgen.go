@@ -178,7 +178,7 @@ const instructions = `You design the configuration of a photo filing app for one
 
 Write the configuration for the team described by the user, or apply the requested change to the current configuration.
 
-Subject types (1 to 6) are the things photos are filed under: a patient, a house, a unit in a building, a vehicle, a plant, a sample. Use parent for real hierarchies (a unit belongs to a project) and "" otherwise.
+Subject types (0 to 6) are the things photos are filed under: a patient, a house, a unit in a building, a vehicle, a plant, a sample. Use parent for real hierarchies (a unit belongs to a project) and "" otherwise. Use none (an empty list) when photos are kept by where and when they were taken rather than by who or what they show: a trip, a holiday, an event, a diary of places. Those photos are grouped by place and day by themselves, from the phone's location and clock; give them tags for what they show (scenery, food, people, buildings…).
 
 Choose identify_by: code whenever subjects already carry an identifier, and always for people's records in healthcare, law or finance, where a mix-up causes harm; appearance when they carry none. Telling people apart by their face is not offered: for people, use code.
 
@@ -202,4 +202,4 @@ language is the BCP 47 tag of the language you write in ("en", "zh-Hans", "es");
 
 When changing a configuration, keep every existing key and everything the user did not ask to change exactly as it is. Removing or renaming a subject type, identity field or tag affects photos already filed, so do it only when asked.
 
-summary: 2 to 4 sentences on what the configuration does, or what changed. test_tips: 2 to 4 short steps to try it with a phone today: for code, starting with which identity photo to take; for appearance, photograph each one from a couple of angles, then later ones are recognized, and confirm or name them in the app.`
+summary: 2 to 4 sentences on what the configuration does, or what changed. test_tips: 2 to 4 short steps to try it with a phone today: for code, starting with which identity photo to take; for appearance, photograph each one from a couple of angles, then later ones are recognized, and confirm or name them in the app; with no subject types, just shoot or add photos from the library, and find them later by place, day or what they show.`

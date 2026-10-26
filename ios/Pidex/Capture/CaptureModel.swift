@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import Observation
 import UIKit
@@ -34,6 +35,10 @@ final class CaptureModel {
     /// Every subject is told apart by how it looks: there is no label to
     /// photograph first.
     private(set) var recognizesByLook = false
+    /// The collection keeps photos by where and when they were taken (a
+    /// trip): nobody to name, so every shot may go.
+    private(set) var filesByPlace = false
+    private let tracker = LocationTracker()
     /// The collection was just made: until its first shot, the camera says
     /// how to start.
     var firstShoot = false
@@ -71,7 +76,9 @@ final class CaptureModel {
     func startCamera() async {
         if let json = try? await api.activeConfig().configJson, let config = try? ScenarioConfig(json: json) {
             recognizesByLook = !config.subjectTypes.isEmpty && config.subjectTypes.allSatisfy(\.byAppearance)
+            filesByPlace = config.subjectTypes.isEmpty
         }
+        tracker.start()
         do {
             try await camera.start()
             cameraState = .ready
@@ -80,7 +87,10 @@ final class CaptureModel {
         }
     }
 
-    func stopCamera() { camera.stop() }
+    func stopCamera() {
+        camera.stop()
+        tracker.stop()
+    }
 
     /// Starts a new session: a new patient round, a new site visit.
     func newSession() {
@@ -125,6 +135,7 @@ final class CaptureModel {
     /// Shots that do not say who they show: none may be sent, so nothing
     /// unidentified is filed wrongly or lost among the unfiled.
     var unidentified: [String] {
+        if filesByPlace { return [] }
         let owners = owners
         return shots.filter { !(owners[$0.id]?.identified ?? false) }.map(\.id)
     }
@@ -136,7 +147,7 @@ final class CaptureModel {
 
     /// The current group has shots but nothing says who they show.
     var needsIdentity: Bool {
-        !shots.isEmpty && !current.identified && !isIdentifying
+        !filesByPlace && !shots.isEmpty && !current.identified && !isIdentifying
     }
 
     /// Says yes to who the current group looks like.
@@ -229,7 +240,7 @@ final class CaptureModel {
         defer { isShooting = false }
         do {
             let data = try await camera.capture()
-            await handle(photoData: data, capturedAt: Date())
+            await handle(photoData: data, capturedAt: Date(), location: tracker.current)
         } catch {
             lastError = error.localizedDescription
         }
@@ -237,11 +248,15 @@ final class CaptureModel {
 
     /// Feeds a picked image through the same path as a camera shot. Used on
     /// the simulator, and for photos taken before the app was opened.
+    ///
+    /// It keeps the day and place the camera wrote into it, not the moment
+    /// it was added.
     func importPhoto(_ data: Data) async {
-        await handle(photoData: data, capturedAt: Date())
+        let meta = PhotoMetadata.read(data)
+        await handle(photoData: data, capturedAt: meta.date ?? Date(), location: meta.location)
     }
 
-    private func handle(photoData: Data, capturedAt: Date) async {
+    private func handle(photoData: Data, capturedAt: Date, location: CLLocation? = nil) async {
         let prepared: (jpeg: Data, analysis: Pidex_V1_OnDeviceAnalysis)
         do {
             prepared = try await Self.prepare(photoData)
@@ -255,6 +270,7 @@ final class CaptureModel {
             guard let store else { throw CocoaError(.fileNoSuchFile) }
             let name = try store.write(prepared.jpeg, id: id)
             shot = StagedShot(id: id, fileName: name, capturedAt: capturedAt, onDevice: try prepared.analysis.serializedData())
+            shot.place = location.map(ShotPlace.init)
             if let p = nextPick, shots.isEmpty || owners[shots.last!.id]?.subjectID != p.subjectID {
                 shot.pick = p
             }
@@ -263,6 +279,7 @@ final class CaptureModel {
             persist()
             thumbnails[id] = await Self.thumbnail(store.url(of: shot))
             lastError = nil
+            if let place = shot.place { nameLater(id, place) }
         } catch {
             lastError = String(localized: "Could not save the photo: \(error.localizedDescription)")
             return
@@ -280,6 +297,17 @@ final class CaptureModel {
     private static func prepare(_ data: Data) async throws -> (jpeg: Data, analysis: Pidex_V1_OnDeviceAnalysis) {
         let (jpeg, image) = try ImageFeatures.uprightJPEG(from: data)
         return (jpeg, OnDeviceAnalyzer.analyze(image))
+    }
+
+    /// Names where a shot was taken, in the background: the shot is kept at
+    /// once, and gets its place's name when the phone has asked.
+    private func nameLater(_ id: String, _ place: ShotPlace) {
+        Task { @MainActor [weak self] in
+            let named = await PlaceNamer.shared.name(place)
+            guard let self, named.named, let i = self.shots.firstIndex(where: { $0.id == id }) else { return }
+            self.shots[i].place = named
+            self.persist()
+        }
     }
 
     /// A copy small enough to send quickly, and plenty for reading a label.
@@ -380,7 +408,7 @@ final class CaptureModel {
                     jpeg: jpeg, sessionID: session, capturedAt: shot.capturedAt,
                     onDevice: try Pidex_V1_OnDeviceAnalysis(serializedBytes: shot.onDevice),
                     lockedSubjectID: owner?.subjectID, subjectChosen: owner?.chosen ?? false,
-                    id: shot.id, identityPhotoID: owner?.identityShotID
+                    id: shot.id, identityPhotoID: owner?.identityShotID, place: shot.place
                 )
             } catch {
                 lastError = String(localized: "Could not send the photo: \(error.localizedDescription)")

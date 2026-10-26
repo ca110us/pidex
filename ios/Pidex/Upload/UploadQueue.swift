@@ -20,6 +20,8 @@ nonisolated struct PendingUpload: Codable, Sendable, Identifiable, Equatable {
     /// The shot that identifies this one, by its ID (which may be this
     /// one's), when no subject is set.
     var identityPhotoID: String?
+    /// Where it was taken. Optional so older queues still decode.
+    var place: ShotPlace?
 
     var photoID: String?
     var bytesUploaded = false
@@ -80,7 +82,8 @@ actor UploadQueue {
     /// `identityPhotoID`, the ID of the shot that identifies it (by default
     /// this one). `id` keeps a shot's own ID, so others can name it.
     func enqueue(jpeg: Data, sessionID: String, capturedAt: Date, onDevice: Pidex_V1_OnDeviceAnalysis,
-                 lockedSubjectID: String?, subjectChosen: Bool = false, id: String? = nil, identityPhotoID: String? = nil) throws {
+                 lockedSubjectID: String?, subjectChosen: Bool = false, id: String? = nil, identityPhotoID: String? = nil,
+                 place: ShotPlace? = nil) throws {
         let id = id ?? UUID().uuidString.lowercased()
         let fileName = id + ".jpg"
         try jpeg.write(to: directory.appending(path: fileName), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
@@ -89,7 +92,8 @@ actor UploadQueue {
             sizeBytes: Int64(jpeg.count), sha256: SHA256.hash(data: jpeg).map { String(format: "%02x", $0) }.joined(),
             onDevice: try onDevice.serializedData(), lockedSubjectID: lockedSubjectID,
             subjectChosen: subjectChosen ? true : nil,
-            identityPhotoID: lockedSubjectID == nil ? (identityPhotoID ?? id) : nil
+            identityPhotoID: lockedSubjectID == nil ? (identityPhotoID ?? id) : nil,
+            place: place
         )
         items.append(item)
         try persist()
@@ -228,6 +232,10 @@ actor UploadQueue {
         } else {
             // Queues written before this was kept: each shot stood for itself.
             r.identityClientPhotoID = item.identityPhotoID ?? item.id
+        }
+        if let place = item.place {
+            r.location = place.geoPoint
+            if let named = place.place { r.place = named }
         }
         return r
     }

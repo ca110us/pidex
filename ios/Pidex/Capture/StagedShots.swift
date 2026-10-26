@@ -13,6 +13,9 @@ nonisolated struct StagedShot: Codable, Sendable, Identifiable, Equatable {
     var mark: Mark?
     /// Who the person said this shot and the ones after it show.
     var pick: Pick?
+    /// Where it was taken, when the phone knew; named once the phone has
+    /// asked. Optional so shots kept by older versions still load.
+    var place: ShotPlace?
 
     struct Mark: Codable, Sendable, Equatable {
         enum State: String, Codable, Sendable {

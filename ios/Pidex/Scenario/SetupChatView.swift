@@ -192,6 +192,8 @@ struct SetupChatView: View {
                 description: "Wound photos at our clinic. Each patient wears a wristband with a name and a record number; we follow healing over weeks."),
         Example(id: "site", icon: "building.2", title: "Units on a renovation site",
                 description: "Renovation work: each project has units with door numbers, and we photograph stages such as waterproofing and tiling."),
+        Example(id: "trip", icon: "airplane", title: "Photos from a trip",
+                description: "Photos from my trip to Dalian. Keep them by where and when they were taken, and let me find them by place, day or what they show."),
         Example(id: "gear", icon: "wrench.and.screwdriver", title: "Equipment with serial numbers",
                 description: "Equipment maintenance: each device has a label with its serial number; we photograph its condition and every repair."),
     ]

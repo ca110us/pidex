@@ -327,6 +327,34 @@
         }
       }
     },
+    "%lld photos, kept by where and when they were taken": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 张照片，按拍摄地点和时间归好"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photo, kept by where and when it was taken"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld photos, kept by where and when they were taken"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld selected": {
       "localizations": {
         "zh-Hans": {
@@ -471,6 +499,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加合集"
+          }
+        }
+      }
+    },
+    "Add photos from the library": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从相册添加照片"
           }
         }
       }
@@ -1875,6 +1913,16 @@
         }
       }
     },
+    "Just shoot, or add photos from the library: each is kept by where and when it was taken": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接拍，或从相册添加：每张照片都会按拍摄地点和时间归好"
+          }
+        }
+      }
+    },
     "Just shoot: each one is recognized by its look": {
       "localizations": {
         "zh-Hans": {
@@ -2501,6 +2549,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "照片按%@归档"
+          }
+        }
+      }
+    },
+    "Photos from a trip": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次旅行的照片"
+          }
+        }
+      }
+    },
+    "Photos from my trip to Dalian. Keep them by where and when they were taken, and let me find them by place, day or what they show.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我去大连旅行拍的照片。按拍摄的地点和时间归好，以后能按地点、哪天或拍了什么找到。"
           }
         }
       }
@@ -3479,6 +3547,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "靠什么区分"
+          }
+        }
+      }
+    },
+    "Where": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拍摄地点"
           }
         }
       }

@@ -60,6 +60,9 @@ struct CollectionView: View {
                         .foregroundStyle(.secondary)
                         .padding(.horizontal)
                 }
+                if !model.places.isEmpty {
+                    placeRow
+                }
                 if !(overview?.tags.isEmpty ?? true) {
                     tagRow
                 }
@@ -232,6 +235,37 @@ struct CollectionView: View {
         .onChange(of: app.showingCamera) { _, showing in
             // Back from shooting: show what was just taken.
             if !showing { Task { await load() } }
+        }
+    }
+
+    /// Where the photos were taken, most first: one tap shows a place's
+    /// photos (a city on a trip, a site), another shows all again.
+    private var placeRow: some View {
+        let picked = model.pickedPlace
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(model.places, id: \.name) { p in
+                    let on = picked == p.name
+                    Button {
+                        Task { await model.toggle(place: p.name) }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: on ? "checkmark" : "mappin").font(.caption2.weight(.bold))
+                            Text(verbatim: p.name)
+                            Text(verbatim: "\(p.count)").foregroundStyle(on ? Theme.onInk.opacity(0.7) : Theme.muted)
+                        }
+                        .font(.footnote)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        .background(on ? Theme.ink : Theme.surface, in: Capsule())
+                        .foregroundStyle(on ? Theme.onInk : Theme.ink)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("place-\(p.name)")
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                }
+            }
+            .padding(.horizontal)
         }
     }
 
@@ -409,23 +443,55 @@ struct DayGroupedGrid: View {
     var more: MorePhotos?
 
     var body: some View {
+        let days = days
         LazyVStack(alignment: .leading, spacing: 8, pinnedViews: .sectionHeaders) {
             ForEach(days, id: \.day) { group in
+                if let trip = group.trip {
+                    // Days in one other city in a row: a trip, said once.
+                    VStack(alignment: .leading, spacing: 2) {
+                        Label { Text(verbatim: trip.city) } icon: { Image(systemName: "mappin.and.ellipse") }
+                            .font(.title3.bold())
+                        Text(verbatim: trip.dates)
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.muted)
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 14)
+                    .accessibilityElement(children: .combine)
+                }
                 SwiftUI.Section {
                     PhotoGrid(photos: group.photos, model: model, selection: selection, album: photos, more: more)
                 } header: {
-                    Text(group.day.formatted(date: .complete, time: .omitted))
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.bar)
+                    HStack(spacing: 6) {
+                        Text(group.day.formatted(date: .complete, time: .omitted))
+                            .font(.subheadline.weight(.semibold))
+                        if let place = group.place {
+                            Text(verbatim: "· \(place)")
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.muted)
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.bar)
                 }
             }
         }
     }
 
-    private var days: [(day: Date, photos: [Pidex_V1_Photo])] {
+    struct Day {
+        let day: Date
+        let photos: [Pidex_V1_Photo]
+        /// Where most of the day's photos were taken: a city and a landmark.
+        let place: String?
+        let city: String?
+        /// Set on the first (latest) day of a run of days in one city.
+        var trip: (city: String, dates: String)?
+    }
+
+    private var days: [Day] {
         let cal = Calendar.current
         var order: [Date] = []
         var byDay: [Date: [Pidex_V1_Photo]] = [:]
@@ -434,7 +500,45 @@ struct DayGroupedGrid: View {
             if byDay[day] == nil { order.append(day) }
             byDay[day, default: []].append(p)
         }
-        return order.map { ($0, byDay[$0]!) }
+        var out = order.map { day -> Day in
+            let photos = byDay[day]!
+            let city = Self.most(photos.compactMap { $0.hasPlace ? Self.city($0.place) : nil })
+            let landmark = Self.most(photos.compactMap { $0.hasPlace && Self.city($0.place) == city && !$0.place.name.isEmpty ? $0.place.name : nil })
+            let place = [city, landmark].compactMap { $0 }.joined(separator: " · ")
+            return Day(day: day, photos: photos, place: place.isEmpty ? nil : place, city: city)
+        }
+        // A run of two or more days in one city, apart from the collection's
+        // usual one, reads as a trip: "Dalian, 1–4 Oct".
+        let placed = out.filter { $0.city != nil }
+        let usual = Self.most(placed.map { $0.city! }, weightedBy: placed.map(\.photos.count))
+        var i = 0
+        while i < out.count {
+            guard let city = out[i].city, city != usual || usual == nil else { i += 1; continue }
+            var j = i
+            while j + 1 < out.count, out[j + 1].city == city { j += 1 }
+            if j > i {
+                let range = (out[j].day ..< cal.date(byAdding: .day, value: 1, to: out[i].day)!)
+                out[i].trip = (city, range.formatted(.interval.month(.abbreviated).day()))
+            }
+            i = j + 1
+        }
+        return out
+    }
+
+    private static func city(_ p: Pidex_V1_Place) -> String? {
+        for v in [p.city, p.region, p.country] where !v.isEmpty { return v }
+        return nil
+    }
+
+    /// The commonest value; ties go to the first seen.
+    private static func most(_ values: [String], weightedBy weights: [Int]? = nil) -> String? {
+        var counts: [String: Int] = [:]
+        var order: [String] = []
+        for (i, v) in values.enumerated() {
+            if counts[v] == nil { order.append(v) }
+            counts[v, default: 0] += weights?[i] ?? 1
+        }
+        return order.max { counts[$0]! < counts[$1]! }
     }
 }
 

@@ -110,6 +110,7 @@ type Photo struct {
 	IndexedAt            *time.Time
 	LookEmbedding        *pgvector_go.Vector
 	LookModel            *string
+	Place                []byte
 }
 
 type PhotoTag struct {

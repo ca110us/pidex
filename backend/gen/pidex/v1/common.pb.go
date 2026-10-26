@@ -309,6 +309,139 @@ func (x *GeoPoint) GetAccuracyMeters() float64 {
 	return 0
 }
 
+// Where a photo was taken, in words: what the phone named its coordinates,
+// in the phone's language. Any part may be empty.
+type Place struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Country string                 `protobuf:"bytes,1,opt,name=country,proto3" json:"country,omitempty"`
+	// State or province.
+	Region   string `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
+	City     string `protobuf:"bytes,3,opt,name=city,proto3" json:"city,omitempty"`
+	District string `protobuf:"bytes,4,opt,name=district,proto3" json:"district,omitempty"`
+	// A named place there: a landmark, a park, a building, a street.
+	Name          string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Place) Reset() {
+	*x = Place{}
+	mi := &file_pidex_v1_common_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Place) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Place) ProtoMessage() {}
+
+func (x *Place) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_common_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Place.ProtoReflect.Descriptor instead.
+func (*Place) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Place) GetCountry() string {
+	if x != nil {
+		return x.Country
+	}
+	return ""
+}
+
+func (x *Place) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *Place) GetCity() string {
+	if x != nil {
+		return x.City
+	}
+	return ""
+}
+
+func (x *Place) GetDistrict() string {
+	if x != nil {
+		return x.District
+	}
+	return ""
+}
+
+func (x *Place) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+// How many photos were taken in a place (its city, else its region).
+type PlaceCount struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlaceCount) Reset() {
+	*x = PlaceCount{}
+	mi := &file_pidex_v1_common_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlaceCount) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlaceCount) ProtoMessage() {}
+
+func (x *PlaceCount) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_common_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlaceCount.ProtoReflect.Descriptor instead.
+func (*PlaceCount) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PlaceCount) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PlaceCount) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 // BoundingBox is normalized to [0,1] with origin at the top-left.
 type BoundingBox struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -322,7 +455,7 @@ type BoundingBox struct {
 
 func (x *BoundingBox) Reset() {
 	*x = BoundingBox{}
-	mi := &file_pidex_v1_common_proto_msgTypes[1]
+	mi := &file_pidex_v1_common_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -334,7 +467,7 @@ func (x *BoundingBox) String() string {
 func (*BoundingBox) ProtoMessage() {}
 
 func (x *BoundingBox) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[1]
+	mi := &file_pidex_v1_common_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -347,7 +480,7 @@ func (x *BoundingBox) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BoundingBox.ProtoReflect.Descriptor instead.
 func (*BoundingBox) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{1}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BoundingBox) GetX() float32 {
@@ -390,7 +523,7 @@ type BarcodeObservation struct {
 
 func (x *BarcodeObservation) Reset() {
 	*x = BarcodeObservation{}
-	mi := &file_pidex_v1_common_proto_msgTypes[2]
+	mi := &file_pidex_v1_common_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -402,7 +535,7 @@ func (x *BarcodeObservation) String() string {
 func (*BarcodeObservation) ProtoMessage() {}
 
 func (x *BarcodeObservation) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[2]
+	mi := &file_pidex_v1_common_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -415,7 +548,7 @@ func (x *BarcodeObservation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BarcodeObservation.ProtoReflect.Descriptor instead.
 func (*BarcodeObservation) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{2}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BarcodeObservation) GetSymbology() string {
@@ -443,7 +576,7 @@ type TextObservation struct {
 
 func (x *TextObservation) Reset() {
 	*x = TextObservation{}
-	mi := &file_pidex_v1_common_proto_msgTypes[3]
+	mi := &file_pidex_v1_common_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -455,7 +588,7 @@ func (x *TextObservation) String() string {
 func (*TextObservation) ProtoMessage() {}
 
 func (x *TextObservation) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[3]
+	mi := &file_pidex_v1_common_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -468,7 +601,7 @@ func (x *TextObservation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TextObservation.ProtoReflect.Descriptor instead.
 func (*TextObservation) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{3}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TextObservation) GetText() string {
@@ -512,7 +645,7 @@ type OnDeviceAnalysis struct {
 
 func (x *OnDeviceAnalysis) Reset() {
 	*x = OnDeviceAnalysis{}
-	mi := &file_pidex_v1_common_proto_msgTypes[4]
+	mi := &file_pidex_v1_common_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +657,7 @@ func (x *OnDeviceAnalysis) String() string {
 func (*OnDeviceAnalysis) ProtoMessage() {}
 
 func (x *OnDeviceAnalysis) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[4]
+	mi := &file_pidex_v1_common_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +670,7 @@ func (x *OnDeviceAnalysis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnDeviceAnalysis.ProtoReflect.Descriptor instead.
 func (*OnDeviceAnalysis) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{4}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *OnDeviceAnalysis) GetBarcodes() []*BarcodeObservation {
@@ -612,7 +745,7 @@ type Subject struct {
 
 func (x *Subject) Reset() {
 	*x = Subject{}
-	mi := &file_pidex_v1_common_proto_msgTypes[5]
+	mi := &file_pidex_v1_common_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -624,7 +757,7 @@ func (x *Subject) String() string {
 func (*Subject) ProtoMessage() {}
 
 func (x *Subject) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[5]
+	mi := &file_pidex_v1_common_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +770,7 @@ func (x *Subject) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Subject.ProtoReflect.Descriptor instead.
 func (*Subject) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{5}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Subject) GetId() string {
@@ -721,7 +854,7 @@ type Tag struct {
 
 func (x *Tag) Reset() {
 	*x = Tag{}
-	mi := &file_pidex_v1_common_proto_msgTypes[6]
+	mi := &file_pidex_v1_common_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -733,7 +866,7 @@ func (x *Tag) String() string {
 func (*Tag) ProtoMessage() {}
 
 func (x *Tag) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[6]
+	mi := &file_pidex_v1_common_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -746,7 +879,7 @@ func (x *Tag) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Tag.ProtoReflect.Descriptor instead.
 func (*Tag) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{6}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Tag) GetKey() string {
@@ -790,14 +923,18 @@ type Photo struct {
 	SuggestedSubjectId string `protobuf:"bytes,14,opt,name=suggested_subject_id,json=suggestedSubjectId,proto3" json:"suggested_subject_id,omitempty"`
 	// Short-lived signed URL of a small JPEG for lists and grids; empty until
 	// the photo is indexed.
-	ThumbnailUrl  string `protobuf:"bytes,15,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	ThumbnailUrl string `protobuf:"bytes,15,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	// Where it was taken, when the phone knew; not kept for high-privacy
+	// teams.
+	Place         *Place    `protobuf:"bytes,16,opt,name=place,proto3" json:"place,omitempty"`
+	Location      *GeoPoint `protobuf:"bytes,17,opt,name=location,proto3" json:"location,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Photo) Reset() {
 	*x = Photo{}
-	mi := &file_pidex_v1_common_proto_msgTypes[7]
+	mi := &file_pidex_v1_common_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -809,7 +946,7 @@ func (x *Photo) String() string {
 func (*Photo) ProtoMessage() {}
 
 func (x *Photo) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[7]
+	mi := &file_pidex_v1_common_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -822,7 +959,7 @@ func (x *Photo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Photo.ProtoReflect.Descriptor instead.
 func (*Photo) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{7}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Photo) GetId() string {
@@ -930,6 +1067,20 @@ func (x *Photo) GetThumbnailUrl() string {
 	return ""
 }
 
+func (x *Photo) GetPlace() *Place {
+	if x != nil {
+		return x.Place
+	}
+	return nil
+}
+
+func (x *Photo) GetLocation() *GeoPoint {
+	if x != nil {
+		return x.Location
+	}
+	return nil
+}
+
 // How many photos have a tag.
 type TagCount struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -941,7 +1092,7 @@ type TagCount struct {
 
 func (x *TagCount) Reset() {
 	*x = TagCount{}
-	mi := &file_pidex_v1_common_proto_msgTypes[8]
+	mi := &file_pidex_v1_common_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -953,7 +1104,7 @@ func (x *TagCount) String() string {
 func (*TagCount) ProtoMessage() {}
 
 func (x *TagCount) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_common_proto_msgTypes[8]
+	mi := &file_pidex_v1_common_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -966,7 +1117,7 @@ func (x *TagCount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TagCount.ProtoReflect.Descriptor instead.
 func (*TagCount) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_common_proto_rawDescGZIP(), []int{8}
+	return file_pidex_v1_common_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *TagCount) GetKey() string {
@@ -991,7 +1142,17 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\bGeoPoint\x12\x1a\n" +
 	"\blatitude\x18\x01 \x01(\x01R\blatitude\x12\x1c\n" +
 	"\tlongitude\x18\x02 \x01(\x01R\tlongitude\x12'\n" +
-	"\x0faccuracy_meters\x18\x03 \x01(\x01R\x0eaccuracyMeters\"W\n" +
+	"\x0faccuracy_meters\x18\x03 \x01(\x01R\x0eaccuracyMeters\"}\n" +
+	"\x05Place\x12\x18\n" +
+	"\acountry\x18\x01 \x01(\tR\acountry\x12\x16\n" +
+	"\x06region\x18\x02 \x01(\tR\x06region\x12\x12\n" +
+	"\x04city\x18\x03 \x01(\tR\x04city\x12\x1a\n" +
+	"\bdistrict\x18\x04 \x01(\tR\bdistrict\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\"6\n" +
+	"\n" +
+	"PlaceCount\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\"W\n" +
 	"\vBoundingBox\x12\f\n" +
 	"\x01x\x18\x01 \x01(\x02R\x01x\x12\f\n" +
 	"\x01y\x18\x02 \x01(\x02R\x01y\x12\x14\n" +
@@ -1038,7 +1199,7 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\n" +
 	"confidence\x18\x02 \x01(\x02R\n" +
 	"confidence\x12+\n" +
-	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\xc7\x05\n" +
+	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\x9e\x06\n" +
 	"\x05Photo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1061,7 +1222,9 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\vdescription\x18\f \x01(\tR\vdescription\x12\x19\n" +
 	"\bview_url\x18\r \x01(\tR\aviewUrl\x120\n" +
 	"\x14suggested_subject_id\x18\x0e \x01(\tR\x12suggestedSubjectId\x12#\n" +
-	"\rthumbnail_url\x18\x0f \x01(\tR\fthumbnailUrl\x1aB\n" +
+	"\rthumbnail_url\x18\x0f \x01(\tR\fthumbnailUrl\x12%\n" +
+	"\x05place\x18\x10 \x01(\v2\x0f.pidex.v1.PlaceR\x05place\x12.\n" +
+	"\blocation\x18\x11 \x01(\v2\x12.pidex.v1.GeoPointR\blocation\x1aB\n" +
 	"\x14ExtractedFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"2\n" +
@@ -1105,45 +1268,49 @@ func file_pidex_v1_common_proto_rawDescGZIP() []byte {
 }
 
 var file_pidex_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_pidex_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_pidex_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_pidex_v1_common_proto_goTypes = []any{
 	(PhotoRole)(0),                // 0: pidex.v1.PhotoRole
 	(PhotoStatus)(0),              // 1: pidex.v1.PhotoStatus
 	(AssignmentState)(0),          // 2: pidex.v1.AssignmentState
 	(TagSource)(0),                // 3: pidex.v1.TagSource
 	(*GeoPoint)(nil),              // 4: pidex.v1.GeoPoint
-	(*BoundingBox)(nil),           // 5: pidex.v1.BoundingBox
-	(*BarcodeObservation)(nil),    // 6: pidex.v1.BarcodeObservation
-	(*TextObservation)(nil),       // 7: pidex.v1.TextObservation
-	(*OnDeviceAnalysis)(nil),      // 8: pidex.v1.OnDeviceAnalysis
-	(*Subject)(nil),               // 9: pidex.v1.Subject
-	(*Tag)(nil),                   // 10: pidex.v1.Tag
-	(*Photo)(nil),                 // 11: pidex.v1.Photo
-	(*TagCount)(nil),              // 12: pidex.v1.TagCount
-	nil,                           // 13: pidex.v1.Subject.IdentityEntry
-	nil,                           // 14: pidex.v1.Photo.ExtractedFieldsEntry
-	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
+	(*Place)(nil),                 // 5: pidex.v1.Place
+	(*PlaceCount)(nil),            // 6: pidex.v1.PlaceCount
+	(*BoundingBox)(nil),           // 7: pidex.v1.BoundingBox
+	(*BarcodeObservation)(nil),    // 8: pidex.v1.BarcodeObservation
+	(*TextObservation)(nil),       // 9: pidex.v1.TextObservation
+	(*OnDeviceAnalysis)(nil),      // 10: pidex.v1.OnDeviceAnalysis
+	(*Subject)(nil),               // 11: pidex.v1.Subject
+	(*Tag)(nil),                   // 12: pidex.v1.Tag
+	(*Photo)(nil),                 // 13: pidex.v1.Photo
+	(*TagCount)(nil),              // 14: pidex.v1.TagCount
+	nil,                           // 15: pidex.v1.Subject.IdentityEntry
+	nil,                           // 16: pidex.v1.Photo.ExtractedFieldsEntry
+	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
 }
 var file_pidex_v1_common_proto_depIdxs = []int32{
-	5,  // 0: pidex.v1.TextObservation.box:type_name -> pidex.v1.BoundingBox
-	6,  // 1: pidex.v1.OnDeviceAnalysis.barcodes:type_name -> pidex.v1.BarcodeObservation
-	7,  // 2: pidex.v1.OnDeviceAnalysis.text:type_name -> pidex.v1.TextObservation
-	5,  // 3: pidex.v1.OnDeviceAnalysis.subject_box:type_name -> pidex.v1.BoundingBox
-	13, // 4: pidex.v1.Subject.identity:type_name -> pidex.v1.Subject.IdentityEntry
-	15, // 5: pidex.v1.Subject.created_at:type_name -> google.protobuf.Timestamp
-	11, // 6: pidex.v1.Subject.cover:type_name -> pidex.v1.Photo
+	7,  // 0: pidex.v1.TextObservation.box:type_name -> pidex.v1.BoundingBox
+	8,  // 1: pidex.v1.OnDeviceAnalysis.barcodes:type_name -> pidex.v1.BarcodeObservation
+	9,  // 2: pidex.v1.OnDeviceAnalysis.text:type_name -> pidex.v1.TextObservation
+	7,  // 3: pidex.v1.OnDeviceAnalysis.subject_box:type_name -> pidex.v1.BoundingBox
+	15, // 4: pidex.v1.Subject.identity:type_name -> pidex.v1.Subject.IdentityEntry
+	17, // 5: pidex.v1.Subject.created_at:type_name -> google.protobuf.Timestamp
+	13, // 6: pidex.v1.Subject.cover:type_name -> pidex.v1.Photo
 	3,  // 7: pidex.v1.Tag.source:type_name -> pidex.v1.TagSource
 	2,  // 8: pidex.v1.Photo.assignment:type_name -> pidex.v1.AssignmentState
 	0,  // 9: pidex.v1.Photo.role:type_name -> pidex.v1.PhotoRole
 	1,  // 10: pidex.v1.Photo.status:type_name -> pidex.v1.PhotoStatus
-	15, // 11: pidex.v1.Photo.captured_at:type_name -> google.protobuf.Timestamp
-	10, // 12: pidex.v1.Photo.tags:type_name -> pidex.v1.Tag
-	14, // 13: pidex.v1.Photo.extracted_fields:type_name -> pidex.v1.Photo.ExtractedFieldsEntry
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	17, // 11: pidex.v1.Photo.captured_at:type_name -> google.protobuf.Timestamp
+	12, // 12: pidex.v1.Photo.tags:type_name -> pidex.v1.Tag
+	16, // 13: pidex.v1.Photo.extracted_fields:type_name -> pidex.v1.Photo.ExtractedFieldsEntry
+	5,  // 14: pidex.v1.Photo.place:type_name -> pidex.v1.Place
+	4,  // 15: pidex.v1.Photo.location:type_name -> pidex.v1.GeoPoint
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_common_proto_init() }
@@ -1157,7 +1324,7 @@ func file_pidex_v1_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pidex_v1_common_proto_rawDesc), len(file_pidex_v1_common_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -100,16 +100,21 @@ func (s *captureService) CompleteUpload(ctx context.Context, req *connect.Reques
 	if !exists {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("upload not received"))
 	}
-	if lockedID != nil {
+	cfg, version, err := s.Configs.Active(ctx, pr.TeamID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+	}
+	switch {
+	case lockedID != nil:
 		if _, err := s.Q.GetSubject(ctx, dbq.GetSubjectParams{TeamID: pr.TeamID, ID: *lockedID}); err != nil {
 			return nil, notFoundOr(err, "locked subject")
 		}
-	} else if err := s.checkIdentityShot(ctx, pr.TeamID, photo, sessionID, m.IdentityClientPhotoId); err != nil {
-		return nil, err
-	}
-	_, version, err := s.Configs.Active(ctx, pr.TeamID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+	case len(cfg.SubjectTypes) == 0:
+		// Kept by where and when it was taken (a trip): nobody to name.
+	default:
+		if err := s.checkIdentityShot(ctx, pr.TeamID, photo, sessionID, m.IdentityClientPhotoId); err != nil {
+			return nil, err
+		}
 	}
 	onDevice := []byte("{}")
 	if m.OnDevice != nil {
@@ -128,6 +133,11 @@ func (s *captureService) CompleteUpload(ctx context.Context, req *connect.Reques
 	if loc := m.Location; loc != nil {
 		params.Latitude, params.Longitude = &loc.Latitude, &loc.Longitude
 		params.LocationAccuracyM = &loc.AccuracyMeters
+	}
+	// High-privacy teams keep coordinates for filing but no names of
+	// places: an address in words says too much about a patient.
+	if pl := placeJSON(m.Place); pl != nil && cfg.Privacy != teamconfig.PrivacyHigh {
+		params.Place = pl
 	}
 
 	var done dbq.Photo
@@ -472,6 +482,12 @@ func (s *captureService) GetSessionSummary(ctx context.Context, req *connect.Req
 		return nil, internal(err)
 	}
 	out := &pidexv1.GetSessionSummaryResponse{TotalCount: int32(len(photos))}
+	// A collection kept by place and day has nobody to name: nothing for
+	// a person to settle.
+	byPlace := false
+	if cfg, _, err := s.Configs.Active(ctx, pr.TeamID); err == nil {
+		byPlace = len(cfg.SubjectTypes) == 0
+	}
 	type group struct{ count, auto int32 }
 	groups := map[uuid.UUID]*group{}
 	var order []uuid.UUID
@@ -497,7 +513,7 @@ func (s *captureService) GetSessionSummary(ctx context.Context, req *connect.Req
 			}
 			continue
 		}
-		if ph.Status == "processed" || ph.Status == "failed" {
+		if (ph.Status == "processed" || ph.Status == "failed") && !byPlace {
 			review = append(review, ph)
 		}
 	}

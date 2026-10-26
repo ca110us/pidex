@@ -71,6 +71,39 @@ func ts(t *time.Time) *timestamppb.Timestamp {
 	return timestamppb.New(*t)
 }
 
+// placeJSON keeps the parts of a place that say something, trimmed; nil
+// when none does.
+func placeJSON(p *pidexv1.Place) []byte {
+	if p == nil {
+		return nil
+	}
+	parts := map[string]string{}
+	for k, v := range map[string]string{"country": p.Country, "region": p.Region, "city": p.City, "district": p.District, "name": p.Name} {
+		if v = strings.TrimSpace(v); v != "" {
+			if len(v) > 200 {
+				v = v[:200]
+			}
+			parts[k] = v
+		}
+	}
+	if len(parts) == 0 {
+		return nil
+	}
+	b, _ := json.Marshal(parts)
+	return b
+}
+
+func placeProto(raw []byte) *pidexv1.Place {
+	if len(raw) == 0 {
+		return nil
+	}
+	var m map[string]string
+	if json.Unmarshal(raw, &m) != nil {
+		return nil
+	}
+	return &pidexv1.Place{Country: m["country"], Region: m["region"], City: m["city"], District: m["district"], Name: m["name"]}
+}
+
 // described is a photo's description, with its subject called by name: "Tutu
 // crouches by the sink", not "a tuxedo cat". Only once it is filed under
 // that subject; a suggestion may be wrong.
@@ -101,9 +134,16 @@ func (s *Server) photoProto(ctx context.Context, ph dbq.Photo, tags []dbq.PhotoT
 		UploadedBy:           ph.UploadedBy.String(),
 		Description:          described(ph, ex, names),
 		ExtractedFields:      ex.DisplayFields(),
+		Place:                placeProto(ph.Place),
 	}
 	if ph.Role != nil {
 		out.Role = roleToProto[*ph.Role]
+	}
+	if ph.Latitude != nil && ph.Longitude != nil {
+		out.Location = &pidexv1.GeoPoint{Latitude: *ph.Latitude, Longitude: *ph.Longitude}
+		if ph.LocationAccuracyM != nil {
+			out.Location.AccuracyMeters = *ph.LocationAccuracyM
+		}
 	}
 	for _, t := range tags {
 		if t.PhotoID != ph.ID {

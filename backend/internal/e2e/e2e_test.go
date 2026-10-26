@@ -427,6 +427,8 @@ type shot struct {
 	chosen uuid.UUID
 	// clientID is the id the phone gave the shot; a new one if empty.
 	clientID string
+	// place is what the phone named where it was taken.
+	place *pidexv1.Place
 }
 
 // take goes through the same steps as the phone: request an upload URL, PUT
@@ -472,6 +474,10 @@ func (e *env) take(s shot) uuid.UUID {
 	}
 	if s.chosen != uuid.Nil {
 		complete.LockedSubjectId, complete.SubjectChosen = s.chosen.String(), true
+	}
+	if s.place != nil {
+		complete.Place = s.place
+		complete.Location = &pidexv1.GeoPoint{Latitude: 38.88, Longitude: 121.58, AccuracyMeters: 10}
 	}
 	done, err := e.capture.CompleteUpload(e.ctx, connect.NewRequest(complete))
 	if err != nil {

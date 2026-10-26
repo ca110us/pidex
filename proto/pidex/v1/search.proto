@@ -50,6 +50,9 @@ message SearchFilters {
   // Every one of tags is required, as when the user picks a tag to filter
   // by. Tags a model read from a request only rank (see tags).
   bool tags_required = 11;
+  // A place the photos were taken in ("Dalian", "Xinghai Square"), matched
+  // against the names of where each was taken.
+  string place = 12;
 }
 
 message SearchPhotosRequest {
@@ -81,6 +84,8 @@ message SearchPhotosResponse {
   int32 total = 6;
   // With tag_counts: most first.
   repeated TagCount tag_counts = 7;
+  // With tag_counts: the places photos were taken in, most first.
+  repeated PlaceCount place_counts = 8;
 }
 
 message AskPhotosRequest {

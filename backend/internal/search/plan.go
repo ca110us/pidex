@@ -38,6 +38,9 @@ type Filters struct {
 	// From is inclusive and To exclusive.
 	From, To *time.Time
 	Roles    []string
+	// Place is a place the photos were taken in ("Dalian", "Xinghai
+	// Square"), matched against the names of where each was taken.
+	Place string
 	// Text is matched by words, and by meaning when Request is empty.
 	Text string
 	// Request is the user's own words without the subject's: what a
@@ -164,6 +167,7 @@ type planForm struct {
 	Tags         []string `json:"tags"`
 	DateFrom     string   `json:"date_from"`
 	DateTo       string   `json:"date_to"`
+	Place        string   `json:"place"`
 	Text         string   `json:"text"`
 }
 
@@ -171,8 +175,13 @@ func planInstructions(cfg *teamconfig.Config, now time.Time) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `You turn a request to find work photos into search filters. Today is %s (%s).
 
-The team: %s (%s). Photos are filed under subjects:
+The team: %s (%s). Each photo keeps when and where it was taken (the names of its place: country, region, city, district, a landmark or street).
 `, now.Format("Monday 2006-01-02"), now.Location(), cfg.Name, cfg.Industry)
+	if len(cfg.SubjectTypes) == 0 {
+		b.WriteString("Photos are not filed under subjects: they are kept by place and time.\n")
+	} else {
+		b.WriteString("Photos are filed under subjects:\n")
+	}
 	for _, st := range cfg.SubjectTypes {
 		fmt.Fprintf(&b, "- %s: %s, identified by", st.Key, st.Name)
 		for i, f := range st.IdentityFields {
@@ -196,6 +205,7 @@ Rules:
 - subject_query: only the identity of one particular subject as the team identifies it (a person's name, a record, unit or plate number, a pet's name), copied from the request; "" if none. Rooms, body parts, objects and kinds of work are never subjects, and neither is how something looks: a colour, a breed, a size or a pattern ("the yellow cat", "black ones", "the big mug") goes in text.
 - subject_type: only when the request asks which subjects lack something (mode "missing") or names a subject whose type matters; "" otherwise.
 - tags: the tags that describe what the photos should show. They rank results, so include every clearly related tag. When the request asks for all photos of a subject or a period without describing their content ("last week's photos"), or asks about the whole collection (what is there, how many, list everything, an overview), leave tags and text empty.
+- place: a place the photos were taken in that the request names (a country, city, district, landmark, street, park, venue), copied as written; "" if none. A subject the team files photos under (a project, a unit, a site with a name) goes in subject_query instead.
 - date_from and date_to: YYYY-MM-DD, date_to exclusive, only when the request mentions time ("yesterday", "last week", "in March"); "" otherwise.
 - text: what the request still asks for that filters do not cover, in the request's language; "" if nothing is left.
 - require_tags: true only when the request explicitly limits results to photos showing those tags ("only the back", "just the damaged ones"); false when tags only describe what to look for, including a question whether such a photo exists ("is there a photo of it in the bag?").
@@ -230,6 +240,7 @@ func planSchema(cfg *teamconfig.Config) map[string]any {
 		"tags":           tagList,
 		"date_from":      str,
 		"date_to":        str,
+		"place":          str,
 		"text":           str,
 	}
 	keys := make([]string, 0, len(props))
@@ -247,7 +258,7 @@ func parsePlan(raw json.RawMessage, cfg *teamconfig.Config, loc *time.Location) 
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return Filters{}, fmt.Errorf("search plan is not the requested JSON: %w", err)
 	}
-	f := Filters{Mode: ModePhotos, SubjectQuery: strings.TrimSpace(p.SubjectQuery), Text: strings.TrimSpace(p.Text)}
+	f := Filters{Mode: ModePhotos, SubjectQuery: strings.TrimSpace(p.SubjectQuery), Text: strings.TrimSpace(p.Text), Place: strings.TrimSpace(p.Place)}
 	if p.Mode == string(ModeMissing) {
 		f.Mode = ModeMissing
 	}

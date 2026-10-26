@@ -8,7 +8,9 @@ struct CaptureView: View {
     @State private var library: LibraryModel
     @Environment(AppModel.self) private var app
     @State private var showSummary = false
-    @State private var pickerItem: PhotosPickerItem?
+    /// Photos chosen from the library, added in the order chosen.
+    @State private var pickerItems: [PhotosPickerItem] = []
+    @State private var importing = 0
     @State private var switchProblem: String?
     @State private var choosing = false
     @State private var confirmingClose = false
@@ -105,13 +107,19 @@ struct CaptureView: View {
                 }
             }
         }
-        .onChange(of: pickerItem) { _, item in
-            guard let item else { return }
+        .onChange(of: pickerItems) { _, items in
+            guard !items.isEmpty else { return }
             Task {
-                if let data = try? await item.loadTransferable(type: Data.self) {
-                    await model.importPhoto(data)
+                importing = items.count
+                // The original file, so its day and place come with it.
+                for item in items {
+                    if let data = try? await item.loadTransferable(type: Data.self) {
+                        await model.importPhoto(data)
+                    }
+                    importing -= 1
                 }
-                pickerItem = nil
+                importing = 0
+                pickerItems = []
             }
         }
     }
@@ -219,12 +227,19 @@ struct CaptureView: View {
 
     private var controls: some View {
         HStack {
-            PhotosPicker(selection: $pickerItem, matching: .images) {
-                Image(systemName: "photo.on.rectangle")
-                    .font(.title2)
-                    .frame(width: 56, height: 56)
+            PhotosPicker(selection: $pickerItems, maxSelectionCount: 200, selectionBehavior: .ordered, matching: .images,
+                         preferredItemEncoding: .current) {
+                Group {
+                    if importing > 0 {
+                        Text(verbatim: "\(importing)").font(.headline.monospacedDigit())
+                    } else {
+                        Image(systemName: "photo.on.rectangle").font(.title2)
+                    }
+                }
+                .frame(width: 56, height: 56)
             }
-            .accessibilityLabel("Import a photo")
+            .disabled(importing > 0)
+            .accessibilityLabel("Add photos from the library")
             Spacer()
             Button {
                 Task { await model.shoot() }
@@ -280,7 +295,7 @@ struct BannerView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Button(action: onChoose) {
+            Button(action: { if !model.filesByPlace { onChoose() } }) {
                 HStack(spacing: 10) {
                     // State is the icon's colour; the banner stays dark glass.
                     Image(systemName: icon)
@@ -298,7 +313,9 @@ struct BannerView: View {
             if model.current.likelyName != nil, !model.current.chosen {
                 pill("Yes", primary: true, action: model.confirmLikely).accessibilityIdentifier("confirmLikely")
             }
-            pill(model.current.subjectID == nil ? "Choose" : "Change", action: onChoose)
+            if !model.filesByPlace {
+                pill(model.current.subjectID == nil ? "Choose" : "Change", action: onChoose)
+            }
             if model.current.chosen {
                 Button(action: model.clearChoice) {
                     Image(systemName: "xmark")
@@ -355,6 +372,12 @@ struct BannerView: View {
         case .offline: return String(localized: "ID seen offline — will match when online")
         case nil: break
         }
+        if model.filesByPlace {
+            // Nobody to name: where and when it is taken says it.
+            return model.shots.isEmpty
+                ? String(localized: "Just shoot, or add photos from the library: each is kept by where and when it was taken")
+                : String(localized: "\(model.shots.count) photos, kept by where and when they were taken")
+        }
         if model.firstShoot && model.shots.isEmpty {
             // A face says most about who it is; a label, all of it.
             return model.recognizesByLook
@@ -373,6 +396,7 @@ struct BannerView: View {
 
     private var icon: String {
         let c = model.current
+        if model.filesByPlace { return "mappin.and.ellipse" }
         if model.banner == .reading { return "text.viewfinder" }
         if c.chosen { return "hand.point.up.left" }
         switch c.mark {

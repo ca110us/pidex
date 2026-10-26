@@ -234,6 +234,45 @@ nonisolated struct Pidex_V1_GeoPoint: Sendable {
   init() {}
 }
 
+/// Where a photo was taken, in words: what the phone named its coordinates,
+/// in the phone's language. Any part may be empty.
+nonisolated struct Pidex_V1_Place: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var country: String = String()
+
+  /// State or province.
+  var region: String = String()
+
+  var city: String = String()
+
+  var district: String = String()
+
+  /// A named place there: a landmark, a park, a building, a street.
+  var name: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// How many photos were taken in a place (its city, else its region).
+nonisolated struct Pidex_V1_PlaceCount: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var name: String = String()
+
+  var count: Int32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 /// BoundingBox is normalized to [0,1] with origin at the top-left.
 nonisolated struct Pidex_V1_BoundingBox: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -332,79 +371,56 @@ nonisolated struct Pidex_V1_OnDeviceAnalysis: Sendable {
   fileprivate var _subjectBox: Pidex_V1_BoundingBox? = nil
 }
 
-nonisolated struct Pidex_V1_Subject: @unchecked Sendable {
+nonisolated struct Pidex_V1_Subject: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var id: String {
-    get {_storage._id}
-    set {_uniqueStorage()._id = newValue}
-  }
+  var id: String = String()
 
-  var typeKey: String {
-    get {_storage._typeKey}
-    set {_uniqueStorage()._typeKey = newValue}
-  }
+  var typeKey: String = String()
 
-  var displayName: String {
-    get {_storage._displayName}
-    set {_uniqueStorage()._displayName = newValue}
-  }
+  var displayName: String = String()
 
-  var identity: Dictionary<String,String> {
-    get {_storage._identity}
-    set {_uniqueStorage()._identity = newValue}
-  }
+  var identity: Dictionary<String,String> = [:]
 
-  var parentID: String {
-    get {_storage._parentID}
-    set {_uniqueStorage()._parentID = newValue}
-  }
+  var parentID: String = String()
 
   var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
-    get {_storage._createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
-    set {_uniqueStorage()._createdAt = newValue}
+    get {_createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_createdAt = newValue}
   }
   /// Returns true if `createdAt` has been explicitly set.
-  var hasCreatedAt: Bool {_storage._createdAt != nil}
+  var hasCreatedAt: Bool {self._createdAt != nil}
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
-  mutating func clearCreatedAt() {_uniqueStorage()._createdAt = nil}
+  mutating func clearCreatedAt() {self._createdAt = nil}
 
-  var photoCount: Int32 {
-    get {_storage._photoCount}
-    set {_uniqueStorage()._photoCount = newValue}
-  }
+  var photoCount: Int32 = 0
 
   /// A photo to show it by in lists: one a person filed there, else the
   /// latest. Set where subjects are listed.
   var cover: Pidex_V1_Photo {
-    get {_storage._cover ?? Pidex_V1_Photo()}
-    set {_uniqueStorage()._cover = newValue}
+    get {_cover ?? Pidex_V1_Photo()}
+    set {_cover = newValue}
   }
   /// Returns true if `cover` has been explicitly set.
-  var hasCover: Bool {_storage._cover != nil}
+  var hasCover: Bool {self._cover != nil}
   /// Clears the value of `cover`. Subsequent reads from it will return its default value.
-  mutating func clearCover() {_uniqueStorage()._cover = nil}
+  mutating func clearCover() {self._cover = nil}
 
   /// What one told apart by look looks like in full, one feature per line:
   /// written from its photos, or by a person.
-  var profile: String {
-    get {_storage._profile}
-    set {_uniqueStorage()._profile = newValue}
-  }
+  var profile: String = String()
 
   /// A person wrote it; it is not rewritten from photos.
-  var profileByPerson: Bool {
-    get {_storage._profileByPerson}
-    set {_uniqueStorage()._profileByPerson = newValue}
-  }
+  var profileByPerson: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+  fileprivate var _cover: Pidex_V1_Photo? = nil
 }
 
 nonisolated struct Pidex_V1_Tag: Sendable {
@@ -423,57 +439,119 @@ nonisolated struct Pidex_V1_Tag: Sendable {
   init() {}
 }
 
-nonisolated struct Pidex_V1_Photo: Sendable {
+nonisolated struct Pidex_V1_Photo: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var id: String = String()
+  var id: String {
+    get {_storage._id}
+    set {_uniqueStorage()._id = newValue}
+  }
 
-  var sessionID: String = String()
+  var sessionID: String {
+    get {_storage._sessionID}
+    set {_uniqueStorage()._sessionID = newValue}
+  }
 
-  var subjectID: String = String()
+  var subjectID: String {
+    get {_storage._subjectID}
+    set {_uniqueStorage()._subjectID = newValue}
+  }
 
-  var assignment: Pidex_V1_AssignmentState = .unspecified
+  var assignment: Pidex_V1_AssignmentState {
+    get {_storage._assignment}
+    set {_uniqueStorage()._assignment = newValue}
+  }
 
-  var assignmentConfidence: Float = 0
+  var assignmentConfidence: Float {
+    get {_storage._assignmentConfidence}
+    set {_uniqueStorage()._assignmentConfidence = newValue}
+  }
 
-  var role: Pidex_V1_PhotoRole = .unspecified
+  var role: Pidex_V1_PhotoRole {
+    get {_storage._role}
+    set {_uniqueStorage()._role = newValue}
+  }
 
-  var status: Pidex_V1_PhotoStatus = .unspecified
+  var status: Pidex_V1_PhotoStatus {
+    get {_storage._status}
+    set {_uniqueStorage()._status = newValue}
+  }
 
   var capturedAt: SwiftProtobuf.Google_Protobuf_Timestamp {
-    get {_capturedAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
-    set {_capturedAt = newValue}
+    get {_storage._capturedAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_uniqueStorage()._capturedAt = newValue}
   }
   /// Returns true if `capturedAt` has been explicitly set.
-  var hasCapturedAt: Bool {self._capturedAt != nil}
+  var hasCapturedAt: Bool {_storage._capturedAt != nil}
   /// Clears the value of `capturedAt`. Subsequent reads from it will return its default value.
-  mutating func clearCapturedAt() {self._capturedAt = nil}
+  mutating func clearCapturedAt() {_uniqueStorage()._capturedAt = nil}
 
-  var uploadedBy: String = String()
+  var uploadedBy: String {
+    get {_storage._uploadedBy}
+    set {_uniqueStorage()._uploadedBy = newValue}
+  }
 
-  var tags: [Pidex_V1_Tag] = []
+  var tags: [Pidex_V1_Tag] {
+    get {_storage._tags}
+    set {_uniqueStorage()._tags = newValue}
+  }
 
-  var extractedFields: Dictionary<String,String> = [:]
+  var extractedFields: Dictionary<String,String> {
+    get {_storage._extractedFields}
+    set {_uniqueStorage()._extractedFields = newValue}
+  }
 
-  var description_p: String = String()
+  var description_p: String {
+    get {_storage._description_p}
+    set {_uniqueStorage()._description_p = newValue}
+  }
 
   /// Short-lived signed URL for viewing the original.
-  var viewURL: String = String()
+  var viewURL: String {
+    get {_storage._viewURL}
+    set {_uniqueStorage()._viewURL = newValue}
+  }
 
   /// Subject proposed when assignment is SUGGESTED.
-  var suggestedSubjectID: String = String()
+  var suggestedSubjectID: String {
+    get {_storage._suggestedSubjectID}
+    set {_uniqueStorage()._suggestedSubjectID = newValue}
+  }
 
   /// Short-lived signed URL of a small JPEG for lists and grids; empty until
   /// the photo is indexed.
-  var thumbnailURL: String = String()
+  var thumbnailURL: String {
+    get {_storage._thumbnailURL}
+    set {_uniqueStorage()._thumbnailURL = newValue}
+  }
+
+  /// Where it was taken, when the phone knew; not kept for high-privacy
+  /// teams.
+  var place: Pidex_V1_Place {
+    get {_storage._place ?? Pidex_V1_Place()}
+    set {_uniqueStorage()._place = newValue}
+  }
+  /// Returns true if `place` has been explicitly set.
+  var hasPlace: Bool {_storage._place != nil}
+  /// Clears the value of `place`. Subsequent reads from it will return its default value.
+  mutating func clearPlace() {_uniqueStorage()._place = nil}
+
+  var location: Pidex_V1_GeoPoint {
+    get {_storage._location ?? Pidex_V1_GeoPoint()}
+    set {_uniqueStorage()._location = newValue}
+  }
+  /// Returns true if `location` has been explicitly set.
+  var hasLocation: Bool {_storage._location != nil}
+  /// Clears the value of `location`. Subsequent reads from it will return its default value.
+  mutating func clearLocation() {_uniqueStorage()._location = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _capturedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 /// How many photos have a tag.
@@ -546,6 +624,91 @@ nonisolated extension Pidex_V1_GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._M
     if lhs.latitude != rhs.latitude {return false}
     if lhs.longitude != rhs.longitude {return false}
     if lhs.accuracyMeters != rhs.accuracyMeters {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_Place: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Place"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}country\0\u{1}region\0\u{1}city\0\u{1}district\0\u{1}name\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.country) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.region) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.city) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.district) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.country.isEmpty {
+      try visitor.visitSingularStringField(value: self.country, fieldNumber: 1)
+    }
+    if !self.region.isEmpty {
+      try visitor.visitSingularStringField(value: self.region, fieldNumber: 2)
+    }
+    if !self.city.isEmpty {
+      try visitor.visitSingularStringField(value: self.city, fieldNumber: 3)
+    }
+    if !self.district.isEmpty {
+      try visitor.visitSingularStringField(value: self.district, fieldNumber: 4)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_Place, rhs: Pidex_V1_Place) -> Bool {
+    if lhs.country != rhs.country {return false}
+    if lhs.region != rhs.region {return false}
+    if lhs.city != rhs.city {return false}
+    if lhs.district != rhs.district {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_PlaceCount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PlaceCount"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}count\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.count) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
+    }
+    if self.count != 0 {
+      try visitor.visitSingularInt32Field(value: self.count, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_PlaceCount, rhs: Pidex_V1_PlaceCount) -> Bool {
+    if lhs.name != rhs.name {return false}
+    if lhs.count != rhs.count {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -743,130 +906,76 @@ nonisolated extension Pidex_V1_Subject: SwiftProtobuf.Message, SwiftProtobuf._Me
   static let protoMessageName: String = _protobuf_package + ".Subject"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}type_key\0\u{3}display_name\0\u{1}identity\0\u{3}parent_id\0\u{3}created_at\0\u{3}photo_count\0\u{1}cover\0\u{1}profile\0\u{3}profile_by_person\0")
 
-  fileprivate class _StorageClass {
-    var _id: String = String()
-    var _typeKey: String = String()
-    var _displayName: String = String()
-    var _identity: Dictionary<String,String> = [:]
-    var _parentID: String = String()
-    var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
-    var _photoCount: Int32 = 0
-    var _cover: Pidex_V1_Photo? = nil
-    var _profile: String = String()
-    var _profileByPerson: Bool = false
-
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _id = source._id
-      _typeKey = source._typeKey
-      _displayName = source._displayName
-      _identity = source._identity
-      _parentID = source._parentID
-      _createdAt = source._createdAt
-      _photoCount = source._photoCount
-      _cover = source._cover
-      _profile = source._profile
-      _profileByPerson = source._profileByPerson
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularStringField(value: &_storage._id) }()
-        case 2: try { try decoder.decodeSingularStringField(value: &_storage._typeKey) }()
-        case 3: try { try decoder.decodeSingularStringField(value: &_storage._displayName) }()
-        case 4: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &_storage._identity) }()
-        case 5: try { try decoder.decodeSingularStringField(value: &_storage._parentID) }()
-        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._createdAt) }()
-        case 7: try { try decoder.decodeSingularInt32Field(value: &_storage._photoCount) }()
-        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._cover) }()
-        case 9: try { try decoder.decodeSingularStringField(value: &_storage._profile) }()
-        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._profileByPerson) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.typeKey) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.displayName) }()
+      case 4: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.identity) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.parentID) }()
+      case 6: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
+      case 7: try { try decoder.decodeSingularInt32Field(value: &self.photoCount) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._cover) }()
+      case 9: try { try decoder.decodeSingularStringField(value: &self.profile) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.profileByPerson) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      if !_storage._id.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._id, fieldNumber: 1)
-      }
-      if !_storage._typeKey.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._typeKey, fieldNumber: 2)
-      }
-      if !_storage._displayName.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._displayName, fieldNumber: 3)
-      }
-      if !_storage._identity.isEmpty {
-        try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: _storage._identity, fieldNumber: 4)
-      }
-      if !_storage._parentID.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._parentID, fieldNumber: 5)
-      }
-      try { if let v = _storage._createdAt {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-      } }()
-      if _storage._photoCount != 0 {
-        try visitor.visitSingularInt32Field(value: _storage._photoCount, fieldNumber: 7)
-      }
-      try { if let v = _storage._cover {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-      } }()
-      if !_storage._profile.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._profile, fieldNumber: 9)
-      }
-      if _storage._profileByPerson != false {
-        try visitor.visitSingularBoolField(value: _storage._profileByPerson, fieldNumber: 10)
-      }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.id.isEmpty {
+      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    }
+    if !self.typeKey.isEmpty {
+      try visitor.visitSingularStringField(value: self.typeKey, fieldNumber: 2)
+    }
+    if !self.displayName.isEmpty {
+      try visitor.visitSingularStringField(value: self.displayName, fieldNumber: 3)
+    }
+    if !self.identity.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.identity, fieldNumber: 4)
+    }
+    if !self.parentID.isEmpty {
+      try visitor.visitSingularStringField(value: self.parentID, fieldNumber: 5)
+    }
+    try { if let v = self._createdAt {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    } }()
+    if self.photoCount != 0 {
+      try visitor.visitSingularInt32Field(value: self.photoCount, fieldNumber: 7)
+    }
+    try { if let v = self._cover {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
+    if !self.profile.isEmpty {
+      try visitor.visitSingularStringField(value: self.profile, fieldNumber: 9)
+    }
+    if self.profileByPerson != false {
+      try visitor.visitSingularBoolField(value: self.profileByPerson, fieldNumber: 10)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_Subject, rhs: Pidex_V1_Subject) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._id != rhs_storage._id {return false}
-        if _storage._typeKey != rhs_storage._typeKey {return false}
-        if _storage._displayName != rhs_storage._displayName {return false}
-        if _storage._identity != rhs_storage._identity {return false}
-        if _storage._parentID != rhs_storage._parentID {return false}
-        if _storage._createdAt != rhs_storage._createdAt {return false}
-        if _storage._photoCount != rhs_storage._photoCount {return false}
-        if _storage._cover != rhs_storage._cover {return false}
-        if _storage._profile != rhs_storage._profile {return false}
-        if _storage._profileByPerson != rhs_storage._profileByPerson {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs.id != rhs.id {return false}
+    if lhs.typeKey != rhs.typeKey {return false}
+    if lhs.displayName != rhs.displayName {return false}
+    if lhs.identity != rhs.identity {return false}
+    if lhs.parentID != rhs.parentID {return false}
+    if lhs._createdAt != rhs._createdAt {return false}
+    if lhs.photoCount != rhs.photoCount {return false}
+    if lhs._cover != rhs._cover {return false}
+    if lhs.profile != rhs.profile {return false}
+    if lhs.profileByPerson != rhs.profileByPerson {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -914,103 +1023,181 @@ nonisolated extension Pidex_V1_Tag: SwiftProtobuf.Message, SwiftProtobuf._Messag
 
 nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".Photo"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0\u{1}place\0\u{1}location\0")
+
+  fileprivate class _StorageClass {
+    var _id: String = String()
+    var _sessionID: String = String()
+    var _subjectID: String = String()
+    var _assignment: Pidex_V1_AssignmentState = .unspecified
+    var _assignmentConfidence: Float = 0
+    var _role: Pidex_V1_PhotoRole = .unspecified
+    var _status: Pidex_V1_PhotoStatus = .unspecified
+    var _capturedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+    var _uploadedBy: String = String()
+    var _tags: [Pidex_V1_Tag] = []
+    var _extractedFields: Dictionary<String,String> = [:]
+    var _description_p: String = String()
+    var _viewURL: String = String()
+    var _suggestedSubjectID: String = String()
+    var _thumbnailURL: String = String()
+    var _place: Pidex_V1_Place? = nil
+    var _location: Pidex_V1_GeoPoint? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _id = source._id
+      _sessionID = source._sessionID
+      _subjectID = source._subjectID
+      _assignment = source._assignment
+      _assignmentConfidence = source._assignmentConfidence
+      _role = source._role
+      _status = source._status
+      _capturedAt = source._capturedAt
+      _uploadedBy = source._uploadedBy
+      _tags = source._tags
+      _extractedFields = source._extractedFields
+      _description_p = source._description_p
+      _viewURL = source._viewURL
+      _suggestedSubjectID = source._suggestedSubjectID
+      _thumbnailURL = source._thumbnailURL
+      _place = source._place
+      _location = source._location
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.sessionID) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.subjectID) }()
-      case 4: try { try decoder.decodeSingularEnumField(value: &self.assignment) }()
-      case 5: try { try decoder.decodeSingularFloatField(value: &self.assignmentConfidence) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self.role) }()
-      case 7: try { try decoder.decodeSingularEnumField(value: &self.status) }()
-      case 8: try { try decoder.decodeSingularMessageField(value: &self._capturedAt) }()
-      case 9: try { try decoder.decodeSingularStringField(value: &self.uploadedBy) }()
-      case 10: try { try decoder.decodeRepeatedMessageField(value: &self.tags) }()
-      case 11: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.extractedFields) }()
-      case 12: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
-      case 13: try { try decoder.decodeSingularStringField(value: &self.viewURL) }()
-      case 14: try { try decoder.decodeSingularStringField(value: &self.suggestedSubjectID) }()
-      case 15: try { try decoder.decodeSingularStringField(value: &self.thumbnailURL) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._id) }()
+        case 2: try { try decoder.decodeSingularStringField(value: &_storage._sessionID) }()
+        case 3: try { try decoder.decodeSingularStringField(value: &_storage._subjectID) }()
+        case 4: try { try decoder.decodeSingularEnumField(value: &_storage._assignment) }()
+        case 5: try { try decoder.decodeSingularFloatField(value: &_storage._assignmentConfidence) }()
+        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._role) }()
+        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._status) }()
+        case 8: try { try decoder.decodeSingularMessageField(value: &_storage._capturedAt) }()
+        case 9: try { try decoder.decodeSingularStringField(value: &_storage._uploadedBy) }()
+        case 10: try { try decoder.decodeRepeatedMessageField(value: &_storage._tags) }()
+        case 11: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &_storage._extractedFields) }()
+        case 12: try { try decoder.decodeSingularStringField(value: &_storage._description_p) }()
+        case 13: try { try decoder.decodeSingularStringField(value: &_storage._viewURL) }()
+        case 14: try { try decoder.decodeSingularStringField(value: &_storage._suggestedSubjectID) }()
+        case 15: try { try decoder.decodeSingularStringField(value: &_storage._thumbnailURL) }()
+        case 16: try { try decoder.decodeSingularMessageField(value: &_storage._place) }()
+        case 17: try { try decoder.decodeSingularMessageField(value: &_storage._location) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.id.isEmpty {
-      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
-    }
-    if !self.sessionID.isEmpty {
-      try visitor.visitSingularStringField(value: self.sessionID, fieldNumber: 2)
-    }
-    if !self.subjectID.isEmpty {
-      try visitor.visitSingularStringField(value: self.subjectID, fieldNumber: 3)
-    }
-    if self.assignment != .unspecified {
-      try visitor.visitSingularEnumField(value: self.assignment, fieldNumber: 4)
-    }
-    if self.assignmentConfidence.bitPattern != 0 {
-      try visitor.visitSingularFloatField(value: self.assignmentConfidence, fieldNumber: 5)
-    }
-    if self.role != .unspecified {
-      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 6)
-    }
-    if self.status != .unspecified {
-      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 7)
-    }
-    try { if let v = self._capturedAt {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
-    } }()
-    if !self.uploadedBy.isEmpty {
-      try visitor.visitSingularStringField(value: self.uploadedBy, fieldNumber: 9)
-    }
-    if !self.tags.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.tags, fieldNumber: 10)
-    }
-    if !self.extractedFields.isEmpty {
-      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.extractedFields, fieldNumber: 11)
-    }
-    if !self.description_p.isEmpty {
-      try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 12)
-    }
-    if !self.viewURL.isEmpty {
-      try visitor.visitSingularStringField(value: self.viewURL, fieldNumber: 13)
-    }
-    if !self.suggestedSubjectID.isEmpty {
-      try visitor.visitSingularStringField(value: self.suggestedSubjectID, fieldNumber: 14)
-    }
-    if !self.thumbnailURL.isEmpty {
-      try visitor.visitSingularStringField(value: self.thumbnailURL, fieldNumber: 15)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._id.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._id, fieldNumber: 1)
+      }
+      if !_storage._sessionID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._sessionID, fieldNumber: 2)
+      }
+      if !_storage._subjectID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._subjectID, fieldNumber: 3)
+      }
+      if _storage._assignment != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._assignment, fieldNumber: 4)
+      }
+      if _storage._assignmentConfidence.bitPattern != 0 {
+        try visitor.visitSingularFloatField(value: _storage._assignmentConfidence, fieldNumber: 5)
+      }
+      if _storage._role != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._role, fieldNumber: 6)
+      }
+      if _storage._status != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._status, fieldNumber: 7)
+      }
+      try { if let v = _storage._capturedAt {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+      } }()
+      if !_storage._uploadedBy.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._uploadedBy, fieldNumber: 9)
+      }
+      if !_storage._tags.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._tags, fieldNumber: 10)
+      }
+      if !_storage._extractedFields.isEmpty {
+        try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: _storage._extractedFields, fieldNumber: 11)
+      }
+      if !_storage._description_p.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._description_p, fieldNumber: 12)
+      }
+      if !_storage._viewURL.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._viewURL, fieldNumber: 13)
+      }
+      if !_storage._suggestedSubjectID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._suggestedSubjectID, fieldNumber: 14)
+      }
+      if !_storage._thumbnailURL.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._thumbnailURL, fieldNumber: 15)
+      }
+      try { if let v = _storage._place {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+      } }()
+      try { if let v = _storage._location {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_Photo, rhs: Pidex_V1_Photo) -> Bool {
-    if lhs.id != rhs.id {return false}
-    if lhs.sessionID != rhs.sessionID {return false}
-    if lhs.subjectID != rhs.subjectID {return false}
-    if lhs.assignment != rhs.assignment {return false}
-    if lhs.assignmentConfidence != rhs.assignmentConfidence {return false}
-    if lhs.role != rhs.role {return false}
-    if lhs.status != rhs.status {return false}
-    if lhs._capturedAt != rhs._capturedAt {return false}
-    if lhs.uploadedBy != rhs.uploadedBy {return false}
-    if lhs.tags != rhs.tags {return false}
-    if lhs.extractedFields != rhs.extractedFields {return false}
-    if lhs.description_p != rhs.description_p {return false}
-    if lhs.viewURL != rhs.viewURL {return false}
-    if lhs.suggestedSubjectID != rhs.suggestedSubjectID {return false}
-    if lhs.thumbnailURL != rhs.thumbnailURL {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._id != rhs_storage._id {return false}
+        if _storage._sessionID != rhs_storage._sessionID {return false}
+        if _storage._subjectID != rhs_storage._subjectID {return false}
+        if _storage._assignment != rhs_storage._assignment {return false}
+        if _storage._assignmentConfidence != rhs_storage._assignmentConfidence {return false}
+        if _storage._role != rhs_storage._role {return false}
+        if _storage._status != rhs_storage._status {return false}
+        if _storage._capturedAt != rhs_storage._capturedAt {return false}
+        if _storage._uploadedBy != rhs_storage._uploadedBy {return false}
+        if _storage._tags != rhs_storage._tags {return false}
+        if _storage._extractedFields != rhs_storage._extractedFields {return false}
+        if _storage._description_p != rhs_storage._description_p {return false}
+        if _storage._viewURL != rhs_storage._viewURL {return false}
+        if _storage._suggestedSubjectID != rhs_storage._suggestedSubjectID {return false}
+        if _storage._thumbnailURL != rhs_storage._thumbnailURL {return false}
+        if _storage._place != rhs_storage._place {return false}
+        if _storage._location != rhs_storage._location {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

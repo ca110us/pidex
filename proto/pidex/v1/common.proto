@@ -53,6 +53,24 @@ message GeoPoint {
   double accuracy_meters = 3;
 }
 
+// Where a photo was taken, in words: what the phone named its coordinates,
+// in the phone's language. Any part may be empty.
+message Place {
+  string country = 1;
+  // State or province.
+  string region = 2;
+  string city = 3;
+  string district = 4;
+  // A named place there: a landmark, a park, a building, a street.
+  string name = 5;
+}
+
+// How many photos were taken in a place (its city, else its region).
+message PlaceCount {
+  string name = 1;
+  int32 count = 2;
+}
+
 // BoundingBox is normalized to [0,1] with origin at the top-left.
 message BoundingBox {
   float x = 1;
@@ -133,6 +151,10 @@ message Photo {
   // Short-lived signed URL of a small JPEG for lists and grids; empty until
   // the photo is indexed.
   string thumbnail_url = 15;
+  // Where it was taken, when the phone knew; not kept for high-privacy
+  // teams.
+  Place place = 16;
+  GeoPoint location = 17;
 }
 
 // How many photos have a tag.

@@ -342,9 +342,8 @@ func (c *Config) Validate() error {
 		add("session rules must be positive")
 	}
 
-	if len(c.SubjectTypes) == 0 {
-		add("at least one subject type is required")
-	}
+	// No subject types: photos are kept by where and when they were taken
+	// (a trip, an event), grouped by place and day.
 	if len(c.SubjectTypes) > maxSubjectTypes {
 		add("at most %d subject types are allowed", maxSubjectTypes)
 	}

@@ -58,6 +58,9 @@ message CompleteUploadRequest {
   // label, or the subject itself for one told apart by its look), which may
   // be this photo. A photo that does neither is refused.
   string identity_client_photo_id = 8;
+  // What the phone named location (city, landmark…), for finding photos by
+  // place.
+  Place place = 9;
 }
 
 message CompleteUploadResponse {

@@ -17,6 +17,8 @@ type DocInput struct {
 	Description    string
 	TagKeys        []string
 	DocumentFields map[string]string
+	// Place is where it was taken, in words ("Dalian · Xinghai Square").
+	Place string
 }
 
 // Document is the text a photo is indexed by, in the team's language. It
@@ -42,6 +44,10 @@ func Document(cfg *teamconfig.Config, in DocInput) string {
 	if len(tags) > 0 {
 		b.WriteString("\n")
 		b.WriteString(strings.Join(tags, ", "))
+	}
+	if p := strings.TrimSpace(in.Place); p != "" && cfg.Privacy != teamconfig.PrivacyHigh {
+		b.WriteString("\n")
+		b.WriteString(p)
 	}
 	if cfg.Privacy != teamconfig.PrivacyHigh && len(in.DocumentFields) > 0 {
 		keys := make([]string, 0, len(in.DocumentFields))

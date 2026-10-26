@@ -41,6 +41,16 @@
         }
       }
     },
+    "NSLocationWhenInUseUsageDescription": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidex 会记下每张照片的拍摄地点，方便你按地点查找和归类照片，比如一次旅行的所有照片。"
+          }
+        }
+      }
+    },
     "NSMicrophoneUsageDescription": {
       "localizations": {
         "zh-Hans": {

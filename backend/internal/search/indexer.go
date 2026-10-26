@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -68,7 +70,7 @@ func (ix *Indexer) IndexPhoto(ctx context.Context, photoID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	in := DocInput{Description: photo.Description, DocumentFields: documentFields(photo.Extracted)}
+	in := DocInput{Description: photo.Description, DocumentFields: documentFields(photo.Extracted), Place: PlaceWords(photo.Place)}
 	for _, t := range tags {
 		in.TagKeys = append(in.TagKeys, t.TagKey)
 	}
@@ -126,4 +128,23 @@ func documentFields(extracted []byte) map[string]string {
 		out[d.Name] = d.Value
 	}
 	return out
+}
+
+// PlaceWords is where a photo was taken, in words, widest first: "China ·
+// Liaoning · Dalian · Shahekou · Xinghai Square". Empty without a place.
+func PlaceWords(raw []byte) string {
+	if len(raw) == 0 {
+		return ""
+	}
+	var m map[string]string
+	if json.Unmarshal(raw, &m) != nil {
+		return ""
+	}
+	var parts []string
+	for _, k := range []string{"country", "region", "city", "district", "name"} {
+		if v := strings.TrimSpace(m[k]); v != "" && !slices.Contains(parts, v) {
+			parts = append(parts, v)
+		}
+	}
+	return strings.Join(parts, " · ")
 }

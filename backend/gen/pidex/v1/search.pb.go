@@ -96,7 +96,10 @@ type SearchFilters struct {
 	Text string `protobuf:"bytes,10,opt,name=text,proto3" json:"text,omitempty"`
 	// Every one of tags is required, as when the user picks a tag to filter
 	// by. Tags a model read from a request only rank (see tags).
-	TagsRequired  bool `protobuf:"varint,11,opt,name=tags_required,json=tagsRequired,proto3" json:"tags_required,omitempty"`
+	TagsRequired bool `protobuf:"varint,11,opt,name=tags_required,json=tagsRequired,proto3" json:"tags_required,omitempty"`
+	// A place the photos were taken in ("Dalian", "Xinghai Square"), matched
+	// against the names of where each was taken.
+	Place         string `protobuf:"bytes,12,opt,name=place,proto3" json:"place,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -199,6 +202,13 @@ func (x *SearchFilters) GetTagsRequired() bool {
 		return x.TagsRequired
 	}
 	return false
+}
+
+func (x *SearchFilters) GetPlace() string {
+	if x != nil {
+		return x.Place
+	}
+	return ""
 }
 
 type SearchPhotosRequest struct {
@@ -305,7 +315,9 @@ type SearchPhotosResponse struct {
 	// page of them. 0 for a page past the end.
 	Total int32 `protobuf:"varint,6,opt,name=total,proto3" json:"total,omitempty"`
 	// With tag_counts: most first.
-	TagCounts     []*TagCount `protobuf:"bytes,7,rep,name=tag_counts,json=tagCounts,proto3" json:"tag_counts,omitempty"`
+	TagCounts []*TagCount `protobuf:"bytes,7,rep,name=tag_counts,json=tagCounts,proto3" json:"tag_counts,omitempty"`
+	// With tag_counts: the places photos were taken in, most first.
+	PlaceCounts   []*PlaceCount `protobuf:"bytes,8,rep,name=place_counts,json=placeCounts,proto3" json:"place_counts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -385,6 +397,13 @@ func (x *SearchPhotosResponse) GetTotal() int32 {
 func (x *SearchPhotosResponse) GetTagCounts() []*TagCount {
 	if x != nil {
 		return x.TagCounts
+	}
+	return nil
+}
+
+func (x *SearchPhotosResponse) GetPlaceCounts() []*PlaceCount {
+	if x != nil {
+		return x.PlaceCounts
 	}
 	return nil
 }
@@ -524,7 +543,7 @@ var File_pidex_v1_search_proto protoreflect.FileDescriptor
 
 const file_pidex_v1_search_proto_rawDesc = "" +
 	"\n" +
-	"\x15pidex/v1/search.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x03\n" +
+	"\x15pidex/v1/search.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa6\x03\n" +
 	"\rSearchFilters\x12(\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x14.pidex.v1.SearchModeR\x04mode\x12#\n" +
 	"\rsubject_query\x18\x02 \x01(\tR\fsubjectQuery\x12\x1f\n" +
@@ -537,7 +556,8 @@ const file_pidex_v1_search_proto_rawDesc = "" +
 	"\x05roles\x18\t \x03(\x0e2\x13.pidex.v1.PhotoRoleR\x05roles\x12\x12\n" +
 	"\x04text\x18\n" +
 	" \x01(\tR\x04text\x12#\n" +
-	"\rtags_required\x18\v \x01(\bR\ftagsRequiredJ\x04\b\x06\x10\aR\ball_tagsR\bany_tags\"\xcf\x01\n" +
+	"\rtags_required\x18\v \x01(\bR\ftagsRequired\x12\x14\n" +
+	"\x05place\x18\f \x01(\tR\x05placeJ\x04\b\x06\x10\aR\ball_tagsR\bany_tags\"\xcf\x01\n" +
 	"\x13SearchPhotosRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x121\n" +
 	"\afilters\x18\x02 \x01(\v2\x17.pidex.v1.SearchFiltersR\afilters\x12\x1b\n" +
@@ -545,7 +565,7 @@ const file_pidex_v1_search_proto_rawDesc = "" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x16\n" +
 	"\x06offset\x18\x05 \x01(\x05R\x06offset\x12\x1d\n" +
 	"\n" +
-	"tag_counts\x18\x06 \x01(\bR\ttagCounts\"\xc3\x02\n" +
+	"tag_counts\x18\x06 \x01(\bR\ttagCounts\"\xfc\x02\n" +
 	"\x14SearchPhotosResponse\x121\n" +
 	"\afilters\x18\x01 \x01(\v2\x17.pidex.v1.SearchFiltersR\afilters\x12-\n" +
 	"\bsubjects\x18\x02 \x03(\v2\x11.pidex.v1.SubjectR\bsubjects\x12'\n" +
@@ -554,7 +574,8 @@ const file_pidex_v1_search_proto_rawDesc = "" +
 	"\x11subject_not_found\x18\x05 \x01(\bR\x0fsubjectNotFound\x12\x14\n" +
 	"\x05total\x18\x06 \x01(\x05R\x05total\x121\n" +
 	"\n" +
-	"tag_counts\x18\a \x03(\v2\x12.pidex.v1.TagCountR\ttagCounts\"K\n" +
+	"tag_counts\x18\a \x03(\v2\x12.pidex.v1.TagCountR\ttagCounts\x127\n" +
+	"\fplace_counts\x18\b \x03(\v2\x14.pidex.v1.PlaceCountR\vplaceCounts\"K\n" +
 	"\x10AskPhotosRequest\x12\x1a\n" +
 	"\bquestion\x18\x01 \x01(\tR\bquestion\x12\x1b\n" +
 	"\ttime_zone\x18\x02 \x01(\tR\btimeZone\"\xe1\x01\n" +
@@ -599,6 +620,7 @@ var file_pidex_v1_search_proto_goTypes = []any{
 	(*Subject)(nil),               // 8: pidex.v1.Subject
 	(*Photo)(nil),                 // 9: pidex.v1.Photo
 	(*TagCount)(nil),              // 10: pidex.v1.TagCount
+	(*PlaceCount)(nil),            // 11: pidex.v1.PlaceCount
 }
 var file_pidex_v1_search_proto_depIdxs = []int32{
 	0,  // 0: pidex.v1.SearchFilters.mode:type_name -> pidex.v1.SearchMode
@@ -611,19 +633,20 @@ var file_pidex_v1_search_proto_depIdxs = []int32{
 	9,  // 7: pidex.v1.SearchPhotosResponse.photos:type_name -> pidex.v1.Photo
 	8,  // 8: pidex.v1.SearchPhotosResponse.missing:type_name -> pidex.v1.Subject
 	10, // 9: pidex.v1.SearchPhotosResponse.tag_counts:type_name -> pidex.v1.TagCount
-	9,  // 10: pidex.v1.AskPhotosResponse.cited:type_name -> pidex.v1.Photo
-	1,  // 11: pidex.v1.AskPhotosResponse.filters:type_name -> pidex.v1.SearchFilters
-	8,  // 12: pidex.v1.AskPhotosResponse.subjects:type_name -> pidex.v1.Subject
-	8,  // 13: pidex.v1.AskPhotosResponse.missing:type_name -> pidex.v1.Subject
-	2,  // 14: pidex.v1.SearchService.SearchPhotos:input_type -> pidex.v1.SearchPhotosRequest
-	4,  // 15: pidex.v1.SearchService.AskPhotos:input_type -> pidex.v1.AskPhotosRequest
-	3,  // 16: pidex.v1.SearchService.SearchPhotos:output_type -> pidex.v1.SearchPhotosResponse
-	5,  // 17: pidex.v1.SearchService.AskPhotos:output_type -> pidex.v1.AskPhotosResponse
-	16, // [16:18] is the sub-list for method output_type
-	14, // [14:16] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	11, // 10: pidex.v1.SearchPhotosResponse.place_counts:type_name -> pidex.v1.PlaceCount
+	9,  // 11: pidex.v1.AskPhotosResponse.cited:type_name -> pidex.v1.Photo
+	1,  // 12: pidex.v1.AskPhotosResponse.filters:type_name -> pidex.v1.SearchFilters
+	8,  // 13: pidex.v1.AskPhotosResponse.subjects:type_name -> pidex.v1.Subject
+	8,  // 14: pidex.v1.AskPhotosResponse.missing:type_name -> pidex.v1.Subject
+	2,  // 15: pidex.v1.SearchService.SearchPhotos:input_type -> pidex.v1.SearchPhotosRequest
+	4,  // 16: pidex.v1.SearchService.AskPhotos:input_type -> pidex.v1.AskPhotosRequest
+	3,  // 17: pidex.v1.SearchService.SearchPhotos:output_type -> pidex.v1.SearchPhotosResponse
+	5,  // 18: pidex.v1.SearchService.AskPhotos:output_type -> pidex.v1.AskPhotosResponse
+	17, // [17:19] is the sub-list for method output_type
+	15, // [15:17] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_search_proto_init() }

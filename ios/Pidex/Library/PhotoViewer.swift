@@ -306,6 +306,12 @@ struct PhotoInfoView: View {
                 if photo.hasCapturedAt {
                     LabeledContent("Taken", value: photo.capturedAt.date.formatted(date: .abbreviated, time: .shortened))
                 }
+                if photo.hasPlace {
+                    // Narrowest first: the landmark, then the city around it.
+                    let p = photo.place
+                    let words = [p.name, p.district, p.city.isEmpty ? p.region : p.city, p.country].filter { !$0.isEmpty }
+                    LabeledContent("Where") { Text(verbatim: words.prefix(3).joined(separator: ", ")).multilineTextAlignment(.trailing) }
+                }
                 if let s = model.subject(photo.subjectID) {
                     NavigationLink {
                         SubjectPhotosView(subject: s, model: model)

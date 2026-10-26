@@ -91,3 +91,23 @@ func TestPlanRanksByTheWholeRequest(t *testing.T) {
 		t.Errorf("filters %+v", f)
 	}
 }
+
+// TestPlaceInDocument: where a photo was taken is searchable by its names,
+// widest first; high-privacy teams keep no place names in what is indexed.
+func TestPlaceInDocument(t *testing.T) {
+	words := PlaceWords([]byte(`{"country":"China","region":"Liaoning","city":"Dalian","name":"Xinghai Square"}`))
+	if words != "China · Liaoning · Dalian · Xinghai Square" {
+		t.Errorf("place words: %q", words)
+	}
+	if PlaceWords(nil) != "" || PlaceWords([]byte(`{"city":""}`)) != "" {
+		t.Error("no place, no words")
+	}
+	cfg := &teamconfig.Config{Privacy: teamconfig.PrivacyStandard}
+	if doc := Document(cfg, DocInput{Description: "A square by the sea.", Place: words}); !strings.Contains(doc, "Xinghai Square") {
+		t.Errorf("the place is not indexed: %q", doc)
+	}
+	cfg.Privacy = teamconfig.PrivacyHigh
+	if doc := Document(cfg, DocInput{Description: "A wound.", Place: words}); strings.Contains(doc, "Dalian") {
+		t.Errorf("a high-privacy team's place is indexed: %q", doc)
+	}
+}

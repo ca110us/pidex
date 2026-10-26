@@ -21,6 +21,7 @@ UPDATE photos SET
     latitude            = sqlc.narg(latitude),
     longitude           = sqlc.narg(longitude),
     location_accuracy_m = sqlc.narg(location_accuracy_m),
+    place               = sqlc.narg(place),
     on_device           = @on_device,
     locked_subject_id   = sqlc.narg(locked_subject_id),
     config_version      = @config_version,

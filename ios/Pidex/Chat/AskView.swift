@@ -519,6 +519,7 @@ struct MessageView: View {
         let f = message.filters
         var parts: [String] = []
         if !f.subjectQuery.isEmpty { parts.append(f.subjectQuery) }
+        if !f.place.isEmpty { parts.append(f.place) }
         parts += f.tags.map { library.tagName($0) }
         if f.hasFrom || f.hasTo {
             let style = Date.FormatStyle(date: .abbreviated, time: .omitted)

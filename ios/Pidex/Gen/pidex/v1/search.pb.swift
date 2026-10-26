@@ -113,6 +113,10 @@ nonisolated struct Pidex_V1_SearchFilters: Sendable {
   /// by. Tags a model read from a request only rank (see tags).
   var tagsRequired: Bool = false
 
+  /// A place the photos were taken in ("Dalian", "Xinghai Square"), matched
+  /// against the names of where each was taken.
+  var place: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -223,6 +227,12 @@ nonisolated struct Pidex_V1_SearchPhotosResponse: @unchecked Sendable {
     set {_uniqueStorage()._tagCounts = newValue}
   }
 
+  /// With tag_counts: the places photos were taken in, most first.
+  var placeCounts: [Pidex_V1_PlaceCount] {
+    get {_storage._placeCounts}
+    set {_uniqueStorage()._placeCounts = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -244,36 +254,48 @@ nonisolated struct Pidex_V1_AskPhotosRequest: Sendable {
   init() {}
 }
 
-nonisolated struct Pidex_V1_AskPhotosResponse: Sendable {
+nonisolated struct Pidex_V1_AskPhotosResponse: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// In the question's language. Statements cite photos as [1], [2]...
-  var answer: String = String()
+  var answer: String {
+    get {_storage._answer}
+    set {_uniqueStorage()._answer = newValue}
+  }
 
   /// cited[i] is the photo marked [i+1] in the answer.
-  var cited: [Pidex_V1_Photo] = []
+  var cited: [Pidex_V1_Photo] {
+    get {_storage._cited}
+    set {_uniqueStorage()._cited = newValue}
+  }
 
   var filters: Pidex_V1_SearchFilters {
-    get {_filters ?? Pidex_V1_SearchFilters()}
-    set {_filters = newValue}
+    get {_storage._filters ?? Pidex_V1_SearchFilters()}
+    set {_uniqueStorage()._filters = newValue}
   }
   /// Returns true if `filters` has been explicitly set.
-  var hasFilters: Bool {self._filters != nil}
+  var hasFilters: Bool {_storage._filters != nil}
   /// Clears the value of `filters`. Subsequent reads from it will return its default value.
-  mutating func clearFilters() {self._filters = nil}
+  mutating func clearFilters() {_uniqueStorage()._filters = nil}
 
-  var subjects: [Pidex_V1_Subject] = []
+  var subjects: [Pidex_V1_Subject] {
+    get {_storage._subjects}
+    set {_uniqueStorage()._subjects = newValue}
+  }
 
   /// Mode MISSING: answered from the database, not by a model.
-  var missing: [Pidex_V1_Subject] = []
+  var missing: [Pidex_V1_Subject] {
+    get {_storage._missing}
+    set {_uniqueStorage()._missing = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _filters: Pidex_V1_SearchFilters? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -286,7 +308,7 @@ nonisolated extension Pidex_V1_SearchMode: SwiftProtobuf._ProtoNameProviding {
 
 nonisolated extension Pidex_V1_SearchFilters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".SearchFilters"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mode\0\u{3}subject_query\0\u{3}subject_ids\0\u{3}subject_type\0\u{1}tags\0\u{2}\u{2}from\0\u{1}to\0\u{1}roles\0\u{1}text\0\u{3}tags_required\0\u{b}all_tags\0\u{b}any_tags\0\u{c}\u{6}\u{1}")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mode\0\u{3}subject_query\0\u{3}subject_ids\0\u{3}subject_type\0\u{1}tags\0\u{2}\u{2}from\0\u{1}to\0\u{1}roles\0\u{1}text\0\u{3}tags_required\0\u{1}place\0\u{b}all_tags\0\u{b}any_tags\0\u{c}\u{6}\u{1}")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -304,6 +326,7 @@ nonisolated extension Pidex_V1_SearchFilters: SwiftProtobuf.Message, SwiftProtob
       case 9: try { try decoder.decodeRepeatedEnumField(value: &self.roles) }()
       case 10: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 11: try { try decoder.decodeSingularBoolField(value: &self.tagsRequired) }()
+      case 12: try { try decoder.decodeSingularStringField(value: &self.place) }()
       default: break
       }
     }
@@ -344,6 +367,9 @@ nonisolated extension Pidex_V1_SearchFilters: SwiftProtobuf.Message, SwiftProtob
     if self.tagsRequired != false {
       try visitor.visitSingularBoolField(value: self.tagsRequired, fieldNumber: 11)
     }
+    if !self.place.isEmpty {
+      try visitor.visitSingularStringField(value: self.place, fieldNumber: 12)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -358,6 +384,7 @@ nonisolated extension Pidex_V1_SearchFilters: SwiftProtobuf.Message, SwiftProtob
     if lhs.roles != rhs.roles {return false}
     if lhs.text != rhs.text {return false}
     if lhs.tagsRequired != rhs.tagsRequired {return false}
+    if lhs.place != rhs.place {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -470,7 +497,7 @@ nonisolated extension Pidex_V1_SearchPhotosRequest: SwiftProtobuf.Message, Swift
 
 nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".SearchPhotosResponse"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}filters\0\u{1}subjects\0\u{1}photos\0\u{1}missing\0\u{3}subject_not_found\0\u{1}total\0\u{3}tag_counts\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}filters\0\u{1}subjects\0\u{1}photos\0\u{1}missing\0\u{3}subject_not_found\0\u{1}total\0\u{3}tag_counts\0\u{3}place_counts\0")
 
   fileprivate class _StorageClass {
     var _filters: Pidex_V1_SearchFilters? = nil
@@ -480,6 +507,7 @@ nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, Swif
     var _subjectNotFound: Bool = false
     var _total: Int32 = 0
     var _tagCounts: [Pidex_V1_TagCount] = []
+    var _placeCounts: [Pidex_V1_PlaceCount] = []
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -497,6 +525,7 @@ nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, Swif
       _subjectNotFound = source._subjectNotFound
       _total = source._total
       _tagCounts = source._tagCounts
+      _placeCounts = source._placeCounts
     }
   }
 
@@ -522,6 +551,7 @@ nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, Swif
         case 5: try { try decoder.decodeSingularBoolField(value: &_storage._subjectNotFound) }()
         case 6: try { try decoder.decodeSingularInt32Field(value: &_storage._total) }()
         case 7: try { try decoder.decodeRepeatedMessageField(value: &_storage._tagCounts) }()
+        case 8: try { try decoder.decodeRepeatedMessageField(value: &_storage._placeCounts) }()
         default: break
         }
       }
@@ -555,6 +585,9 @@ nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, Swif
       if !_storage._tagCounts.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._tagCounts, fieldNumber: 7)
       }
+      if !_storage._placeCounts.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._placeCounts, fieldNumber: 8)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -571,6 +604,7 @@ nonisolated extension Pidex_V1_SearchPhotosResponse: SwiftProtobuf.Message, Swif
         if _storage._subjectNotFound != rhs_storage._subjectNotFound {return false}
         if _storage._total != rhs_storage._total {return false}
         if _storage._tagCounts != rhs_storage._tagCounts {return false}
+        if _storage._placeCounts != rhs_storage._placeCounts {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -619,51 +653,95 @@ nonisolated extension Pidex_V1_AskPhotosResponse: SwiftProtobuf.Message, SwiftPr
   static let protoMessageName: String = _protobuf_package + ".AskPhotosResponse"
   static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}answer\0\u{1}cited\0\u{1}filters\0\u{1}subjects\0\u{1}missing\0")
 
+  fileprivate class _StorageClass {
+    var _answer: String = String()
+    var _cited: [Pidex_V1_Photo] = []
+    var _filters: Pidex_V1_SearchFilters? = nil
+    var _subjects: [Pidex_V1_Subject] = []
+    var _missing: [Pidex_V1_Subject] = []
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _answer = source._answer
+      _cited = source._cited
+      _filters = source._filters
+      _subjects = source._subjects
+      _missing = source._missing
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.answer) }()
-      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.cited) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._filters) }()
-      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.subjects) }()
-      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.missing) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._answer) }()
+        case 2: try { try decoder.decodeRepeatedMessageField(value: &_storage._cited) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._filters) }()
+        case 4: try { try decoder.decodeRepeatedMessageField(value: &_storage._subjects) }()
+        case 5: try { try decoder.decodeRepeatedMessageField(value: &_storage._missing) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.answer.isEmpty {
-      try visitor.visitSingularStringField(value: self.answer, fieldNumber: 1)
-    }
-    if !self.cited.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.cited, fieldNumber: 2)
-    }
-    try { if let v = self._filters {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    if !self.subjects.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.subjects, fieldNumber: 4)
-    }
-    if !self.missing.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.missing, fieldNumber: 5)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._answer.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._answer, fieldNumber: 1)
+      }
+      if !_storage._cited.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._cited, fieldNumber: 2)
+      }
+      try { if let v = _storage._filters {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if !_storage._subjects.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._subjects, fieldNumber: 4)
+      }
+      if !_storage._missing.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._missing, fieldNumber: 5)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_AskPhotosResponse, rhs: Pidex_V1_AskPhotosResponse) -> Bool {
-    if lhs.answer != rhs.answer {return false}
-    if lhs.cited != rhs.cited {return false}
-    if lhs._filters != rhs._filters {return false}
-    if lhs.subjects != rhs.subjects {return false}
-    if lhs.missing != rhs.missing {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._answer != rhs_storage._answer {return false}
+        if _storage._cited != rhs_storage._cited {return false}
+        if _storage._filters != rhs_storage._filters {return false}
+        if _storage._subjects != rhs_storage._subjects {return false}
+        if _storage._missing != rhs_storage._missing {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
