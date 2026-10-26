@@ -24,14 +24,11 @@ final class ScenarioFlowUITests: XCTestCase {
         // From the menu: the card at the end of the grid may be off screen.
         app.buttons["homeMenu"].tap()
         app.buttons["New collection"].tap()
-        // A conversation: how they are told apart is asked outright, then
-        // a description, and a draft to create from.
-        let byCode = app.buttons["identifyBy-code"]
-        XCTAssertTrue(byCode.waitForExistence(timeout: 5))
-        byCode.tap()
-        XCTAssertTrue(app.buttons["identifyBy-appearance"].isHittable && app.buttons["identifyBy-auto"].isHittable,
-                      "every choice in view without scrolling")
-        snap(app, "1b choices")
+        // A question and examples to start from, no choices: how they are
+        // told apart is worked out from the description.
+        XCTAssertTrue(app.buttons["example-pets"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["identifyBy-code"].exists, "no choice to make before describing")
+        snap(app, "1b question and examples")
         let request = app.textFields["chatInput"]
         request.tap()
         request.typeText("We run a small bike repair shop. Each bike gets a paper repair ticket with a number like R-1042 tied to the handlebar. We photograph damage on arrival, the parts we replace and the finished bike.")
@@ -47,23 +44,10 @@ final class ScenarioFlowUITests: XCTestCase {
         }
         create.tap()
 
-        // Back home with a confirmation and a card for the new collection.
-        // A toast says so, and goes by itself.
-        let created = app.buttons.matching(NSPredicate(format: "identifier == 'toast' AND label CONTAINS 'Created'")).firstMatch
-        XCTAssertTrue(created.waitForExistence(timeout: 20))
-        // Earlier runs left collections of the same name; the new one is
-        // the one the camera now shoots for.
-        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'collection-' AND value CONTAINS 'camera shoots'")).firstMatch
-        for _ in 0..<15 where !card.exists { app.swipeUp() }
-        XCTAssertTrue(card.waitForExistence(timeout: 10))
-        snap(app, "4 home with the new collection")
-
-        card.tap()
-        XCTAssertTrue(app.buttons["collectionCamera"].waitForExistence(timeout: 10))
-        snap(app, "5 empty collection")
-        app.buttons["collectionCamera"].tap()
+        // Straight to the camera, saying how to take the first photos.
         assertCameraStarted(app)
-        snap(app, "6 camera for the new collection")
+        XCTAssertTrue(app.buttons["whoBanner"].label.contains("First photos"), app.buttons["whoBanner"].label)
+        snap(app, "4 camera for the new collection")
 
         // A photo sent, then the batch's summary.
         importLibraryPhoto(app)
@@ -77,11 +61,20 @@ final class ScenarioFlowUITests: XCTestCase {
         } else {
             // Nothing goes out that does not say who it shows.
             XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'not identified'")).firstMatch.exists)
-            snap(app, "6a not identified")
+            snap(app, "4a not identified")
             app.buttons["closeCamera"].tap()
             app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Discard'")).firstMatch.tap()
         }
-        XCTAssertTrue(app.buttons["collectionCamera"].waitForExistence(timeout: 10), "closing the camera returns to the collection")
+
+        // Home, with a card for the new collection: earlier runs left
+        // collections of the same name; the new one is the one the camera
+        // now shoots for.
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'collection-' AND value CONTAINS 'camera shoots'")).firstMatch
+        for _ in 0..<15 where !card.exists { app.swipeUp() }
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        snap(app, "5 home with the new collection")
+        card.tap()
+        XCTAssertTrue(app.buttons["collectionCamera"].waitForExistence(timeout: 10))
         // Unrelated to bike repair, the photo is filed as not relevant
         // and hidden; deleting photos is checked in the other test.
 

@@ -115,8 +115,11 @@ final class AppModel {
 
     /// Opens the camera for a collection. Shooting for another collection
     /// waits until queued photos are uploaded, since they belong to this one.
-    func openCamera(for id: String) throws {
+    /// firstShoot: the collection was just made; the camera says how to
+    /// take its first photos.
+    func openCamera(for id: String, firstShoot: Bool = false) throws {
         try switchTo(id)
+        capture?.firstShoot = firstShoot
         showingCamera = true
     }
 

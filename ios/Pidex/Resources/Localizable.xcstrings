@@ -555,6 +555,16 @@
         }
       }
     },
+    "Almost there…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "马上就好…"
+          }
+        }
+      }
+    },
     "Another collection once %lld photos are uploaded": {
       "localizations": {
         "zh-Hans": {
@@ -705,6 +715,26 @@
         }
       }
     },
+    "By %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按%@区分"
+          }
+        }
+      }
+    },
+    "By a label or number": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按标签或编号"
+          }
+        }
+      }
+    },
     "By a label, tag or number on each": {
       "localizations": {
         "zh-Hans": {
@@ -811,6 +841,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "选择"
+          }
+        }
+      }
+    },
+    "Choosing tags you will search by…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在挑选以后搜索用的标签…"
           }
         }
       }
@@ -945,6 +985,16 @@
         }
       }
     },
+    "Create and shoot": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建并开始拍"
+          }
+        }
+      }
+    },
     "Create collection": {
       "localizations": {
         "zh-Hans": {
@@ -991,6 +1041,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "已创建“%@”。照片上传完后再切换过去。"
+          }
+        }
+      }
+    },
+    "Created “%@”. Take its first photos.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已创建“%@”，来拍第一批照片吧。"
           }
         }
       }
@@ -1465,6 +1525,26 @@
         }
       }
     },
+    "Equipment maintenance: each device has a label with its serial number; we photograph its condition and every repair.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备维护：每台设备贴着序列号标签，我们拍它的状况和每一次维修。"
+          }
+        }
+      }
+    },
+    "Equipment with serial numbers": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "带序列号的设备"
+          }
+        }
+      }
+    },
     "Every one has a matching photo.": {
       "localizations": {
         "zh-Hans": {
@@ -1581,6 +1661,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "找照片、问照片里有什么，或者还有什么没拍到。后面的话可以接着前面说。"
+          }
+        }
+      }
+    },
+    "First photos: each one close up, face on": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第一批照片：每一只都靠近拍，拍正脸"
+          }
+        }
+      }
+    },
+    "First photos: start with the label or ID": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第一批照片：先拍标签或编号"
           }
         }
       }
@@ -1925,6 +2025,26 @@
         }
       }
     },
+    "My cats at home. File every photo under the right cat, and let me find them later by what they are doing.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "家里的几只猫。每张照片都归到对应的那只猫下，以后能按它们在做什么找到照片。"
+          }
+        }
+      }
+    },
+    "My pets at home": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "家里的宠物"
+          }
+        }
+      }
+    },
     "Name": {
       "localizations": {
         "zh-Hans": {
@@ -1941,6 +2061,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "起名"
+          }
+        }
+      }
+    },
+    "Naming it and checking it…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在起名并检查…"
           }
         }
       }
@@ -2515,6 +2645,16 @@
         }
       }
     },
+    "Renovation work: each project has units with door numbers, and we photograph stages such as waterproofing and tiling.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "装修工程：每个项目有若干户，门上有门牌号，我们拍防水、贴砖等各个施工阶段。"
+          }
+        }
+      }
+    },
     "Restore": {
       "localizations": {
         "zh-Hans": {
@@ -2601,6 +2741,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "用自己的话说明它们身上有没有标签。"
+          }
+        }
+      }
+    },
+    "Say it in your own words. Pidex sets the collection up, and you can change anything later.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用你自己的话说就行。Pidex 会把合集建好，之后随时可以改。"
           }
         }
       }
@@ -2965,6 +3115,26 @@
         }
       }
     },
+    "Tell %@ apart by a label or number on them, not by how they look.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按%@身上的标签或编号来区分，不要靠外观。"
+          }
+        }
+      }
+    },
+    "Tell %@ apart by how they look, not by a label.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按外观来区分%@，不要靠标签。"
+          }
+        }
+      }
+    },
     "Tell me what you photograph, what you will want to find later, and how you tell one from another. I will set the collection up, and you can keep changing it here, now or later.": {
       "localizations": {
         "zh-Hans": {
@@ -3105,6 +3275,16 @@
         }
       }
     },
+    "Told apart by how they look": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按外观区分"
+          }
+        }
+      }
+    },
     "Touch and hold to choose the language": {
       "localizations": {
         "zh-Hans": {
@@ -3131,6 +3311,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "输入合集名称以确认"
+          }
+        }
+      }
+    },
+    "Understanding what you photograph…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在理解你拍的东西…"
+          }
+        }
+      }
+    },
+    "Units on a renovation site": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "装修工地的各户"
           }
         }
       }
@@ -3233,6 +3433,16 @@
         }
       }
     },
+    "What do you photograph?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你拍的是什么？"
+          }
+        }
+      }
+    },
     "What does your team photograph?": {
       "localizations": {
         "zh-Hans": {
@@ -3303,6 +3513,16 @@
         }
       }
     },
+    "Working out how to tell them apart…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在判断怎么区分每一个…"
+          }
+        }
+      }
+    },
     "Workspace": {
       "localizations": {
         "zh-Hans": {
@@ -3319,6 +3539,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "工作区"
+          }
+        }
+      }
+    },
+    "Wound photos at our clinic. Each patient wears a wristband with a name and a record number; we follow healing over weeks.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我们诊所的伤口照片。每个病人戴着写有姓名和病历号的腕带，我们要连续几周跟踪愈合情况。"
+          }
+        }
+      }
+    },
+    "Wounds at a clinic": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "诊所的伤口照片"
           }
         }
       }

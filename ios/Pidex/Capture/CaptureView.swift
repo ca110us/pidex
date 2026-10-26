@@ -355,6 +355,12 @@ struct BannerView: View {
         case .offline: return String(localized: "ID seen offline — will match when online")
         case nil: break
         }
+        if model.firstShoot && model.shots.isEmpty {
+            // A face says most about who it is; a label, all of it.
+            return model.recognizesByLook
+                ? String(localized: "First photos: each one close up, face on")
+                : String(localized: "First photos: start with the label or ID")
+        }
         if model.needsIdentity {
             return model.recognizesByLook
                 ? String(localized: "Not recognized: shoot it again closer, or choose who this is")

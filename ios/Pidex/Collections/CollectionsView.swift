@@ -88,7 +88,8 @@ struct CollectionsView: View {
             .navigationDestination(isPresented: $creating) {
                 if let api = app.api {
                     SetupChatView(mode: .create, api: api) { done in
-                        app.show(done)
+                        // Empty when its camera opened, which says it.
+                        if !done.isEmpty { app.show(done) }
                         creating = false
                         Task { await loadOverviews() }
                     }

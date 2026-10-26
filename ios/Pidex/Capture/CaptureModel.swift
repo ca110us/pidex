@@ -34,6 +34,9 @@ final class CaptureModel {
     /// Every subject is told apart by how it looks: there is no label to
     /// photograph first.
     private(set) var recognizesByLook = false
+    /// The collection was just made: until its first shot, the camera says
+    /// how to start.
+    var firstShoot = false
     /// A pick made before the shots it applies to were taken.
     private var nextPick: StagedShot.Pick?
     /// Shots being looked up.

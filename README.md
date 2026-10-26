@@ -150,10 +150,10 @@ Comparison results from 2026-10 (87 judgments; latency is the full request round
 
 Each collection is one team on the server, with its own configuration (its scenario), subjects and photos. Nobody writes the configuration by hand:
 
-1. On the home screen, tap **New collection**. A conversation opens, tied to the collection; it is not among the photo chats.
-2. Choose how subjects are told apart (by how they look, by labels or numbers, or auto), then describe, in any language, what you will photograph and what you will want to find later.
+1. On the home screen, tap **New collection**. A conversation opens, tied to the collection; it is not among the photo chats. It asks one question, "What do you photograph?", with a few examples to tap (pets at home, wounds at a clinic, units on a renovation site, equipment with serial numbers).
+2. Describe, in any language, what you will photograph and what you will want to find later. There is nothing to choose first: how subjects are told apart (by a label or code, or by how they look) is worked out from the description, shown on the draft, and changed there with one tap. While the draft is made, the app says what step it is at.
 3. The server has `CONFIG_MODEL` generate the configuration and runs the same full validation as for a hand-written one. If validation fails, the errors are sent back to the model to fix (at most two rounds). Each identity field must also include an example of "how it looks printed on the label". The server checks it with the same rules as the pipeline, to prevent formats that could never match.
-4. Preview the summary, identification method and tags. If you are not happy, say one more sentence to have it changed. When you are happy, tap **Create collection**: the server creates a new team, you are the owner, and the app opens it.
+4. The draft is one card: its name (rename in place), how each kind of subject is told apart (change it from a menu), its tags, and **Create and shoot**. To change anything else, say it in one more sentence. Creating it makes a new team with you as owner and opens the camera straight away, which says how to take the first photos (a label first, or each one close up and face on).
 
 Later, reopen the same conversation from the collection's page and describe what to change. The model edits the current version and existing keys stay the same. If a deletion or change would affect the content of photos already filed, warnings are listed before publishing. Every version is kept and can be restored from History. Each photo records the version used to process it.
 
