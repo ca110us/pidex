@@ -11,6 +11,23 @@ nonisolated struct ScenarioConfig: Decodable, Sendable {
     var subjectTypes: [SubjectType]
     var tags: [Tag]
 
+    private enum CodingKeys: String, CodingKey {
+        case name, industry, description, strictness, privacy, subjectTypes, tags
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        industry = try c.decode(String.self, forKey: .industry)
+        description = try c.decodeIfPresent(String.self, forKey: .description)
+        strictness = try c.decode(String.self, forKey: .strictness)
+        privacy = try c.decode(String.self, forKey: .privacy)
+        // A collection kept by place and time has no subject types; a
+        // server may write that as null or leave it out.
+        subjectTypes = try c.decodeIfPresent([SubjectType].self, forKey: .subjectTypes) ?? []
+        tags = try c.decodeIfPresent([Tag].self, forKey: .tags) ?? []
+    }
+
     struct SubjectType: Decodable, Sendable, Identifiable {
         var key: String
         var name: String

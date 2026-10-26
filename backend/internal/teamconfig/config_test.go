@@ -1,6 +1,7 @@
 package teamconfig
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -88,5 +89,26 @@ func TestDisplayNameFallsBack(t *testing.T) {
 	}
 	if got := st.DisplayName(map[string]string{"mrn": "12345678"}); got != "12345678" {
 		t.Errorf("got %q", got)
+	}
+}
+
+// TestNoSubjectTypesIsAList: a collection kept by place and time has no
+// subject types, written as an empty list (clients read a list), and is
+// valid.
+func TestNoSubjectTypesIsAList(t *testing.T) {
+	cfg, err := LoadTemplate("trips")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.SubjectTypes = nil
+	raw, err := json.Marshal(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), `"subject_types":[]`) {
+		t.Errorf("no subject types written as %s", raw)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("a collection without subject types is refused: %v", err)
 	}
 }

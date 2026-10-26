@@ -71,6 +71,20 @@ type Config struct {
 	Session      SessionRules  `json:"session"`
 }
 
+// MarshalJSON writes no subject types (a collection kept by place and
+// time) as an empty list, not null: clients read a list.
+func (c Config) MarshalJSON() ([]byte, error) {
+	type plain Config
+	p := plain(c)
+	if p.SubjectTypes == nil {
+		p.SubjectTypes = []SubjectType{}
+	}
+	if p.Tags == nil {
+		p.Tags = []Tag{}
+	}
+	return json.Marshal(p)
+}
+
 // IdentifyBy is how one subject is told from another.
 type IdentifyBy string
 

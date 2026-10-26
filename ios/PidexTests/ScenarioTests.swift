@@ -56,6 +56,16 @@ struct WorkspaceListTests {
 }
 
 struct ScenarioConfigTests {
+    /// A collection kept by place and time (a trip) has no subject types;
+    /// the draft must still show, whether they come as [], null or not at all.
+    @Test func aConfigWithoutSubjectTypesStillReads() throws {
+        for types in [#""subject_types":[],"#, #""subject_types":null,"#, ""] {
+            let json = #"{"name":"Dalian trip","industry":"personal","strictness":"lenient","privacy":"standard",\#(types)"tags":[{"key":"food","name":"Food"}]}"#
+            let c = try ScenarioConfig(json: json)
+            #expect(c.subjectTypes.isEmpty && c.tags.count == 1, "\(types)")
+        }
+    }
+
     /// The shape teamconfig.Config marshals to, including fields the app
     /// does not use.
     static let json = """

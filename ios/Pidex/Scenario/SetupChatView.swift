@@ -403,6 +403,21 @@ struct DraftPreview<Actions: View>: View {
                     .padding(.top, -6)
             }
             VStack(alignment: .leading, spacing: 8) {
+                if config.subjectTypes.isEmpty {
+                    // A trip, an event: nobody to name.
+                    HStack(spacing: 10) {
+                        Image(systemName: "mappin.and.ellipse")
+                            .font(.system(size: 14, weight: .medium))
+                            .frame(width: 30, height: 30)
+                            .background(Theme.raised, in: Circle())
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("By place and time").font(.subheadline.weight(.semibold))
+                            Text("Each photo is kept by where and when it was taken")
+                                .font(.caption)
+                                .foregroundStyle(Theme.muted)
+                        }
+                    }
+                }
                 ForEach(config.subjectTypes) { st in
                     HStack(spacing: 10) {
                         Image(systemName: st.byAppearance ? "eye" : "barcode.viewfinder")

@@ -813,6 +813,16 @@
         }
       }
     },
+    "By place and time": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按地点和时间"
+          }
+        }
+      }
+    },
     "Camera access is off. Enable it in Settings › Pidex.": {
       "localizations": {
         "zh-Hans": {
@@ -1529,6 +1539,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "每个%1$@都属于一个%2$@。"
+          }
+        }
+      }
+    },
+    "Each photo is kept by where and when it was taken": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每张照片按拍摄地点和时间归好"
           }
         }
       }
