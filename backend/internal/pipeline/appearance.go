@@ -18,6 +18,7 @@ import (
 	"pidex/internal/analysis"
 	"pidex/internal/audit"
 	"pidex/internal/imaging"
+	"pidex/internal/looks"
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
@@ -55,6 +56,9 @@ const (
 	// aloneConfidence files the first subject of its type: there is
 	// nothing it could be confused with.
 	aloneConfidence = 0.99
+	// byLookConfidence is a photo filed by its look alone; a person
+	// correcting it counts as the system wrong at its surest.
+	byLookConfidence = 0.98
 	// A match is trusted, and filed without asking below sureByLook or
 	// between look-alikes, once people checking the model's answers have
 	// found it right trustAfter times running, in separate shoots, at
@@ -87,6 +91,11 @@ type AppearanceVerdict struct {
 	Reason          string
 	// Unseen: the photo did not show one clearly enough to tell.
 	Unseen bool
+	// ByLook: decided by the look service alone, without the model.
+	ByLook bool
+	// Look is how similar the closest subject's photos look (0 without a
+	// look service).
+	Look float64
 }
 
 // LookCheck is one answer of the model a person checked: the subject it
@@ -107,6 +116,10 @@ func (p *Processor) matchAppearance(ctx context.Context, photo dbq.Photo, cfg *t
 	ex.Appearance, ex.SubjectType = am, st.Key
 	probe := p.appearanceVector(ctx, photo.TeamID, &photo.ID, seen.Features)
 	subject := SubjectOnly(img, DecodeOnDevice(photo.OnDevice), refEdge*2)
+	look := p.lookOf(ctx, subject)
+	if err := p.saveLook(ctx, photo.ID, look); err != nil {
+		return err
+	}
 	th := cfg.Thresholds()
 	return store.WithTx(ctx, p.Pool, func(tx pgx.Tx) error {
 		// One photo at a time per type, so two photos of a new subject
@@ -114,7 +127,7 @@ func (p *Processor) matchAppearance(ctx context.Context, photo dbq.Photo, cfg *t
 		if _, err := tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", "subject:"+photo.TeamID.String()+":"+st.Key); err != nil {
 			return err
 		}
-		cands, v, err := p.appearanceVerdict(ctx, tx, photo.TeamID, &photo.ID, cfg, st, subject, seen, probe)
+		cands, v, err := p.appearanceVerdict(ctx, tx, photo.TeamID, &photo.ID, cfg, st, subject, seen, probe, look)
 		if err != nil {
 			return err
 		}
@@ -122,6 +135,7 @@ func (p *Processor) matchAppearance(ctx context.Context, photo dbq.Photo, cfg *t
 			am.Compared = append(am.Compared, c.ID)
 		}
 		am.Confidence, am.ModelConfidence, am.Reason, am.Unseen = v.Confidence, v.ModelConfidence, v.Reason, v.Unseen
+		am.ByLook, am.Look = v.ByLook, v.Look
 		switch {
 		case v.Match >= 0:
 			id := cands[v.Match].ID
@@ -144,11 +158,41 @@ func (p *Processor) matchAppearance(ctx context.Context, photo dbq.Photo, cfg *t
 // appearanceVerdict compares a subject, cut out of its photo, with the
 // closest-looking subjects on file. A match to one of two look-alikes is
 // never certain enough to file without asking.
+//
+// With a look, the subjects whose photos look most like it come first, and
+// one that surely is it is taken without asking the model (see look.go).
 func (p *Processor) appearanceVerdict(ctx context.Context, q queryer, teamID uuid.UUID, photoID *uuid.UUID, cfg *teamconfig.Config, st *teamconfig.SubjectType,
-	subject []byte, seen *analysis.Appearance, probe *pgvector.Vector) ([]AppearanceCandidate, AppearanceVerdict, error) {
-	cands, err := p.appearanceCandidates(ctx, q, teamID, photoID, st.Key, probe)
+	subject []byte, seen *analysis.Appearance, probe *pgvector.Vector, look *looks.Look) ([]AppearanceCandidate, AppearanceVerdict, error) {
+	matches, err := lookMatches(ctx, q, teamID, photoID, st.Key, look)
+	if err != nil {
+		return nil, AppearanceVerdict{}, err
+	}
+	closest := 0.0
+	if len(matches) > 0 {
+		closest = matches[0].Similarity
+	}
+	if auto, margin := p.lookThresholds(); SureByLook(matches, cfg, auto, margin) {
+		m := matches[0]
+		var name string
+		if err := q.QueryRow(ctx, `SELECT display_name FROM subjects WHERE id = $1`, m.SubjectID).Scan(&name); err != nil {
+			return nil, AppearanceVerdict{}, fmt.Errorf("look match: %w", err)
+		}
+		next := "no other subject"
+		if len(matches) > 1 {
+			next = fmt.Sprintf("the next %.2f", matches[1].Similarity)
+		}
+		return []AppearanceCandidate{{ID: m.SubjectID, DisplayName: name}}, AppearanceVerdict{
+			Match: 0, Confidence: byLookConfidence, ModelConfidence: byLookConfidence, ByLook: true, Look: m.Similarity,
+			Reason: fmt.Sprintf("Looks like the photos of %s (similarity %.2f, %s).", name, m.Similarity, next),
+		}, nil
+	}
+	first := make([]uuid.UUID, len(matches))
+	for i, m := range matches {
+		first[i] = m.SubjectID
+	}
+	cands, err := p.appearanceCandidates(ctx, q, teamID, photoID, st.Key, probe, first)
 	if err != nil || len(cands) == 0 {
-		return cands, AppearanceVerdict{Match: -1, Confidence: aloneConfidence}, err
+		return cands, AppearanceVerdict{Match: -1, Confidence: aloneConfidence, Look: closest}, err
 	}
 	v, err := CompareAppearance(ctx, p.matcher(), ai.CallMeta{TeamID: teamID, PhotoID: photoID, Purpose: "appearance_match"}, st, subject, seen, cands)
 	if err != nil {
@@ -158,7 +202,9 @@ func (p *Processor) appearanceVerdict(ctx context.Context, q queryer, teamID uui
 	if err != nil {
 		return cands, v, err
 	}
-	return cands, AppearanceRules(v, cands, cfg, checks), nil
+	v = AppearanceRules(v, cands, cfg, checks)
+	v.Look = closest
+	return cands, v, nil
 }
 
 // lookChecks are the model's answers people have checked in a team, newest
@@ -335,6 +381,7 @@ func SubjectOnly(img []byte, od *pidexv1.OnDeviceAnalysis, edge int) []byte {
 // queryer is a pool or a transaction.
 type queryer interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 func (p *Processor) matcher() *ai.Router {
@@ -367,13 +414,20 @@ func (p *Processor) appearanceVector(ctx context.Context, teamID uuid.UUID, phot
 // photo's, each with a few photos of it, cut down to the subject: clear
 // ones from different shoots, those a person filed first, then the one
 // that introduced it, then the latest.
-func (p *Processor) appearanceCandidates(ctx context.Context, q queryer, teamID uuid.UUID, photoID *uuid.UUID, typeKey string, probe *pgvector.Vector) ([]AppearanceCandidate, error) {
+//
+// Subjects in first (the closest by look) come first, in its order; words
+// fill the rest.
+func (p *Processor) appearanceCandidates(ctx context.Context, q queryer, teamID uuid.UUID, photoID *uuid.UUID, typeKey string, probe *pgvector.Vector, first []uuid.UUID) ([]AppearanceCandidate, error) {
+	if first == nil {
+		first = []uuid.UUID{}
+	}
 	rows, err := q.Query(ctx, `
 SELECT id, display_name, appearance, appearance_photo_id, appearance_embedding FROM subjects
 WHERE team_id = $1 AND type_key = $2 AND merged_into_id IS NULL
-ORDER BY CASE WHEN $3::vector IS NULL OR appearance_embedding IS NULL THEN 1 ELSE 0 END,
+ORDER BY array_position($5::uuid[], id) NULLS LAST,
+    CASE WHEN $3::vector IS NULL OR appearance_embedding IS NULL THEN 1 ELSE 0 END,
     appearance_embedding <=> $3::vector, created_at DESC
-LIMIT $4`, teamID, typeKey, probe, maxCompared)
+LIMIT $4`, teamID, typeKey, probe, maxCompared, first)
 	if err != nil {
 		return nil, fmt.Errorf("appearance candidates: %w", err)
 	}

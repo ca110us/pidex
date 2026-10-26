@@ -73,6 +73,26 @@ func (w *nameDescriptionWorker) Work(ctx context.Context, job *river.Job[NameDes
 	return w.p.NameDescription(ctx, job.Args.PhotoID)
 }
 
+// EmbedLookArgs sends a photo to the look service (pipeline.EmbedLook).
+type EmbedLookArgs struct {
+	PhotoID uuid.UUID `json:"photo_id"`
+}
+
+func (EmbedLookArgs) Kind() string { return "embed_look" }
+
+func (EmbedLookArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{MaxAttempts: 5, UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
+
+type embedLookWorker struct {
+	river.WorkerDefaults[EmbedLookArgs]
+	p *pipeline.Processor
+}
+
+func (w *embedLookWorker) Work(ctx context.Context, job *river.Job[EmbedLookArgs]) error {
+	return w.p.EmbedLook(ctx, job.Args.PhotoID)
+}
+
 // ProfileSubjectsArgs writes the profiles of subjects told apart by look
 // that have none yet or have doubled their photos since (see
 // pipeline.ProfileSubjects). It runs every few minutes, not per photo: a
@@ -139,6 +159,7 @@ func New(pool *pgxpool.Pool, p *pipeline.Processor, ix *search.Indexer, workers 
 		river.AddWorker(w, &indexPhotoWorker{ix: ix})
 		river.AddWorker(w, &nameDescriptionWorker{p: p})
 		river.AddWorker(w, &profileSubjectsWorker{p: p})
+		river.AddWorker(w, &embedLookWorker{p: p})
 		cfg.Workers = w
 		cfg.PeriodicJobs = []*river.PeriodicJob{river.NewPeriodicJob(
 			river.PeriodicInterval(profileEvery),
@@ -165,6 +186,16 @@ func (q *Queue) EnqueueProcessPhoto(ctx context.Context, tx pgx.Tx, photoID uuid
 
 func (q *Queue) EnqueueIndexPhoto(ctx context.Context, tx pgx.Tx, photoID uuid.UUID) error {
 	_, err := q.client.InsertTx(ctx, tx, IndexPhotoArgs{PhotoID: photoID}, nil)
+	return err
+}
+
+// EnqueueEmbedLooks queues photos for the look service.
+func (q *Queue) EnqueueEmbedLooks(ctx context.Context, ids []uuid.UUID) error {
+	params := make([]river.InsertManyParams, len(ids))
+	for i, id := range ids {
+		params[i] = river.InsertManyParams{Args: EmbedLookArgs{PhotoID: id}}
+	}
+	_, err := q.client.InsertMany(ctx, params)
 	return err
 }
 

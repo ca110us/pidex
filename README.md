@@ -20,10 +20,14 @@ iOS app (SwiftUI)                         Server (Go)                           
   shot tray, upload queue                  pipeline: barcode → reuse → model        matcher: compare looks
   collections, chat, review               River jobs on Postgres                    search planner and checker
                                            Postgres 17 + pgvector, S3 storage        text embeddings
+                                                    │
+                                                    ▼
+                                           Look service (Python, vision/): a photo → what its subject looks like, as a vector
 ```
 
 - `proto/pidex/v1/`: the API, shared by Go and Swift (Kotlin later).
 - `backend/`: the API server, the processing pipeline, search and background jobs, in one binary (`pidex serve`).
+- `vision/`: the look service, which tells individuals apart by image (DINOv2); optional, the server works without it.
 - `ios/`: the iPhone app, generated from `ios/project.yml` with XcodeGen.
 - `design/brand/`: the icon and colours; `eval/`: evaluation sets; `reports/`, `research_notes/`: product research.
 
@@ -50,6 +54,7 @@ backend/
 ios/
   Pidex/                The app: Capture, Collections, Chat, Library, Review, Scenario, Upload, App (theme, brand)
   PidexTests/, PidexUITests/
+vision/                 Look service (Python): a photo of a subject → a vector of what it looks like
 deploy/postgres/        Postgres 17 + pgvector image
 design/brand/           Icon originals and render script (`swift design/brand/render.swift`), colour notes
 eval/                   Evaluation labels and sources (photos are downloaded, not committed)
@@ -61,7 +66,7 @@ reports/, research_notes/  Product research reports
 Requires Go 1.26+, Docker and buf for the server; Xcode 26 and XcodeGen for the app.
 
 ```sh
-make up                                   # Postgres with pgvector on port 55432
+make up                                   # Postgres with pgvector (55432) and the look service (8090); the first build downloads ~1.5 GB
 make migrate
 make seed TEAM="My team" EMAIL=you@example.com TEMPLATE=household_pets   # prints an API token (cbk_...)
 export OPENROUTER_API_KEY=...             # optional: without a key, photos are filed by barcode only
@@ -110,6 +115,8 @@ export OPENROUTER_API_KEY=...      # put this in ~/.zshrc; do not commit it to t
 | `MATCH_MODEL` | For identification by appearance, the model that compares photos to decide which object it is. Default on OpenRouter is `openai/gpt-6-luna`; for zero misfiling set `anthropic/claude-sonnet-5.5` (about 20x more expensive). See [Identification by appearance](#identification-by-appearance) |
 | `SEARCH_MODEL` | Model that turns a sentence into search conditions. Default is `google/gemini-3.1-flash-lite`; if it does not respond within 6 seconds, search falls back to text search |
 | `TEXT_EMBEDDING_MODEL` | Text embedding model for photo search (via OpenRouter). Default is `voyageai/voyage-4`, fixed at 1024 dimensions; after changing models, run `pidex reindex` |
+| `LOOK_SERVICE_URL` | The look service (`vision/`). `make serve` uses `http://127.0.0.1:8090`; empty runs without it. See [Identification by appearance](#identification-by-appearance) |
+| `LOOK_AUTO_SIMILARITY` / `LOOK_MARGIN` | When a photo is filed by its look alone: the closest subject at least this similar (default 0.85) and this much closer than the next (default 0.08), measured for `dinov2_b@336` |
 | `EMBEDDING_MODEL` | Optional. Image embeddings needed for search by image. Currently only supported with direct Gemini (requires `GEMINI_API_KEY`) |
 | `VISION_PRICE_IN` / `VISION_PRICE_OUT` | Optional. Price per million tokens. OpenRouter returns the actual charge, so these are usually not needed |
 
@@ -168,13 +175,14 @@ There are two ways to identify objects. They are set per object type in the scen
 - **By code (code)**: patient wristbands, serial numbers, house numbers, license plates, asset tags. Take an identity photo first; the photos after it are filed under it. Precise. Medical, legal and financial users always use this method.
 - **By appearance (appearance)**: things nobody would put a label on, such as pets, mugs, house plants, personal belongings. No number needs to be photographed; just take the photo.
 
-The appearance identification flow (`backend/internal/pipeline/appearance.go`):
+The appearance identification flow (`backend/internal/pipeline/appearance.go`, `look.go`):
 
 1. While analyzing a photo, the vision model also writes a **short name** for the subject ("orange tabby cat") and its **distinguishing features** (patterns, markings, chips, accessories).
-2. Using the embedding of the feature description, find at most 6 of the most similar existing objects of the same kind, and take 3 reference photos of each: first those where the subject is clearly visible; among those, first ones a human has confirmed, then the photo from its first appearance, then the newest.
-3. `MATCH_MODEL` looks at the new photo and these photos together. It answers which one it is, that it is new, or "can't tell" (too small, too dark, occluded, not there at all), and gives a confidence. A confidence above 0.9 is allowed only when it sees a feature unique to one individual. Features that other individuals of the same kind may also have, such as color or breed, allow at most 0.7. A "can't tell" photo is neither filed nor used to create a new object.
-4. Only confidence ≥ 0.97 (0.99 in strict mode) files the photo directly. Moderate confidence becomes a suggestion, confirmed with one tap on the review page after shooting ("Is this Mimi? Yes / No, choose another"). If it is clearly new, a new object is created automatically and named after how it looks; it can be renamed later.
-5. Each photo a human confirms or corrects becomes a reference photo for that object, so recognition improves over time. If one object has been split into two, merge them on the object page with "Same as another...".
+2. **By look first.** With the look service running, the subject (cut out by the phone's box) becomes a vector, which is kept with the photo. It is compared with the photos already filed; each subject counts by its closest photo. If the closest subject is at least 0.85 similar and at least 0.08 closer than the next, the photo is filed without asking the model. Words cannot tell two black cats apart; the vector can. Otherwise those subjects become the first candidates below, in that order. Without the service, or when it fails, this step is skipped.
+3. Using the embedding of the feature description, fill up to 6 candidates with the most similar existing objects of the same kind, and take 3 reference photos of each: first those where the subject is clearly visible; among those, first ones a human has confirmed, then the photo from its first appearance, then the newest.
+4. `MATCH_MODEL` looks at the new photo and these photos together. It answers which one it is, that it is new, or "can't tell" (too small, too dark, occluded, not there at all), and gives a confidence. A confidence above 0.9 is allowed only when it sees a feature unique to one individual. Features that other individuals of the same kind may also have, such as color or breed, allow at most 0.7. A "can't tell" photo is neither filed nor used to create a new object.
+5. Only confidence ≥ 0.97 (0.99 in strict mode) files the photo directly. Moderate confidence becomes a suggestion, confirmed with one tap on the review page after shooting ("Is this Mimi? Yes / No, choose another"). If it is clearly new, a new object is created automatically and named after how it looks; it can be renamed later.
+6. Each photo a human confirms or corrects becomes a reference photo for that object, so recognition improves over time. If one object has been split into two, merge them on the object page with "Same as another...".
 
 Within one continuous shooting group, photos that do not show the subject (for example the cat bowl) still follow the object recognized in the previous photo.
 
@@ -227,6 +235,17 @@ After adding the 0.97 threshold, "can't tell" and reference photo selection (202
 - The two tuxedo cats are never auto-filed, at the cost of a few more taps: Socks is mostly in long-shot old photos from the 90s, and is often suggested as Palmerston, so "Other" is needed to pick another.
 - Mugs (`eval/mugs`): 4 white mugs, plus two from the same maker (Denby) with different glazes. Mugs photographed many times use real photos. The rest use one photo to generate two "retakes" (closer, tilted, darker or blurrier); see `eval/mugs/make_shots.py`. `make eval-fetch` downloads and generates them; `make eval-mugs` runs them. The mug results in the table above used the phone's subject boxes (`-boxes`); `make eval-mugs` does not use them by default.
 - Limitations: the sample is small (5 cats, 13 mugs). 98% is the result on these photo sets, not a guarantee. Photos taken at home are usually clearer than these public photos.
+
+**Filing by look, measured** (2026-10-26, `dinov2_b@336`, `openai/gpt-6-luna` for the rest, the same three shooting orders as above; `evalappearance -look`):
+
+| Set | Filed automatically | Filed by look alone | "Other" taps to fix a suggestion | Model comparisons |
+|---|---|---|---|---|
+| Cats, without the look service | 38, 36 right | | 30 | 156 |
+| Cats, with it | 49, 47 right | 22, all right | 16 | 134 |
+| Mugs, without it | 35, all right | | 0 | 35 |
+| Mugs, with it | 36, all right | 23, all right | 0 | 12 |
+
+The two cat errors in both rows are the night shot of Downing Street described above. `eval/visual/` measures the look models themselves (DINOv2 against MegaDescriptor, keypoint matching for rigid things) and how the thresholds were chosen. Photos filed before the service ran get their vectors with `pidex embed-looks`; after changing `LOOK_MODEL`, `pidex embed-looks -all`. Strict teams never file by look alone.
 
 **Profiles.** A subject told apart by look also gets a profile: what it looks like in full (coat, nose, eyes, ears, paws, build, marks, collar), written by the vision model from up to four clear photos of it from different shoots, and written again as its photos double (1, 2, 4, 8…). A periodic job does this every two minutes, about $0.001 to $0.002 a subject each time. Features no photo shows clearly are left out. On the subject page a person can add to or correct it ("black nose"); what they write is kept and no longer rewritten from photos. Search matches subjects by profile too, so "the cat with the black nose" finds that cat's photos even where its nose is not visible, and the result check reads each subject's profile.
 

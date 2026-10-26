@@ -179,3 +179,11 @@ DELETE FROM shot_verdicts WHERE team_id = @team_id AND created_at < now() - inte
 SELECT id FROM photos
 WHERE status = 'processed' AND extracted->'appearance' IS NOT NULL AND NOT extracted ? 'named_description'
 ORDER BY created_at;
+
+-- name: ListPhotosToEmbedLook :many
+-- Photos of subjects told apart by look with no look yet; with all, every
+-- such photo (after the look model changed).
+SELECT id FROM photos
+WHERE status = 'processed' AND extracted->'appearance' IS NOT NULL
+  AND (@every_photo::bool OR look_embedding IS NULL)
+ORDER BY created_at;

@@ -32,6 +32,7 @@ import (
 	"pidex/internal/configstore"
 	"pidex/internal/identity"
 	"pidex/internal/imaging"
+	"pidex/internal/looks"
 	"pidex/internal/storage"
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
@@ -56,8 +57,13 @@ type Processor struct {
 	// TextEmbedder is optional; it finds the closest-looking subjects
 	// before they are compared.
 	TextEmbedder ai.TextEmbedder
-	Recorder     ai.Recorder
-	Log          *slog.Logger
+	// Looks is optional; it tells apart subjects that have no code by how
+	// their photos look (see look.go). Without it, words and Match do.
+	Looks *looks.Client
+	// LookAutoSimilarity and LookMargin override DefaultLook*.
+	LookAutoSimilarity, LookMargin float64
+	Recorder                       ai.Recorder
+	Log                            *slog.Logger
 
 	MaxImageEdge   int
 	MaxObjectBytes int64
@@ -176,6 +182,12 @@ func (p *Processor) ProcessPhoto(ctx context.Context, photoID uuid.UUID) error {
 			}
 			if err := p.learnAppearance(ctx, photo, seen); err != nil {
 				return err
+			}
+			// Filed by hand, it is one more photo to compare others with.
+			if imageForEmb != nil {
+				if err := p.saveLook(ctx, photo.ID, p.lookOf(ctx, SubjectOnly(imageForEmb, od, refEdge*2))); err != nil {
+					return err
+				}
 			}
 		} else if err := p.matchAppearance(ctx, photo, cfg, st, seen, imageForEmb, &ex); err != nil {
 			return err
@@ -408,7 +420,8 @@ func (p *Processor) ReadShot(ctx context.Context, teamID uuid.UUID, cfg *teamcon
 			return nil, nil
 		}
 		probe := p.appearanceVector(ctx, teamID, nil, res.Appearance.Features)
-		cands, v, err := p.appearanceVerdict(ctx, p.Pool, teamID, nil, cfg, st, SubjectOnly(img, od, refEdge*2), res.Appearance, probe)
+		subject := SubjectOnly(img, od, refEdge*2)
+		cands, v, err := p.appearanceVerdict(ctx, p.Pool, teamID, nil, cfg, st, subject, res.Appearance, probe, p.lookOf(ctx, subject))
 		if err != nil {
 			return nil, err
 		}

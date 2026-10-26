@@ -34,6 +34,7 @@ import (
 	"pidex/internal/ai"
 	"pidex/internal/analysis"
 	"pidex/internal/imaging"
+	"pidex/internal/looks"
 	"pidex/internal/pipeline"
 	"pidex/internal/search"
 	"pidex/internal/teamconfig"
@@ -53,6 +54,8 @@ type subject struct {
 	Intro    string
 	Manual   []string
 	Auto     []string
+	// Looks are the look service's vectors of its filed photos.
+	Looks [][]float32
 }
 
 type outcome string
@@ -82,7 +85,14 @@ func main() {
 	maxEdge := flag.Int("max-edge", 1280, "long edge sent to the model, as in the pipeline")
 	verbose := flag.Bool("v", false, "print every photo")
 	boxesPath := flag.String("boxes", "", "TSV of each photo's subject box (path, x, y, w, h), as the phone finds it; compared photos are cut to it")
+	lookURL := flag.String("look", "", "look service URL (vision/): photos surely alike by look are filed without the model, and candidates come by look first")
+	lookAuto := flag.Float64("look-auto", pipeline.DefaultLookAutoSimilarity, "similarity that files by look alone")
+	lookMargin := flag.Float64("look-margin", pipeline.DefaultLookMargin, "how much closer than the next subject it must be")
 	flag.Parse()
+	var lookClient *looks.Client
+	if *lookURL != "" {
+		lookClient = looks.New(*lookURL)
+	}
 
 	key := os.Getenv("OPENROUTER_API_KEY")
 	if *labelsPath == "" || key == "" {
@@ -141,7 +151,7 @@ func main() {
 	th := cfg.Thresholds()
 	total := map[outcome]int{}
 	var compareTime time.Duration
-	var compares int
+	var compares, byLookFiled, byLookRight int
 	for _, c := range colls {
 		list := byColl[c]
 		rng := rand.New(rand.NewPCG(*seed, 7))
@@ -161,8 +171,25 @@ func main() {
 			}
 			vec := embedOne(embedder, a.Features)
 			cands := closest(subjects, vec)
+			var look []float32
+			var matches []pipeline.LookMatch
+			if lookClient != nil {
+				img, err := cutOut(*dir, p.Path, 1024)
+				check(err)
+				l, err := lookClient.Embed(context.Background(), img)
+				check(err)
+				look = l.Vector
+				cands, matches = byLook(subjects, cands, look)
+			}
 			v := pipeline.AppearanceVerdict{Match: -1, Confidence: 0.99}
-			if len(cands) > 0 {
+			if len(cands) > 0 && pipeline.SureByLook(matches, cfg, *lookAuto, *lookMargin) {
+				// cands start with the closest by look.
+				v = pipeline.AppearanceVerdict{Match: 0, Confidence: 0.98, ModelConfidence: 0.98, ByLook: true, Look: matches[0].Similarity}
+				byLookFiled++
+				if cands[0].Truth == p.Truth {
+					byLookRight++
+				}
+			} else if len(cands) > 0 {
 				img, err := cutOut(*dir, p.Path, 1024)
 				check(err)
 				var cs []pipeline.AppearanceCandidate
@@ -190,6 +217,7 @@ func main() {
 			}
 			var o outcome
 			var filed *subject
+			known := len(subjects)
 			truthHas := func() *subject {
 				for _, s := range subjects {
 					if s.Truth == p.Truth {
@@ -248,6 +276,15 @@ func main() {
 			if filed != nil && o != autoRight && o != autoWrong {
 				filed.Manual = append(filed.Manual, p.Path)
 			}
+			// Its look joins the subject it landed in.
+			if look != nil {
+				switch {
+				case filed != nil:
+					filed.Looks = append(filed.Looks, look)
+				case len(subjects) > known:
+					subjects[len(subjects)-1].Looks = append(subjects[len(subjects)-1].Looks, look)
+				}
+			}
 			counts[o]++
 			if *verbose {
 				fmt.Printf("  %-10s %-26s %.2f %s | %s\n", p.Truth, o, v.Confidence, filepath.Base(p.Path), v.Reason)
@@ -261,6 +298,9 @@ func main() {
 	}
 	fmt.Printf("\n== all\n")
 	report(total, len(photos))
+	if lookClient != nil {
+		fmt.Printf("  filed by look alone: %d, %d right\n", byLookFiled, byLookRight)
+	}
 	fmt.Printf("  describe (%s): $%.4f; compare (%s): %d calls, $%.4f, %.1fs each\n",
 		*vision, describeCost, *match, compares, matchCost.usage.CostUSD, compareTime.Seconds()/math.Max(1, float64(compares)))
 }
@@ -287,6 +327,44 @@ func (u *usageRecorder) Record(_ context.Context, c ai.CallRecord) {
 	u.mu.Lock()
 	defer u.mu.Unlock()
 	u.usage.CostUSD += c.Usage.CostUSD
+}
+
+// byLook puts first the subjects whose photos look most like look (closest
+// first, as the pipeline's lookMatches does), then the rest of cands.
+func byLook(subjects, cands []*subject, look []float32) ([]*subject, []pipeline.LookMatch) {
+	type scored struct {
+		s   *subject
+		sim float64
+	}
+	var all []scored
+	for _, s := range subjects {
+		best := -1.0
+		for _, l := range s.Looks {
+			best = max(best, cosine(look, l))
+		}
+		if best > -1 {
+			all = append(all, scored{s, best})
+		}
+	}
+	sort.SliceStable(all, func(i, j int) bool { return all[i].sim > all[j].sim })
+	all = all[:min(len(all), 6)]
+	var out []*subject
+	var matches []pipeline.LookMatch
+	in := map[*subject]bool{}
+	for _, x := range all {
+		out = append(out, x.s)
+		matches = append(matches, pipeline.LookMatch{SubjectID: x.s.ID, Similarity: x.sim})
+		in[x.s] = true
+	}
+	for _, s := range cands {
+		if len(out) == 6 {
+			break
+		}
+		if !in[s] {
+			out = append(out, s)
+		}
+	}
+	return out, matches
 }
 
 // closest are the subjects nearest in description, as the pipeline ranks

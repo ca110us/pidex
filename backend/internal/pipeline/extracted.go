@@ -111,4 +111,8 @@ type AppearanceMatch struct {
 	Reason          string  `json:"reason,omitempty"`
 	// Unseen: the photo did not show the subject clearly enough to tell.
 	Unseen bool `json:"unseen,omitempty"`
+	// ByLook: filed by the look service alone, without the model; Look is
+	// how similar the closest subject's photos look.
+	ByLook bool    `json:"by_look,omitempty"`
+	Look   float64 `json:"look,omitempty"`
 }

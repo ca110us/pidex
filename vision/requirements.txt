@@ -1,0 +1,8 @@
+torch
+timm>=1.0
+pillow
+numpy
+huggingface_hub
+safetensors
+fastapi
+uvicorn[standard]

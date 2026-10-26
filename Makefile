@@ -1,8 +1,8 @@
-.PHONY: up down tools generate migrate seed serve test lint eval-fetch eval eval-appearance eval-mugs
+.PHONY: up down tools generate migrate seed serve vision test lint eval-fetch eval eval-appearance eval-mugs
 
 BACKEND := backend
 
-up: ## Start Postgres (with pgvector) in Docker
+up: ## Start Postgres (with pgvector) and the look service in Docker
 	docker compose up -d --build
 
 down:
@@ -23,8 +23,13 @@ migrate:
 seed: ## make seed TEAM="My team" EMAIL=you@example.com TEMPLATE=<template key> (run without TEMPLATE to list them)
 	cd $(BACKEND) && go run ./cmd/pidex seed -team "$(TEAM)" -email "$(EMAIL)" -template "$(TEMPLATE)"
 
+# The look service at :8090 (from `make up` or `make vision`) tells subjects
+# apart by appearance; set LOOK_SERVICE_URL= to run without it.
 serve:
-	cd $(BACKEND) && go run ./cmd/pidex serve
+	cd $(BACKEND) && LOOK_SERVICE_URL=$${LOOK_SERVICE_URL-http://127.0.0.1:8090} go run ./cmd/pidex serve
+
+vision: ## Run the look service on this machine (faster on Apple silicon than in Docker); needs vision/.venv
+	cd vision && .venv/bin/uvicorn pidex_vision.server:app --host 127.0.0.1 --port 8090
 
 test: ## Unit tests plus end-to-end tests (needs `make up`)
 	cd $(BACKEND) && go test ./...

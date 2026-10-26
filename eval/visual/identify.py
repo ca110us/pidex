@@ -24,23 +24,14 @@ import time
 from pathlib import Path
 
 import numpy as np
-import torch
-from PIL import Image, ImageOps
 
-MODELS = {
-    # General-purpose self-supervised features, strong on fine detail.
-    "dinov2_s": ("vit_small_patch14_dinov2.lvd142m", 336),
-    "dinov2_b": ("vit_base_patch14_dinov2.lvd142m", 336),
-    "dinov2_l": ("vit_large_patch14_dinov2.lvd142m", 336),
-    # Trained to re-identify individual animals across many species.
-    "mega_t": ("hf-hub:BVRA/MegaDescriptor-T-224", 224),
-    "mega_l": ("hf-hub:BVRA/MegaDescriptor-L-384", 384),
-}
+# The service's own code, so these numbers are what it would do.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "vision"))
+from pidex_vision.embed import MODELS, Embedder, default_device, open_image  # noqa: E402
 
 TARGET = 0.98
 
-
-IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
+IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp"}
 
 
 def load_labels(path, images=None):
@@ -65,51 +56,6 @@ def load_boxes(path):
             if len(p) >= 5:
                 boxes[p[0]] = tuple(float(v) for v in p[1:5])
     return boxes
-
-
-def open_image(path, box, margin=0.15):
-    im = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
-    if box:
-        x, y, w, h = box
-        W, H = im.size
-        x0, y0 = max(0, (x - w * margin) * W), max(0, (y - h * margin) * H)
-        x1, y1 = min(W, (x + w * (1 + margin)) * W), min(H, (y + h * (1 + margin)) * H)
-        im = im.crop((x0, y0, x1, y1))
-    return im
-
-
-def embedder(name, device):
-    import timm
-
-    arch, size = MODELS[name]
-    kw = {"pretrained": True, "num_classes": 0}
-    if "dinov2" in arch:
-        kw["img_size"] = size
-    model = timm.create_model(arch, **kw).eval().to(device)
-    cfg = timm.data.resolve_data_config({}, model=model)
-    mean, std = torch.tensor(cfg["mean"]).view(3, 1, 1), torch.tensor(cfg["std"]).view(3, 1, 1)
-
-    def prep(im):
-        # The whole subject, padded square: a centre crop could cut off
-        # the patch that tells two individuals apart.
-        side = max(im.size)
-        sq = Image.new("RGB", (side, side), tuple(int(255 * m) for m in cfg["mean"]))
-        sq.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
-        t = torch.from_numpy(np.asarray(sq.resize((size, size), Image.BICUBIC), dtype=np.float32) / 255).permute(2, 0, 1)
-        return (t - mean) / std
-
-    @torch.no_grad()
-    def embed(images, flip):
-        out = []
-        for i in range(0, len(images), 16):
-            batch = torch.stack([prep(im) for im in images[i : i + 16]]).to(device)
-            f = model(batch)
-            if flip:
-                f = f + model(torch.flip(batch, dims=[3]))
-            out.append(torch.nn.functional.normalize(f, dim=1).cpu())
-        return torch.cat(out).numpy()
-
-    return embed
 
 
 def score(emb, who):
@@ -159,12 +105,11 @@ def main():
     ap.add_argument("--name", default="")
     args = ap.parse_args()
 
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
     rows = load_labels(args.labels, args.images)
     boxes = load_boxes(args.boxes)
     images = [open_image(Path(args.images) / p, boxes.get(p)) for p, _ in rows]
     start = time.time()
-    emb = embedder(args.model, device)(images, args.flip)
+    emb = Embedder(args.model, default_device(), args.flip).embed(images)
     per = (time.time() - start) / len(images)
     result = {"set": args.name or Path(args.labels or args.images).stem, "model": args.model + ("+flip" if args.flip else ""),
               "boxes": bool(boxes), **score(emb, [w for _, w in rows]), "ms_per_photo": round(per * 1000)}

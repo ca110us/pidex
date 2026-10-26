@@ -127,3 +127,35 @@ func TestEarnedTrust(t *testing.T) {
 		t.Error("strict teams trust the look")
 	}
 }
+
+// TestSureByLook: a photo is filed by its look alone only when the closest
+// subject is similar enough and clearly closer than the next; never for
+// strict teams.
+func TestSureByLook(t *testing.T) {
+	standard := &teamconfig.Config{Strictness: teamconfig.StrictnessStandard}
+	m := func(s ...float64) []LookMatch {
+		out := make([]LookMatch, len(s))
+		for i, v := range s {
+			out[i] = LookMatch{SubjectID: uuid.New(), Similarity: v}
+		}
+		return out
+	}
+	cases := []struct {
+		name    string
+		matches []LookMatch
+		cfg     *teamconfig.Config
+		want    bool
+	}{
+		{"alone and close", m(0.9), standard, true},
+		{"close, clearly closer than the next", m(0.92, 0.80), standard, true},
+		{"close, but a look-alike is as close", m(0.92, 0.88), standard, false},
+		{"not close enough", m(0.84, 0.2), standard, false},
+		{"nothing filed", nil, standard, false},
+		{"strict teams always ask the model", m(0.99), &teamconfig.Config{Strictness: teamconfig.StrictnessStrict}, false},
+	}
+	for _, c := range cases {
+		if got := SureByLook(c.matches, c.cfg, DefaultLookAutoSimilarity, DefaultLookMargin); got != c.want {
+			t.Errorf("%s: %v, want %v", c.name, got, c.want)
+		}
+	}
+}

@@ -67,3 +67,26 @@ What this says:
 - **Keypoint matching** adds a little where views overlap (product rank1 0.71 to 0.75) but its inlier counts separate right from wrong less cleanly than embedding similarity. It needs real photos of rigid things from overlapping views (the socket set) before it can be judged.
 
 Caveats: the sets are small; the Commons photos may hold near-duplicates from one event; 8 of the 12 mugs have one real photo and two generated retakes, which flatters keypoint matching. The household photos are not in the repository.
+
+## Choosing the thresholds for filing by look alone
+
+Photos shot one by one, in random order (5 orders each), into an empty
+collection, with `dinov2_b`: a photo is filed by look alone when the closest
+subject (by its closest photo) is at least *similarity* alike and at least
+*margin* closer than the next. Each cell is the share of those filings that
+were right, then the share of photos of already-known individuals filed that
+way.
+
+| Similarity / margin | Cats (Commons) | Household cats | Dog faces | Mugs | Products |
+|---|---|---|---|---|---|
+| 0.75 / 0.05 | 1.000 / 0.496 | 1.000 / 0.662 | 0.986 / 0.686 | 1.000 / 0.958 | 0.920 / 0.386 |
+| 0.80 / 0.05 | 1.000 / 0.377 | 1.000 / 0.354 | 0.993 / 0.499 | 1.000 / 0.958 | 0.948 / 0.327 |
+| **0.85 / 0.08** | **1.000 / 0.200** | **1.000 / 0.154** | **0.993 / 0.335** | **1.000 / 0.958** | **0.984 / 0.216** |
+| 0.90 / 0.08 | none filed | 1.000 / 0.077 | 0.987 / 0.173 | 1.000 / 0.908 | 1.000 / 0.140 |
+
+0.85 / 0.08 is the default (`pipeline.DefaultLookAutoSimilarity`,
+`DefaultLookMargin`): the loosest setting at least 98% right on every set,
+the deliberately hard products included. Photos it does not file go to the
+vision model with the closest subjects by look as candidates. Fewer photos
+are filed by look early on, while each individual has few photos; more as
+they are confirmed.

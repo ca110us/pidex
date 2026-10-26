@@ -41,13 +41,13 @@ def main():
     ap.add_argument("--name", default="")
     args = ap.parse_args()
 
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    device = identify.default_device()
     rows = identify.load_labels(args.labels, args.images)
     boxes = identify.load_boxes(args.boxes)
     images = [identify.open_image(Path(args.images) / p, boxes.get(p)) for p, _ in rows]
     who = np.array([w for _, w in rows])
     start = time.time()
-    emb = identify.embedder(args.model, device)(images, False)
+    emb = identify.Embedder(args.model, device).embed(images)
     sim = emb @ emb.T
     np.fill_diagonal(sim, -1)
     same = who[:, None] == who[None, :]

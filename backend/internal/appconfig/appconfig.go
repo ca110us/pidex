@@ -48,6 +48,15 @@ type Config struct {
 	SearchMaxDistance, SearchRelativeDistance, SearchMissingDistance float64
 	// EmbeddingModel uses the Gemini API directly and needs GEMINI_API_KEY.
 	EmbeddingModel string
+	// LookServiceURL is the look service (vision/), which turns a photo of
+	// a subject told apart by appearance into a vector; without it those
+	// subjects are matched by words and a vision model alone.
+	LookServiceURL string
+	// LookAutoSimilarity and LookMargin decide when a photo is filed by
+	// its look alone: the closest subject at least this similar, and this
+	// much more similar than the next. Zero takes the defaults measured
+	// for the default model (pipeline.DefaultLook*).
+	LookAutoSimilarity, LookMargin float64
 	// Optional price overrides, USD per million tokens.
 	VisionPriceIn  float64
 	VisionPriceOut float64
@@ -76,6 +85,7 @@ func FromEnv() (Config, error) {
 		StrongModel:        os.Getenv("STRONG_VISION_MODEL"),
 		MatchModel:         os.Getenv("MATCH_MODEL"),
 		ConfigModel:        os.Getenv("CONFIG_MODEL"),
+		LookServiceURL:     os.Getenv("LOOK_SERVICE_URL"),
 		SearchModel:        os.Getenv("SEARCH_MODEL"),
 		TextEmbeddingModel: os.Getenv("TEXT_EMBEDDING_MODEL"),
 		EmbeddingModel:     os.Getenv("EMBEDDING_MODEL"),
@@ -158,6 +168,7 @@ func FromEnv() (Config, error) {
 	for key, dst := range map[string]*float64{
 		"SEARCH_MAX_DISTANCE": &c.SearchMaxDistance, "SEARCH_RELATIVE_DISTANCE": &c.SearchRelativeDistance,
 		"SEARCH_MISSING_DISTANCE": &c.SearchMissingDistance,
+		"LOOK_AUTO_SIMILARITY":    &c.LookAutoSimilarity, "LOOK_MARGIN": &c.LookMargin,
 	} {
 		if *dst, err = floatEnv(key); err != nil {
 			return c, err

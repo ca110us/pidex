@@ -18,5 +18,22 @@ services:
       timeout: 3s
       retries: 30
 
+  # What a subject looks like, as a vector (vision/README.md).
+  vision:
+    build: ./vision
+    image: pidex-vision:1
+    environment:
+      LOOK_MODEL: dinov2_b
+    ports:
+      - "8090:8090"
+    volumes:
+      - vision-models:/models
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/healthz')\""]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
 volumes:
   postgres-data:
+  vision-models:

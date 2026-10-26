@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"syscall"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"pidex/internal/appconfig"
 	"pidex/internal/configstore"
 	"pidex/internal/jobs"
+	"pidex/internal/looks"
 	"pidex/internal/pipeline"
 	"pidex/internal/search"
 	"pidex/internal/storage"
@@ -33,6 +35,7 @@ const usage = `usage:
   pidex migrate up|down|status
   pidex seed -team NAME -email EMAIL [-name NAME] [-template KEY]
   pidex reindex   (queue processed photos that need thumbnails or search vectors)
+  pidex embed-looks [-all]   (queue photos of subjects told apart by look for the look service; -all also those embedded by another model)
   pidex name-descriptions   (queue photos of pets and the like described before descriptions used their names)
 `
 
@@ -61,6 +64,8 @@ func main() {
 		err = reindex(ctx, cfg, log)
 	case "name-descriptions":
 		err = nameDescriptions(ctx, cfg, log)
+	case "embed-looks":
+		err = embedLooks(ctx, cfg, log, slices.Contains(os.Args[2:], "-all"))
 	default:
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(2)
@@ -170,6 +175,32 @@ func reindex(ctx context.Context, cfg appconfig.Config, log *slog.Logger) error 
 	return nil
 }
 
+// embedLooks queues photos of subjects told apart by look that have no
+// look yet (all of them with all) for the server to send to the look
+// service: photos filed before it ran, or embedded by another model.
+func embedLooks(ctx context.Context, cfg appconfig.Config, log *slog.Logger, all bool) error {
+	pool, err := store.OpenPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	ids, err := dbq.New(pool).ListPhotosToEmbedLook(ctx, all)
+	if err != nil {
+		return err
+	}
+	queue, err := jobs.New(pool, nil, nil, 0, log)
+	if err != nil {
+		return err
+	}
+	for start := 0; start < len(ids); start += 500 {
+		if err := queue.EnqueueEmbedLooks(ctx, ids[start:min(start+500, len(ids))]); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("queued %d photos for the look service\n", len(ids))
+	return nil
+}
+
 // nameDescriptions queues photos described before descriptions named their
 // subject; the server describes them again, about $0.001 each.
 func nameDescriptions(ctx context.Context, cfg appconfig.Config, log *slog.Logger) error {
@@ -240,6 +271,11 @@ func serve(ctx context.Context, cfg appconfig.Config, log *slog.Logger) error {
 		Pool: pool, Configs: configs, Storage: objects, Vision: ms.vision, Strong: ms.strong, Match: ms.match,
 		Embedder: ms.embedder, TextEmbedder: ms.textEmbedder, Recorder: rec, Log: log,
 		MaxImageEdge: cfg.MaxImageEdge, MaxObjectBytes: cfg.MaxUploadBytes,
+		LookAutoSimilarity: cfg.LookAutoSimilarity, LookMargin: cfg.LookMargin,
+	}
+	if cfg.LookServiceURL != "" {
+		proc.Looks = looks.New(cfg.LookServiceURL)
+		log.Info("telling subjects apart by look", "service", cfg.LookServiceURL)
 	}
 	ix := &search.Indexer{
 		Pool: pool, Configs: configs, Storage: objects, Embedder: ms.textEmbedder, Recorder: rec, Log: log,

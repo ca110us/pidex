@@ -108,6 +108,8 @@ type Photo struct {
 	TextEmbedding        *pgvector_go.Vector
 	TextEmbeddingModel   *string
 	IndexedAt            *time.Time
+	LookEmbedding        *pgvector_go.Vector
+	LookModel            *string
 }
 
 type PhotoTag struct {
