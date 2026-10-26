@@ -65,10 +65,16 @@ message Place {
   string name = 5;
 }
 
-// How many photos were taken in a place (its city, else its region).
+// How many photos were taken in a place, at one level: a country, a city
+// (its region when it has none) or an area within a city (a landmark,
+// else a district). The app shows the level that tells photos apart.
 message PlaceCount {
   string name = 1;
   int32 count = 2;
+  // "country", "city" or "area".
+  string level = 3;
+  // The country a city is in, the city an area is in; empty for countries.
+  string parent = 4;
 }
 
 // BoundingBox is normalized to [0,1] with origin at the top-left.

@@ -389,11 +389,17 @@ func (x *Place) GetName() string {
 	return ""
 }
 
-// How many photos were taken in a place (its city, else its region).
+// How many photos were taken in a place, at one level: a country, a city
+// (its region when it has none) or an area within a city (a landmark,
+// else a district). The app shows the level that tells photos apart.
 type PlaceCount struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Count int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	// "country", "city" or "area".
+	Level string `protobuf:"bytes,3,opt,name=level,proto3" json:"level,omitempty"`
+	// The country a city is in, the city an area is in; empty for countries.
+	Parent        string `protobuf:"bytes,4,opt,name=parent,proto3" json:"parent,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -440,6 +446,20 @@ func (x *PlaceCount) GetCount() int32 {
 		return x.Count
 	}
 	return 0
+}
+
+func (x *PlaceCount) GetLevel() string {
+	if x != nil {
+		return x.Level
+	}
+	return ""
+}
+
+func (x *PlaceCount) GetParent() string {
+	if x != nil {
+		return x.Parent
+	}
+	return ""
 }
 
 // BoundingBox is normalized to [0,1] with origin at the top-left.
@@ -1148,11 +1168,13 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\x06region\x18\x02 \x01(\tR\x06region\x12\x12\n" +
 	"\x04city\x18\x03 \x01(\tR\x04city\x12\x1a\n" +
 	"\bdistrict\x18\x04 \x01(\tR\bdistrict\x12\x12\n" +
-	"\x04name\x18\x05 \x01(\tR\x04name\"6\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\"d\n" +
 	"\n" +
 	"PlaceCount\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\"W\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x14\n" +
+	"\x05level\x18\x03 \x01(\tR\x05level\x12\x16\n" +
+	"\x06parent\x18\x04 \x01(\tR\x06parent\"W\n" +
 	"\vBoundingBox\x12\f\n" +
 	"\x01x\x18\x01 \x01(\x02R\x01x\x12\f\n" +
 	"\x01y\x18\x02 \x01(\x02R\x01y\x12\x14\n" +

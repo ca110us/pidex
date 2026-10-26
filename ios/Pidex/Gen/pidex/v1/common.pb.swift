@@ -258,7 +258,9 @@ nonisolated struct Pidex_V1_Place: Sendable {
   init() {}
 }
 
-/// How many photos were taken in a place (its city, else its region).
+/// How many photos were taken in a place, at one level: a country, a city
+/// (its region when it has none) or an area within a city (a landmark,
+/// else a district). The app shows the level that tells photos apart.
 nonisolated struct Pidex_V1_PlaceCount: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -267,6 +269,12 @@ nonisolated struct Pidex_V1_PlaceCount: Sendable {
   var name: String = String()
 
   var count: Int32 = 0
+
+  /// "country", "city" or "area".
+  var level: String = String()
+
+  /// The country a city is in, the city an area is in; empty for countries.
+  var parent: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -681,7 +689,7 @@ nonisolated extension Pidex_V1_Place: SwiftProtobuf.Message, SwiftProtobuf._Mess
 
 nonisolated extension Pidex_V1_PlaceCount: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PlaceCount"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}count\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}count\0\u{1}level\0\u{1}parent\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -691,6 +699,8 @@ nonisolated extension Pidex_V1_PlaceCount: SwiftProtobuf.Message, SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 2: try { try decoder.decodeSingularInt32Field(value: &self.count) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.level) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.parent) }()
       default: break
       }
     }
@@ -703,12 +713,20 @@ nonisolated extension Pidex_V1_PlaceCount: SwiftProtobuf.Message, SwiftProtobuf.
     if self.count != 0 {
       try visitor.visitSingularInt32Field(value: self.count, fieldNumber: 2)
     }
+    if !self.level.isEmpty {
+      try visitor.visitSingularStringField(value: self.level, fieldNumber: 3)
+    }
+    if !self.parent.isEmpty {
+      try visitor.visitSingularStringField(value: self.parent, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_PlaceCount, rhs: Pidex_V1_PlaceCount) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.count != rhs.count {return false}
+    if lhs.level != rhs.level {return false}
+    if lhs.parent != rhs.parent {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

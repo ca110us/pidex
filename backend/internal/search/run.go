@@ -72,9 +72,9 @@ type Result struct {
 	// of which the IDs are one page; 0 for a page past the end.
 	Total int
 	// TagCounts, when asked for, are how many matches have each tag, and
-	// PlaceCounts how many were taken in each place (its city, else region).
+	// PlaceCounts how many were taken in each place, at every level.
 	TagCounts   []TagCount
-	PlaceCounts []TagCount
+	PlaceCounts []PlaceCount
 }
 
 type TagCount struct {
@@ -249,11 +249,21 @@ GROUP BY pt.tag_key ORDER BY count(*) DESC, pt.tag_key`, slices.Clone(b.args))
 				return res, err
 			}
 			res.TagCounts = counts
-			places, err := s.tagCounts(ctx, with+`
-SELECT name, count(*) FROM (
-	SELECT coalesce(nullif(ph.place->>'city', ''), nullif(ph.place->>'region', ''), ph.place->>'country') AS name
-	FROM filtered p JOIN photos ph ON ph.id = p.id WHERE ph.place IS NOT NULL
-) x WHERE name IS NOT NULL GROUP BY name ORDER BY count(*) DESC, name LIMIT 20`, slices.Clone(b.args))
+			places, err := s.placeCounts(ctx, with+`,
+placed AS (SELECT ph.place AS pl FROM filtered p JOIN photos ph ON ph.id = p.id WHERE ph.place IS NOT NULL),
+levels AS (
+	SELECT 'country' AS level, pl->>'country' AS name, '' AS parent FROM placed
+	UNION ALL
+	SELECT 'city', coalesce(nullif(pl->>'city', ''), pl->>'region'), coalesce(pl->>'country', '') FROM placed
+	UNION ALL
+	SELECT 'area', coalesce(nullif(pl->>'name', ''), pl->>'district'), coalesce(nullif(pl->>'city', ''), pl->>'region', '') FROM placed
+),
+counted AS (
+	SELECT level, name, parent, count(*) AS n,
+		row_number() OVER (PARTITION BY level ORDER BY count(*) DESC, name) AS rank
+	FROM levels WHERE coalesce(name, '') <> '' GROUP BY level, name, parent
+)
+SELECT level, name, parent, n FROM counted WHERE rank <= 30 ORDER BY level, n DESC, name`, slices.Clone(b.args))
 			if err != nil {
 				return res, err
 			}
@@ -425,6 +435,30 @@ func (s *Searcher) tagCounts(ctx context.Context, sql string, args []any) ([]Tag
 	})
 	if err != nil {
 		return nil, fmt.Errorf("search: tag counts: %w", err)
+	}
+	return out, nil
+}
+
+// PlaceCount is how many matches were taken in a place at one level.
+type PlaceCount struct {
+	Level, Name, Parent string
+	Count               int
+}
+
+func (s *Searcher) placeCounts(ctx context.Context, sql string, args []any) ([]PlaceCount, error) {
+	rows, err := s.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("search: place counts: %w", err)
+	}
+	out, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (PlaceCount, error) {
+		var c PlaceCount
+		var n int64
+		err := r.Scan(&c.Level, &c.Name, &c.Parent, &n)
+		c.Count = int(n)
+		return c, err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("search: place counts: %w", err)
 	}
 	return out, nil
 }

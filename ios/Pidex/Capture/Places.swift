@@ -162,3 +162,91 @@ actor PlaceNamer {
         return p
     }
 }
+
+/// Place names as shown: the phone names a Chinese city "大连市" and often
+/// starts a landmark with its city ("杭州市北京航空航天大学…"). Search keeps the
+/// full names, so either form still finds the photos.
+nonisolated enum PlaceNames {
+    /// A city without the "市" Chinese names end in, unless that leaves one
+    /// character ("沙市" stays).
+    static func city(_ name: String) -> String {
+        guard name.count > 2, name.hasSuffix("市"), let before = name.dropLast().last, before.isCJK else { return name }
+        return String(name.dropLast())
+    }
+
+    /// A landmark without the region, city or district it begins with,
+    /// in either form; kept whole when that would leave nothing.
+    static func area(_ name: String, in place: Pidex_V1_Place) -> String {
+        area(name, within: [place.region, place.city, place.district])
+    }
+
+    private static func area(_ name: String, within places: [String]) -> String {
+        var out = name
+        for place in places where !place.isEmpty {
+            // The full name if it begins with it ("杭州市…"), else the short one.
+            let prefix = out.hasPrefix(place) ? place : city(place)
+            if out.hasPrefix(prefix), out.count > prefix.count { out.removeFirst(prefix.count) }
+        }
+        let trimmed = out.trimmingCharacters(in: .whitespaces.union(.punctuationCharacters))
+        return trimmed.isEmpty ? name : trimmed
+    }
+
+    /// The name a place count is shown with on a chip, cut short if long.
+    static func shown(_ c: Pidex_V1_PlaceCount) -> String {
+        switch c.level {
+        case "city": city(c.name)
+        case "area": short(area(c.name, within: [c.parent]))
+        default: c.name
+        }
+    }
+
+    /// At most `limit` characters, ending in "…" when cut.
+    static func short(_ name: String, limit: Int = 14) -> String {
+        name.count > limit ? String(name.prefix(limit - 1)) + "…" : name
+    }
+}
+
+/// Which places a collection's photos are grouped by: the level that tells
+/// them apart. Photos from several countries are grouped by country, and a
+/// picked country shows its cities; from one country, by city; from one
+/// city, by landmark or district.
+nonisolated struct PlaceLevels {
+    /// The chips to show, most photos first.
+    var shown: [Pidex_V1_PlaceCount]
+    /// The country picked to look inside, shown as a way back to all.
+    var inside: Pidex_V1_PlaceCount?
+
+    init(_ counts: [Pidex_V1_PlaceCount], picked: String?) {
+        func at(_ level: String) -> [Pidex_V1_PlaceCount] {
+            counts.filter { $0.level == level }.sorted { $0.count > $1.count }
+        }
+        let countries = at("country"), cities = at("city"), areas = at("area")
+        if countries.count > 1 {
+            // Inside a country when it, or one of its cities, is picked.
+            let country = countries.first { $0.name == picked }
+                ?? cities.first { $0.name == picked }.flatMap { c in countries.first { $0.name == c.parent } }
+            if let country {
+                inside = country
+                shown = cities.filter { $0.parent == country.name }
+            } else {
+                shown = countries
+            }
+        } else if cities.count > 1 || areas.isEmpty {
+            shown = cities
+        } else {
+            shown = areas
+        }
+    }
+
+    /// How many places the photos were taken in, as the header counts them.
+    static func count(_ counts: [Pidex_V1_PlaceCount]) -> Int {
+        let cities = counts.filter { $0.level == "city" }.count
+        return cities > 1 ? cities : max(cities, counts.filter { $0.level == "area" }.count)
+    }
+}
+
+private extension Character {
+    nonisolated var isCJK: Bool {
+        unicodeScalars.allSatisfy { (0x4E00...0x9FFF).contains($0.value) || (0x3400...0x4DBF).contains($0.value) }
+    }
+}

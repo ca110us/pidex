@@ -309,7 +309,7 @@ struct PhotoInfoView: View {
                 if photo.hasPlace {
                     // Narrowest first: the landmark, then the city around it.
                     let p = photo.place
-                    let words = [p.name, p.district, p.city.isEmpty ? p.region : p.city, p.country].filter { !$0.isEmpty }
+                    let words = [PlaceNames.area(p.name, in: p), p.district, p.city.isEmpty ? p.region : PlaceNames.city(p.city), p.country].filter { !$0.isEmpty }
                     LabeledContent("Where") { Text(verbatim: words.prefix(3).joined(separator: ", ")).multilineTextAlignment(.trailing) }
                 }
                 if let s = model.subject(photo.subjectID) {

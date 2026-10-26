@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"encoding/json"
+	"fmt"
+	"maps"
 	"slices"
 	"testing"
 	"time"
@@ -71,12 +73,18 @@ func TestTripsByPlace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	counts := map[string]int32{}
+	// Counted at every level, each with the place it is in.
+	counts := map[string]string{}
 	for _, c := range all.Msg.PlaceCounts {
-		counts[c.Name] = c.Count
+		counts[c.Level+":"+c.Name] = fmt.Sprintf("%d in %q", c.Count, c.Parent)
 	}
-	if counts["Dalian"] != 2 || counts["Shenyang"] != 1 || len(counts) != 2 {
-		t.Errorf("place counts: %v", counts)
+	want := map[string]string{
+		"country:China": `3 in ""`,
+		"city:Dalian":   `2 in "China"`, "city:Shenyang": `1 in "China"`,
+		"area:Xinghai Square": `2 in "Dalian"`, "area:Imperial Palace": `1 in "Shenyang"`,
+	}
+	if !maps.Equal(counts, want) {
+		t.Errorf("place counts:\n got %v\nwant %v", counts, want)
 	}
 	for _, p := range all.Msg.Photos {
 		if p.Id == d1.String() && (p.Place.GetName() != "Xinghai Square" || p.Location.GetLatitude() == 0) {

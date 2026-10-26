@@ -54,6 +54,11 @@ struct CollectionView: View {
                     }
                     .font(.subheadline)
                     .padding(.horizontal)
+                } else if let o = overview, byPlace {
+                    photosAndPlaces(Int(o.photoCount))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
                 } else if let o = overview {
                     Text("\(o.photoCount) photos · \(o.subjectCount) subjects")
                         .font(.subheadline)
@@ -85,13 +90,17 @@ struct CollectionView: View {
                         moreSentinel
                     }
                 } else {
-                    Picker("Show", selection: $section) {
-                        Text("Photos").tag(Section.photos)
-                        Text("Subjects").tag(Section.subjects)
+                    // Kept by place and time, a collection has no subjects
+                    // to switch to.
+                    if !byPlace {
+                        Picker("Show", selection: $section) {
+                            Text("Photos").tag(Section.photos)
+                            Text("Subjects").tag(Section.subjects)
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal)
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    if section == .photos {
+                    if section == .photos || byPlace {
                         if model.photos.isEmpty && !model.working {
                             emptyState(String(localized: "No photos yet. Tap the camera to start."))
                         } else {
@@ -238,20 +247,49 @@ struct CollectionView: View {
         }
     }
 
-    /// Where the photos were taken, most first: one tap shows a place's
-    /// photos (a city on a trip, a site), another shows all again.
+    private var byPlace: Bool { model.config?.subjectTypes.isEmpty == true }
+
+    private func photosAndPlaces(_ photos: Int) -> Text {
+        let places = PlaceLevels.count(model.places)
+        let parts: [Text] = [Text("\(photos) photos"), Text(verbatim: " · "), Text("\(places) places")]
+        return parts.dropFirst().reduce(parts[0], +)
+    }
+
+    /// Where the photos were taken, most first, at the level that tells them
+    /// apart (countries, cities or landmarks): one tap shows a place's photos,
+    /// another shows all again. A picked country shows its cities, with a
+    /// way back.
     private var placeRow: some View {
         let picked = model.pickedPlace
+        let levels = PlaceLevels(model.places, picked: picked)
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(model.places, id: \.name) { p in
+                if let country = levels.inside {
+                    Button {
+                        Task { await model.toggle(place: picked ?? country.name) }
+                    } label: {
+                        Label { Text(verbatim: country.name) } icon: { Image(systemName: "chevron.left") }
+                            .font(.footnote.weight(.semibold))
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 12)
+                            .background(Theme.ink, in: Capsule())
+                            .foregroundStyle(Theme.onInk)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("All places"))
+                    .accessibilityIdentifier("places-back")
+                }
+                ForEach(levels.shown, id: \.name) { p in
                     let on = picked == p.name
                     Button {
-                        Task { await model.toggle(place: p.name) }
+                        // Within a country, unpicking a city goes back to
+                        // the country's photos.
+                        let place = on ? (levels.inside?.name ?? p.name) : p.name
+                        Task { await model.toggle(place: place) }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: on ? "checkmark" : "mappin").font(.caption2.weight(.bold))
-                            Text(verbatim: p.name)
+                            Text(verbatim: PlaceNames.shown(p))
                             Text(verbatim: "\(p.count)").foregroundStyle(on ? Theme.onInk.opacity(0.7) : Theme.muted)
                         }
                         .font(.footnote)
@@ -503,7 +541,9 @@ struct DayGroupedGrid: View {
         var out = order.map { day -> Day in
             let photos = byDay[day]!
             let city = Self.most(photos.compactMap { $0.hasPlace ? Self.city($0.place) : nil })
-            let landmark = Self.most(photos.compactMap { $0.hasPlace && Self.city($0.place) == city && !$0.place.name.isEmpty ? $0.place.name : nil })
+            let landmark = Self.most(photos.compactMap { p in
+                p.hasPlace && Self.city(p.place) == city && !p.place.name.isEmpty ? PlaceNames.area(p.place.name, in: p.place) : nil
+            })
             let place = [city, landmark].compactMap { $0 }.joined(separator: " · ")
             return Day(day: day, photos: photos, place: place.isEmpty ? nil : place, city: city)
         }
@@ -526,7 +566,7 @@ struct DayGroupedGrid: View {
     }
 
     private static func city(_ p: Pidex_V1_Place) -> String? {
-        for v in [p.city, p.region, p.country] where !v.isEmpty { return v }
+        for v in [PlaceNames.city(p.city), p.region, p.country] where !v.isEmpty { return v }
         return nil
     }
 

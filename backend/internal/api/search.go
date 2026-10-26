@@ -65,7 +65,7 @@ func (s *searchService) SearchPhotos(ctx context.Context, req *connect.Request[p
 		out.TagCounts = append(out.TagCounts, &pidexv1.TagCount{Key: c.Key, Count: int32(c.Count)})
 	}
 	for _, c := range res.PlaceCounts {
-		out.PlaceCounts = append(out.PlaceCounts, &pidexv1.PlaceCount{Name: c.Key, Count: int32(c.Count)})
+		out.PlaceCounts = append(out.PlaceCounts, &pidexv1.PlaceCount{Name: c.Name, Count: int32(c.Count), Level: c.Level, Parent: c.Parent})
 	}
 	photos, err := s.photosInOrder(ctx, pr.TeamID, res.PhotoIDs)
 	if err != nil {

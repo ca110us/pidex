@@ -375,6 +375,34 @@
         }
       }
     },
+    "%lld places": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 个地点"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld place"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld places"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld selected": {
       "localizations": {
         "zh-Hans": {
@@ -599,6 +627,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "所有合集"
+          }
+        }
+      }
+    },
+    "All places": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部地点"
           }
         }
       }
