@@ -61,6 +61,16 @@
         }
       }
     },
+    "%d hidden: blurred, dark or nothing in them": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d 张已隐藏：模糊、太暗或什么都没拍到"
+          }
+        }
+      }
+    },
     "%d photos": {
       "localizations": {
         "zh-Hans": {
@@ -239,6 +249,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld 张照片已归档到“%2$@”"
+          }
+        }
+      }
+    },
+    "%lld photos filed in “%@”, %lld hidden": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已归档 %lld 张到“%@”，隐藏 %lld 张"
           }
         }
       }
@@ -2579,6 +2599,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "一次旅行的照片"
+          }
+        }
+      }
+    },
+    "Photos from my travels": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "旅行照片"
+          }
+        }
+      }
+    },
+    "Photos from my travels. Group them by place and day by themselves, so I can find them by city, date or what they show.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我旅行时拍的照片。按地点和日期自动归好，以后能按城市、日期或拍了什么找到。"
           }
         }
       }

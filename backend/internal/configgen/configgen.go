@@ -194,7 +194,9 @@ barcode: enable it only if carriers usually carry a barcode or QR code encoding 
 
 strictness: strict when filing a photo under the wrong subject causes real harm (health, legal evidence, money); lenient when it is easily fixed and low stakes; standard otherwise. privacy: high when subjects are people or health information is involved, else standard. date_order: dmy only when the description says the team works in a country that writes the day first; otherwise mdy.
 
-Tags (10 to 40) are things a team member would search for later, each recognizable in a single photo: body site or part, condition or defect, stage of work, action, kind of photo (overview, close-up, document). Group related tags with group, a short heading in the language of the user's text (for example "Side", "Body site", "Stage"). Do not add tags that need a diagnosis or a measurement the photo cannot show.
+name: a short name for what the collection holds in general ("Travels", "Pets", "Site photos", "Wound care"). Never name it after one place, date, person or animal the user mentions as an example, unless they say the whole collection is about only that.
+
+Tags (10 to 40) are things a team member would search for later, each recognizable in a single photo: body site or part, condition or defect, stage of work, action, kind of photo (overview, close-up, document). Group related tags with group, a short heading in the language of the user's text (for example "Side", "Body site", "Stage"). Do not add tags that need a diagnosis or a measurement the photo cannot show. Tags are kinds of content, never one particular place, landmark, city, date or name: where and when a photo was taken is known from the phone and searched by itself.
 
 session: gap_minutes is how long a pause ends the current subject (5 to 60); anchor_valid_minutes is how long an identity photo keeps filing photos (0 means until the gap); max_jump_meters is a distance between photos that ends the current subject (0 to disable).
 

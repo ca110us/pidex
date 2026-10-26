@@ -189,6 +189,23 @@ func (q *Queue) EnqueueIndexPhoto(ctx context.Context, tx pgx.Tx, photoID uuid.U
 	return err
 }
 
+// EnqueueProcessMany queues photos to be analysed and filed again. A photo
+// processed before has a completed job with the same arguments, which the
+// default uniqueness would take for this one; only one waiting or running
+// counts here.
+func (q *Queue) EnqueueProcessMany(ctx context.Context, ids []uuid.UUID) error {
+	again := &river.InsertOpts{MaxAttempts: 5, UniqueOpts: river.UniqueOpts{ByArgs: true, ByState: []rivertype.JobState{
+		rivertype.JobStateAvailable, rivertype.JobStatePending, rivertype.JobStateRunning,
+		rivertype.JobStateRetryable, rivertype.JobStateScheduled,
+	}}}
+	params := make([]river.InsertManyParams, len(ids))
+	for i, id := range ids {
+		params[i] = river.InsertManyParams{Args: ProcessPhotoArgs{PhotoID: id}, InsertOpts: again}
+	}
+	_, err := q.client.InsertMany(ctx, params)
+	return err
+}
+
 // EnqueueEmbedLooks queues photos for the look service.
 func (q *Queue) EnqueueEmbedLooks(ctx context.Context, ids []uuid.UUID) error {
 	params := make([]river.InsertManyParams, len(ids))

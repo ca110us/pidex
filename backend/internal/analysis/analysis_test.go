@@ -128,3 +128,19 @@ func TestParseRejectsUnknownRole(t *testing.T) {
 		t.Fatal("want error")
 	}
 }
+
+// TestAlbumRoles: in an album kept by place and time (no subject types),
+// whatever was photographed belongs; only shots showing nothing are junk.
+func TestAlbumRoles(t *testing.T) {
+	trips, err := teamconfig.LoadTemplate("trips")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ins := Instructions(trips)
+	if strings.Contains(ins, "unrelated to this team's work") || !strings.Contains(ins, "Never junk for being ordinary") {
+		t.Errorf("an album's photos are judged as work:\n%s", ins)
+	}
+	if !strings.Contains(Instructions(hospital(t)), "unrelated to this team's work") {
+		t.Error("work photos lost their rule for what is unrelated")
+	}
+}

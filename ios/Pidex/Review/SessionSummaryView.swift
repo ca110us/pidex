@@ -193,6 +193,9 @@ struct BatchProgress: View {
                 .animation(.default, value: batch.progress(pending: pending))
             if let paused, batch.phase(pending: pending) != .done {
                 Text("Uploads paused. \(paused)").font(.caption).foregroundStyle(Theme.attention)
+            } else if let junk = batch.summary?.junkCount, junk > 0 {
+                // Said, so "filed" never means photos that will not show.
+                Text("\(junk) hidden: blurred, dark or nothing in them").font(.caption).foregroundStyle(Theme.attention)
             } else if batch.needsReview > 0 {
                 Text("\(batch.needsReview) need you").font(.caption).foregroundStyle(Theme.attention)
             }
@@ -261,7 +264,10 @@ struct BatchPill: View {
                 guard settled, !app.showingCamera, !app.showingBatch else { return }
                 try? await Task.sleep(for: .seconds(1.5))
                 guard app.batch === batch, !app.showingCamera, !app.showingBatch else { return }
-                app.show(String(localized: "\(batch.expected) photos filed in “\(batch.collection)”"))
+                let junk = Int(batch.summary?.junkCount ?? 0)
+                app.show(junk > 0
+                         ? String(localized: "\(batch.expected - junk) photos filed in “\(batch.collection)”, \(junk) hidden")
+                         : String(localized: "\(batch.expected) photos filed in “\(batch.collection)”"))
                 app.dismissBatch()
             }
         }

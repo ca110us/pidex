@@ -188,3 +188,10 @@ SELECT id FROM photos
 WHERE status = 'processed' AND extracted->'appearance' IS NOT NULL
   AND (@every_photo::bool OR look_embedding IS NULL)
 ORDER BY created_at;
+
+-- name: ListTeamPhotosToReprocess :many
+-- A collection's photos to analyse and file again, all or only one role.
+SELECT p.id FROM photos p JOIN teams t ON t.id = p.team_id
+WHERE t.name = @team_name AND p.status IN ('processed', 'failed')
+  AND (@role::text = '' OR p.role = @role::text)
+ORDER BY p.created_at;

@@ -109,14 +109,27 @@ func (r *Result) IdentityFields() (map[string]string, float64) {
 // Instructions are identical for every photo of a team and config version.
 func Instructions(cfg *teamconfig.Config) string {
 	var b strings.Builder
-	b.WriteString(`You file work photos for a team. You see one photo at a time and fill in a JSON form about it.
+	if len(cfg.SubjectTypes) == 0 {
+		// An album kept by place and time (a trip): whatever the person
+		// chose to photograph belongs; nothing is "unrelated work".
+		b.WriteString(`You describe photos for an album kept by where and when they were taken. You see one photo at a time and fill in a JSON form about it.
+
+Roles:
+- content: anything the person chose to photograph: places, scenery, people, food, rooms, things, moments. Set subject_type to "none".
+- document: tickets, receipts, menus, signs or screens whose text is the point.
+- junk: only a shot that shows nothing at all: black, completely blurred, or taken by accident (inside a pocket, a finger over the lens). Never junk for being ordinary or everyday.
+`)
+	} else {
+		b.WriteString(`You file work photos for a team. You see one photo at a time and fill in a JSON form about it.
 
 Roles:
 - identity: the photo's main purpose is to show who or what the work is about, on one of the identity carriers listed for a subject type below.
 - document: paperwork whose content matters (report, form, invoice, screen showing text).
 - content: the work itself, as this team does it.
 - junk: blurred, black, accidental, or showing nothing useful, and anything unrelated to this team's work (personal photos, other places or events, artwork, advertisements, other trades).
-
+`)
+	}
+	b.WriteString(`
 Identity rules:
 - Identity comes only from the carriers listed for each subject type. Text on anything else (tickets, packaging, artwork, posters, unrelated signs) is not identity.
 - Report identity values only if you can actually read them in this photo, character by character. Never guess, infer, or complete a partly visible value, and never use an example or placeholder value.

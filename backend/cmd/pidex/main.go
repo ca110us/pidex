@@ -35,6 +35,7 @@ const usage = `usage:
   pidex migrate up|down|status
   pidex seed -team NAME -email EMAIL [-name NAME] [-template KEY]
   pidex reindex   (queue processed photos that need thumbnails or search vectors)
+  pidex reprocess -team NAME [-role junk]   (analyse and file a collection's photos again, after its rules changed; only one role with -role)
   pidex embed-looks [-all]   (queue photos of subjects told apart by look for the look service; -all also those embedded by another model)
   pidex name-descriptions   (queue photos of pets and the like described before descriptions used their names)
 `
@@ -64,6 +65,8 @@ func main() {
 		err = reindex(ctx, cfg, log)
 	case "name-descriptions":
 		err = nameDescriptions(ctx, cfg, log)
+	case "reprocess":
+		err = reprocess(ctx, cfg, log, os.Args[2:])
 	case "embed-looks":
 		err = embedLooks(ctx, cfg, log, slices.Contains(os.Args[2:], "-all"))
 	default:
@@ -172,6 +175,40 @@ func reindex(ctx context.Context, cfg appconfig.Config, log *slog.Logger) error 
 		}
 	}
 	fmt.Printf("queued %d photos for indexing\n", len(ids))
+	return nil
+}
+
+// reprocess queues a collection's photos to be analysed and filed again
+// under its current rules: people's own filings are kept.
+func reprocess(ctx context.Context, cfg appconfig.Config, log *slog.Logger, args []string) error {
+	fs := flag.NewFlagSet("reprocess", flag.ContinueOnError)
+	team := fs.String("team", "", "the collection's name")
+	role := fs.String("role", "", "only photos of this role (identity, document, content, junk)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *team == "" {
+		return errors.New("reprocess needs -team")
+	}
+	pool, err := store.OpenPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	ids, err := dbq.New(pool).ListTeamPhotosToReprocess(ctx, dbq.ListTeamPhotosToReprocessParams{TeamName: *team, Role: *role})
+	if err != nil {
+		return err
+	}
+	queue, err := jobs.New(pool, nil, nil, 0, log)
+	if err != nil {
+		return err
+	}
+	for start := 0; start < len(ids); start += 500 {
+		if err := queue.EnqueueProcessMany(ctx, ids[start:min(start+500, len(ids))]); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("queued %d photos of %q to be processed again\n", len(ids), *team)
 	return nil
 }
 

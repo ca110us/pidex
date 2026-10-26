@@ -848,6 +848,39 @@ func (q *Queries) ListSubjectPhotos(ctx context.Context, arg ListSubjectPhotosPa
 	return items, nil
 }
 
+const listTeamPhotosToReprocess = `-- name: ListTeamPhotosToReprocess :many
+SELECT p.id FROM photos p JOIN teams t ON t.id = p.team_id
+WHERE t.name = $1 AND p.status IN ('processed', 'failed')
+  AND ($2::text = '' OR p.role = $2::text)
+ORDER BY p.created_at
+`
+
+type ListTeamPhotosToReprocessParams struct {
+	TeamName string
+	Role     string
+}
+
+// A collection's photos to analyse and file again, all or only one role.
+func (q *Queries) ListTeamPhotosToReprocess(ctx context.Context, arg ListTeamPhotosToReprocessParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listTeamPhotosToReprocess, arg.TeamName, arg.Role)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const manualAssignPhotos = `-- name: ManualAssignPhotos :many
 UPDATE photos SET
     subject_id            = $1,
