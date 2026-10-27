@@ -17,6 +17,8 @@ import (
 
 	"pidex/internal/pipeline"
 	"pidex/internal/search"
+	"pidex/internal/store"
+	"pidex/internal/store/dbq"
 )
 
 type ProcessPhotoArgs struct {
@@ -107,6 +109,27 @@ func (ProfileSubjectsArgs) InsertOpts() river.InsertOpts {
 	}}}
 }
 
+// PruneTombstonesArgs forgets deletions phones no longer need to hear of.
+type PruneTombstonesArgs struct{}
+
+func (PruneTombstonesArgs) Kind() string { return "prune_tombstones" }
+
+func (PruneTombstonesArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{MaxAttempts: 1, UniqueOpts: river.UniqueOpts{ByState: []rivertype.JobState{
+		rivertype.JobStateAvailable, rivertype.JobStatePending, rivertype.JobStateRunning, rivertype.JobStateScheduled,
+	}}}
+}
+
+type pruneTombstonesWorker struct {
+	river.WorkerDefaults[PruneTombstonesArgs]
+	p *pipeline.Processor
+}
+
+func (w *pruneTombstonesWorker) Work(ctx context.Context, job *river.Job[PruneTombstonesArgs]) error {
+	_, err := store.PruneTombstones(ctx, dbq.New(w.p.Pool))
+	return err
+}
+
 // profileEvery is how often subjects are looked at for a profile.
 const profileEvery = 2 * time.Minute
 
@@ -160,10 +183,15 @@ func New(pool *pgxpool.Pool, p *pipeline.Processor, ix *search.Indexer, workers 
 		river.AddWorker(w, &nameDescriptionWorker{p: p})
 		river.AddWorker(w, &profileSubjectsWorker{p: p})
 		river.AddWorker(w, &embedLookWorker{p: p})
+		river.AddWorker(w, &pruneTombstonesWorker{p: p})
 		cfg.Workers = w
 		cfg.PeriodicJobs = []*river.PeriodicJob{river.NewPeriodicJob(
 			river.PeriodicInterval(profileEvery),
 			func() (river.JobArgs, *river.InsertOpts) { return ProfileSubjectsArgs{}, nil },
+			&river.PeriodicJobOpts{RunOnStart: true},
+		), river.NewPeriodicJob(
+			river.PeriodicInterval(24*time.Hour),
+			func() (river.JobArgs, *river.InsertOpts) { return PruneTombstonesArgs{}, nil },
 			&river.PeriodicJobOpts{RunOnStart: true},
 		)}
 		cfg.Queues = map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: workers}}

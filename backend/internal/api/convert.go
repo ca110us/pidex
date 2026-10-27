@@ -118,9 +118,29 @@ func described(ph dbq.Photo, ex pipeline.Extracted, names map[uuid.UUID]string) 
 	return strings.ReplaceAll(ex.NamedDescription, analysis.SubjectPlaceholder, name)
 }
 
-// photoProto converts a photo; names are the display names of the subjects
-// photos are filed under, for their descriptions.
+// photoProto converts a photo with links to its images; names are the
+// display names of the subjects photos are filed under, for their
+// descriptions.
 func (s *Server) photoProto(ctx context.Context, ph dbq.Photo, tags []dbq.PhotoTag, names map[uuid.UUID]string) *pidexv1.Photo {
+	out := photoData(ph, tags, names)
+	out.ViewUrl, out.ThumbnailUrl = s.photoLinks(ctx, ph.Status, ph.ObjectKey, ph.ThumbKey)
+	return out
+}
+
+// photoLinks are short-lived links to a photo's original and thumbnail,
+// each empty until there is one.
+func (s *Server) photoLinks(ctx context.Context, status, objectKey string, thumbKey *string) (view, thumb string) {
+	if status != "awaiting_upload" {
+		view, _ = s.Storage.PresignGet(ctx, objectKey, viewURLTTL)
+	}
+	if thumbKey != nil {
+		thumb, _ = s.Storage.PresignGet(ctx, *thumbKey, viewURLTTL)
+	}
+	return view, thumb
+}
+
+// photoData converts a photo without links, as phones keep it.
+func photoData(ph dbq.Photo, tags []dbq.PhotoTag, names map[uuid.UUID]string) *pidexv1.Photo {
 	ex := pipeline.DecodeExtracted(ph.Extracted)
 	out := &pidexv1.Photo{
 		Id:                   ph.ID.String(),
@@ -135,6 +155,7 @@ func (s *Server) photoProto(ctx context.Context, ph dbq.Photo, tags []dbq.PhotoT
 		Description:          described(ph, ex, names),
 		ExtractedFields:      ex.DisplayFields(),
 		Place:                placeProto(ph.Place),
+		CreatedAt:            timestamppb.New(ph.CreatedAt),
 	}
 	if ph.Role != nil {
 		out.Role = roleToProto[*ph.Role]
@@ -154,16 +175,6 @@ func (s *Server) photoProto(ctx context.Context, ph dbq.Photo, tags []dbq.PhotoT
 			src = pidexv1.TagSource_TAG_SOURCE_USER
 		}
 		out.Tags = append(out.Tags, &pidexv1.Tag{Key: t.TagKey, Confidence: t.Confidence, Source: src})
-	}
-	if ph.Status != "awaiting_upload" {
-		if u, err := s.Storage.PresignGet(ctx, ph.ObjectKey, viewURLTTL); err == nil {
-			out.ViewUrl = u
-		}
-	}
-	if ph.ThumbKey != nil {
-		if u, err := s.Storage.PresignGet(ctx, *ph.ThumbKey, viewURLTTL); err == nil {
-			out.ThumbnailUrl = u
-		}
 	}
 	return out
 }

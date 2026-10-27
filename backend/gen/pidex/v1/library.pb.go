@@ -21,6 +21,301 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SyncLibraryRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// From the last response; empty to start from nothing.
+	Cursor        string `protobuf:"bytes,1,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	PageSize      int32  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncLibraryRequest) Reset() {
+	*x = SyncLibraryRequest{}
+	mi := &file_pidex_v1_library_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncLibraryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncLibraryRequest) ProtoMessage() {}
+
+func (x *SyncLibraryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_library_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncLibraryRequest.ProtoReflect.Descriptor instead.
+func (*SyncLibraryRequest) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *SyncLibraryRequest) GetCursor() string {
+	if x != nil {
+		return x.Cursor
+	}
+	return ""
+}
+
+func (x *SyncLibraryRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type SyncLibraryResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Added or changed since the cursor, without links. Photos in any state:
+	// the phone shows the same ones search does (processed, not junk).
+	Photos []*Photo `protobuf:"bytes,1,rep,name=photos,proto3" json:"photos,omitempty"`
+	// Added or changed subjects, without counts or covers.
+	Subjects []*Subject `protobuf:"bytes,2,rep,name=subjects,proto3" json:"subjects,omitempty"`
+	// Deleted, or (subjects) merged into another.
+	DeletedPhotoIds   []string `protobuf:"bytes,3,rep,name=deleted_photo_ids,json=deletedPhotoIds,proto3" json:"deleted_photo_ids,omitempty"`
+	DeletedSubjectIds []string `protobuf:"bytes,4,rep,name=deleted_subject_ids,json=deletedSubjectIds,proto3" json:"deleted_subject_ids,omitempty"`
+	// To ask with next time.
+	Cursor string `protobuf:"bytes,5,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// More changes wait: ask again with the cursor straight away.
+	More bool `protobuf:"varint,6,opt,name=more,proto3" json:"more,omitempty"`
+	// The cursor was too old to say what was deleted since: drop the copy
+	// and keep what follows, from this response on.
+	StartOver     bool `protobuf:"varint,7,opt,name=start_over,json=startOver,proto3" json:"start_over,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncLibraryResponse) Reset() {
+	*x = SyncLibraryResponse{}
+	mi := &file_pidex_v1_library_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncLibraryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncLibraryResponse) ProtoMessage() {}
+
+func (x *SyncLibraryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_library_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncLibraryResponse.ProtoReflect.Descriptor instead.
+func (*SyncLibraryResponse) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SyncLibraryResponse) GetPhotos() []*Photo {
+	if x != nil {
+		return x.Photos
+	}
+	return nil
+}
+
+func (x *SyncLibraryResponse) GetSubjects() []*Subject {
+	if x != nil {
+		return x.Subjects
+	}
+	return nil
+}
+
+func (x *SyncLibraryResponse) GetDeletedPhotoIds() []string {
+	if x != nil {
+		return x.DeletedPhotoIds
+	}
+	return nil
+}
+
+func (x *SyncLibraryResponse) GetDeletedSubjectIds() []string {
+	if x != nil {
+		return x.DeletedSubjectIds
+	}
+	return nil
+}
+
+func (x *SyncLibraryResponse) GetCursor() string {
+	if x != nil {
+		return x.Cursor
+	}
+	return ""
+}
+
+func (x *SyncLibraryResponse) GetMore() bool {
+	if x != nil {
+		return x.More
+	}
+	return false
+}
+
+func (x *SyncLibraryResponse) GetStartOver() bool {
+	if x != nil {
+		return x.StartOver
+	}
+	return false
+}
+
+type GetPhotoLinksRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// At most 200.
+	Ids           []string `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPhotoLinksRequest) Reset() {
+	*x = GetPhotoLinksRequest{}
+	mi := &file_pidex_v1_library_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPhotoLinksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPhotoLinksRequest) ProtoMessage() {}
+
+func (x *GetPhotoLinksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_library_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPhotoLinksRequest.ProtoReflect.Descriptor instead.
+func (*GetPhotoLinksRequest) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetPhotoLinksRequest) GetIds() []string {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+type PhotoLinks struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ThumbnailUrl  string                 `protobuf:"bytes,1,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	ViewUrl       string                 `protobuf:"bytes,2,opt,name=view_url,json=viewUrl,proto3" json:"view_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PhotoLinks) Reset() {
+	*x = PhotoLinks{}
+	mi := &file_pidex_v1_library_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PhotoLinks) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PhotoLinks) ProtoMessage() {}
+
+func (x *PhotoLinks) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_library_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PhotoLinks.ProtoReflect.Descriptor instead.
+func (*PhotoLinks) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PhotoLinks) GetThumbnailUrl() string {
+	if x != nil {
+		return x.ThumbnailUrl
+	}
+	return ""
+}
+
+func (x *PhotoLinks) GetViewUrl() string {
+	if x != nil {
+		return x.ViewUrl
+	}
+	return ""
+}
+
+type GetPhotoLinksResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// By photo id; photos not found in the collection are left out.
+	Links         map[string]*PhotoLinks `protobuf:"bytes,1,rep,name=links,proto3" json:"links,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPhotoLinksResponse) Reset() {
+	*x = GetPhotoLinksResponse{}
+	mi := &file_pidex_v1_library_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPhotoLinksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPhotoLinksResponse) ProtoMessage() {}
+
+func (x *GetPhotoLinksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_library_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPhotoLinksResponse.ProtoReflect.Descriptor instead.
+func (*GetPhotoLinksResponse) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetPhotoLinksResponse) GetLinks() map[string]*PhotoLinks {
+	if x != nil {
+		return x.Links
+	}
+	return nil
+}
+
 type ListPhotosRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SubjectId     string                 `protobuf:"bytes,1,opt,name=subject_id,json=subjectId,proto3" json:"subject_id,omitempty"`
@@ -35,7 +330,7 @@ type ListPhotosRequest struct {
 
 func (x *ListPhotosRequest) Reset() {
 	*x = ListPhotosRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[0]
+	mi := &file_pidex_v1_library_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +342,7 @@ func (x *ListPhotosRequest) String() string {
 func (*ListPhotosRequest) ProtoMessage() {}
 
 func (x *ListPhotosRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[0]
+	mi := &file_pidex_v1_library_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +355,7 @@ func (x *ListPhotosRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPhotosRequest.ProtoReflect.Descriptor instead.
 func (*ListPhotosRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{0}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListPhotosRequest) GetSubjectId() string {
@@ -115,7 +410,7 @@ type ListPhotosResponse struct {
 
 func (x *ListPhotosResponse) Reset() {
 	*x = ListPhotosResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[1]
+	mi := &file_pidex_v1_library_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -127,7 +422,7 @@ func (x *ListPhotosResponse) String() string {
 func (*ListPhotosResponse) ProtoMessage() {}
 
 func (x *ListPhotosResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[1]
+	mi := &file_pidex_v1_library_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -140,7 +435,7 @@ func (x *ListPhotosResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPhotosResponse.ProtoReflect.Descriptor instead.
 func (*ListPhotosResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{1}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListPhotosResponse) GetPhotos() []*Photo {
@@ -166,7 +461,7 @@ type GetPhotoRequest struct {
 
 func (x *GetPhotoRequest) Reset() {
 	*x = GetPhotoRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[2]
+	mi := &file_pidex_v1_library_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -178,7 +473,7 @@ func (x *GetPhotoRequest) String() string {
 func (*GetPhotoRequest) ProtoMessage() {}
 
 func (x *GetPhotoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[2]
+	mi := &file_pidex_v1_library_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -191,7 +486,7 @@ func (x *GetPhotoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPhotoRequest.ProtoReflect.Descriptor instead.
 func (*GetPhotoRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{2}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetPhotoRequest) GetId() string {
@@ -210,7 +505,7 @@ type GetPhotoResponse struct {
 
 func (x *GetPhotoResponse) Reset() {
 	*x = GetPhotoResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[3]
+	mi := &file_pidex_v1_library_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -222,7 +517,7 @@ func (x *GetPhotoResponse) String() string {
 func (*GetPhotoResponse) ProtoMessage() {}
 
 func (x *GetPhotoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[3]
+	mi := &file_pidex_v1_library_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -235,7 +530,7 @@ func (x *GetPhotoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPhotoResponse.ProtoReflect.Descriptor instead.
 func (*GetPhotoResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{3}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetPhotoResponse) GetPhoto() *Photo {
@@ -255,7 +550,7 @@ type AssignPhotosRequest struct {
 
 func (x *AssignPhotosRequest) Reset() {
 	*x = AssignPhotosRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[4]
+	mi := &file_pidex_v1_library_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -267,7 +562,7 @@ func (x *AssignPhotosRequest) String() string {
 func (*AssignPhotosRequest) ProtoMessage() {}
 
 func (x *AssignPhotosRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[4]
+	mi := &file_pidex_v1_library_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -280,7 +575,7 @@ func (x *AssignPhotosRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignPhotosRequest.ProtoReflect.Descriptor instead.
 func (*AssignPhotosRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{4}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *AssignPhotosRequest) GetPhotoIds() []string {
@@ -306,7 +601,7 @@ type AssignPhotosResponse struct {
 
 func (x *AssignPhotosResponse) Reset() {
 	*x = AssignPhotosResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[5]
+	mi := &file_pidex_v1_library_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -318,7 +613,7 @@ func (x *AssignPhotosResponse) String() string {
 func (*AssignPhotosResponse) ProtoMessage() {}
 
 func (x *AssignPhotosResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[5]
+	mi := &file_pidex_v1_library_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -331,7 +626,7 @@ func (x *AssignPhotosResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignPhotosResponse.ProtoReflect.Descriptor instead.
 func (*AssignPhotosResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{5}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *AssignPhotosResponse) GetPhotos() []*Photo {
@@ -352,7 +647,7 @@ type UpdatePhotoTagsRequest struct {
 
 func (x *UpdatePhotoTagsRequest) Reset() {
 	*x = UpdatePhotoTagsRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[6]
+	mi := &file_pidex_v1_library_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -364,7 +659,7 @@ func (x *UpdatePhotoTagsRequest) String() string {
 func (*UpdatePhotoTagsRequest) ProtoMessage() {}
 
 func (x *UpdatePhotoTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[6]
+	mi := &file_pidex_v1_library_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -377,7 +672,7 @@ func (x *UpdatePhotoTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePhotoTagsRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePhotoTagsRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{6}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdatePhotoTagsRequest) GetPhotoId() string {
@@ -410,7 +705,7 @@ type UpdatePhotoTagsResponse struct {
 
 func (x *UpdatePhotoTagsResponse) Reset() {
 	*x = UpdatePhotoTagsResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[7]
+	mi := &file_pidex_v1_library_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -422,7 +717,7 @@ func (x *UpdatePhotoTagsResponse) String() string {
 func (*UpdatePhotoTagsResponse) ProtoMessage() {}
 
 func (x *UpdatePhotoTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[7]
+	mi := &file_pidex_v1_library_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -435,7 +730,7 @@ func (x *UpdatePhotoTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePhotoTagsResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePhotoTagsResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{7}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdatePhotoTagsResponse) GetPhoto() *Photo {
@@ -458,7 +753,7 @@ type ListSubjectsRequest struct {
 
 func (x *ListSubjectsRequest) Reset() {
 	*x = ListSubjectsRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[8]
+	mi := &file_pidex_v1_library_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -470,7 +765,7 @@ func (x *ListSubjectsRequest) String() string {
 func (*ListSubjectsRequest) ProtoMessage() {}
 
 func (x *ListSubjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[8]
+	mi := &file_pidex_v1_library_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -483,7 +778,7 @@ func (x *ListSubjectsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubjectsRequest.ProtoReflect.Descriptor instead.
 func (*ListSubjectsRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{8}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListSubjectsRequest) GetTypeKey() string {
@@ -524,7 +819,7 @@ type ListSubjectsResponse struct {
 
 func (x *ListSubjectsResponse) Reset() {
 	*x = ListSubjectsResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[9]
+	mi := &file_pidex_v1_library_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -536,7 +831,7 @@ func (x *ListSubjectsResponse) String() string {
 func (*ListSubjectsResponse) ProtoMessage() {}
 
 func (x *ListSubjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[9]
+	mi := &file_pidex_v1_library_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -549,7 +844,7 @@ func (x *ListSubjectsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubjectsResponse.ProtoReflect.Descriptor instead.
 func (*ListSubjectsResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{9}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListSubjectsResponse) GetSubjects() []*Subject {
@@ -575,7 +870,7 @@ type GetSubjectRequest struct {
 
 func (x *GetSubjectRequest) Reset() {
 	*x = GetSubjectRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[10]
+	mi := &file_pidex_v1_library_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -587,7 +882,7 @@ func (x *GetSubjectRequest) String() string {
 func (*GetSubjectRequest) ProtoMessage() {}
 
 func (x *GetSubjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[10]
+	mi := &file_pidex_v1_library_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -600,7 +895,7 @@ func (x *GetSubjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubjectRequest.ProtoReflect.Descriptor instead.
 func (*GetSubjectRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{10}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetSubjectRequest) GetId() string {
@@ -621,7 +916,7 @@ type GetSubjectResponse struct {
 
 func (x *GetSubjectResponse) Reset() {
 	*x = GetSubjectResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[11]
+	mi := &file_pidex_v1_library_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -633,7 +928,7 @@ func (x *GetSubjectResponse) String() string {
 func (*GetSubjectResponse) ProtoMessage() {}
 
 func (x *GetSubjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[11]
+	mi := &file_pidex_v1_library_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -646,7 +941,7 @@ func (x *GetSubjectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubjectResponse.ProtoReflect.Descriptor instead.
 func (*GetSubjectResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{11}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetSubjectResponse) GetSubject() *Subject {
@@ -677,7 +972,7 @@ type CreateSubjectRequest struct {
 
 func (x *CreateSubjectRequest) Reset() {
 	*x = CreateSubjectRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[12]
+	mi := &file_pidex_v1_library_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -689,7 +984,7 @@ func (x *CreateSubjectRequest) String() string {
 func (*CreateSubjectRequest) ProtoMessage() {}
 
 func (x *CreateSubjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[12]
+	mi := &file_pidex_v1_library_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -702,7 +997,7 @@ func (x *CreateSubjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSubjectRequest.ProtoReflect.Descriptor instead.
 func (*CreateSubjectRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{12}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CreateSubjectRequest) GetTypeKey() string {
@@ -742,7 +1037,7 @@ type CreateSubjectResponse struct {
 
 func (x *CreateSubjectResponse) Reset() {
 	*x = CreateSubjectResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[13]
+	mi := &file_pidex_v1_library_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +1049,7 @@ func (x *CreateSubjectResponse) String() string {
 func (*CreateSubjectResponse) ProtoMessage() {}
 
 func (x *CreateSubjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[13]
+	mi := &file_pidex_v1_library_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,7 +1062,7 @@ func (x *CreateSubjectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSubjectResponse.ProtoReflect.Descriptor instead.
 func (*CreateSubjectResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{13}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *CreateSubjectResponse) GetSubject() *Subject {
@@ -787,7 +1082,7 @@ type RenameSubjectRequest struct {
 
 func (x *RenameSubjectRequest) Reset() {
 	*x = RenameSubjectRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[14]
+	mi := &file_pidex_v1_library_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -799,7 +1094,7 @@ func (x *RenameSubjectRequest) String() string {
 func (*RenameSubjectRequest) ProtoMessage() {}
 
 func (x *RenameSubjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[14]
+	mi := &file_pidex_v1_library_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -812,7 +1107,7 @@ func (x *RenameSubjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RenameSubjectRequest.ProtoReflect.Descriptor instead.
 func (*RenameSubjectRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{14}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RenameSubjectRequest) GetSubjectId() string {
@@ -839,7 +1134,7 @@ type SetSubjectProfileRequest struct {
 
 func (x *SetSubjectProfileRequest) Reset() {
 	*x = SetSubjectProfileRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[15]
+	mi := &file_pidex_v1_library_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -851,7 +1146,7 @@ func (x *SetSubjectProfileRequest) String() string {
 func (*SetSubjectProfileRequest) ProtoMessage() {}
 
 func (x *SetSubjectProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[15]
+	mi := &file_pidex_v1_library_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -864,7 +1159,7 @@ func (x *SetSubjectProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetSubjectProfileRequest.ProtoReflect.Descriptor instead.
 func (*SetSubjectProfileRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{15}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *SetSubjectProfileRequest) GetSubjectId() string {
@@ -890,7 +1185,7 @@ type SetSubjectProfileResponse struct {
 
 func (x *SetSubjectProfileResponse) Reset() {
 	*x = SetSubjectProfileResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[16]
+	mi := &file_pidex_v1_library_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -902,7 +1197,7 @@ func (x *SetSubjectProfileResponse) String() string {
 func (*SetSubjectProfileResponse) ProtoMessage() {}
 
 func (x *SetSubjectProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[16]
+	mi := &file_pidex_v1_library_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -915,7 +1210,7 @@ func (x *SetSubjectProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetSubjectProfileResponse.ProtoReflect.Descriptor instead.
 func (*SetSubjectProfileResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{16}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *SetSubjectProfileResponse) GetSubject() *Subject {
@@ -934,7 +1229,7 @@ type RenameSubjectResponse struct {
 
 func (x *RenameSubjectResponse) Reset() {
 	*x = RenameSubjectResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[17]
+	mi := &file_pidex_v1_library_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -946,7 +1241,7 @@ func (x *RenameSubjectResponse) String() string {
 func (*RenameSubjectResponse) ProtoMessage() {}
 
 func (x *RenameSubjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[17]
+	mi := &file_pidex_v1_library_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -959,7 +1254,7 @@ func (x *RenameSubjectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RenameSubjectResponse.ProtoReflect.Descriptor instead.
 func (*RenameSubjectResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{17}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *RenameSubjectResponse) GetSubject() *Subject {
@@ -979,7 +1274,7 @@ type MergeSubjectsRequest struct {
 
 func (x *MergeSubjectsRequest) Reset() {
 	*x = MergeSubjectsRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[18]
+	mi := &file_pidex_v1_library_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -991,7 +1286,7 @@ func (x *MergeSubjectsRequest) String() string {
 func (*MergeSubjectsRequest) ProtoMessage() {}
 
 func (x *MergeSubjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[18]
+	mi := &file_pidex_v1_library_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1004,7 +1299,7 @@ func (x *MergeSubjectsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MergeSubjectsRequest.ProtoReflect.Descriptor instead.
 func (*MergeSubjectsRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{18}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *MergeSubjectsRequest) GetSubjectIds() []string {
@@ -1030,7 +1325,7 @@ type MergeSubjectsResponse struct {
 
 func (x *MergeSubjectsResponse) Reset() {
 	*x = MergeSubjectsResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[19]
+	mi := &file_pidex_v1_library_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1042,7 +1337,7 @@ func (x *MergeSubjectsResponse) String() string {
 func (*MergeSubjectsResponse) ProtoMessage() {}
 
 func (x *MergeSubjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[19]
+	mi := &file_pidex_v1_library_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1055,7 +1350,7 @@ func (x *MergeSubjectsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MergeSubjectsResponse.ProtoReflect.Descriptor instead.
 func (*MergeSubjectsResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{19}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *MergeSubjectsResponse) GetSubject() *Subject {
@@ -1074,7 +1369,7 @@ type DeletePhotosRequest struct {
 
 func (x *DeletePhotosRequest) Reset() {
 	*x = DeletePhotosRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[20]
+	mi := &file_pidex_v1_library_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1086,7 +1381,7 @@ func (x *DeletePhotosRequest) String() string {
 func (*DeletePhotosRequest) ProtoMessage() {}
 
 func (x *DeletePhotosRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[20]
+	mi := &file_pidex_v1_library_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1099,7 +1394,7 @@ func (x *DeletePhotosRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePhotosRequest.ProtoReflect.Descriptor instead.
 func (*DeletePhotosRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{20}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DeletePhotosRequest) GetPhotoIds() []string {
@@ -1120,7 +1415,7 @@ type DeletePhotosResponse struct {
 
 func (x *DeletePhotosResponse) Reset() {
 	*x = DeletePhotosResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[21]
+	mi := &file_pidex_v1_library_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1132,7 +1427,7 @@ func (x *DeletePhotosResponse) String() string {
 func (*DeletePhotosResponse) ProtoMessage() {}
 
 func (x *DeletePhotosResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[21]
+	mi := &file_pidex_v1_library_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1145,7 +1440,7 @@ func (x *DeletePhotosResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePhotosResponse.ProtoReflect.Descriptor instead.
 func (*DeletePhotosResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{21}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *DeletePhotosResponse) GetDeletedPhotos() int32 {
@@ -1173,7 +1468,7 @@ type DeleteSubjectRequest struct {
 
 func (x *DeleteSubjectRequest) Reset() {
 	*x = DeleteSubjectRequest{}
-	mi := &file_pidex_v1_library_proto_msgTypes[22]
+	mi := &file_pidex_v1_library_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1185,7 +1480,7 @@ func (x *DeleteSubjectRequest) String() string {
 func (*DeleteSubjectRequest) ProtoMessage() {}
 
 func (x *DeleteSubjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[22]
+	mi := &file_pidex_v1_library_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1198,7 +1493,7 @@ func (x *DeleteSubjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSubjectRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSubjectRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{22}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DeleteSubjectRequest) GetSubjectId() string {
@@ -1225,7 +1520,7 @@ type DeleteSubjectResponse struct {
 
 func (x *DeleteSubjectResponse) Reset() {
 	*x = DeleteSubjectResponse{}
-	mi := &file_pidex_v1_library_proto_msgTypes[23]
+	mi := &file_pidex_v1_library_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +1532,7 @@ func (x *DeleteSubjectResponse) String() string {
 func (*DeleteSubjectResponse) ProtoMessage() {}
 
 func (x *DeleteSubjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_library_proto_msgTypes[23]
+	mi := &file_pidex_v1_library_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1545,7 @@ func (x *DeleteSubjectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSubjectResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSubjectResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_library_proto_rawDescGZIP(), []int{23}
+	return file_pidex_v1_library_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *DeleteSubjectResponse) GetDeletedPhotos() int32 {
@@ -1271,7 +1566,31 @@ var File_pidex_v1_library_proto protoreflect.FileDescriptor
 
 const file_pidex_v1_library_proto_rawDesc = "" +
 	"\n" +
-	"\x16pidex/v1/library.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\"\xef\x01\n" +
+	"\x16pidex/v1/library.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\"I\n" +
+	"\x12SyncLibraryRequest\x12\x16\n" +
+	"\x06cursor\x18\x01 \x01(\tR\x06cursor\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\x94\x02\n" +
+	"\x13SyncLibraryResponse\x12'\n" +
+	"\x06photos\x18\x01 \x03(\v2\x0f.pidex.v1.PhotoR\x06photos\x12-\n" +
+	"\bsubjects\x18\x02 \x03(\v2\x11.pidex.v1.SubjectR\bsubjects\x12*\n" +
+	"\x11deleted_photo_ids\x18\x03 \x03(\tR\x0fdeletedPhotoIds\x12.\n" +
+	"\x13deleted_subject_ids\x18\x04 \x03(\tR\x11deletedSubjectIds\x12\x16\n" +
+	"\x06cursor\x18\x05 \x01(\tR\x06cursor\x12\x12\n" +
+	"\x04more\x18\x06 \x01(\bR\x04more\x12\x1d\n" +
+	"\n" +
+	"start_over\x18\a \x01(\bR\tstartOver\"(\n" +
+	"\x14GetPhotoLinksRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"L\n" +
+	"\n" +
+	"PhotoLinks\x12#\n" +
+	"\rthumbnail_url\x18\x01 \x01(\tR\fthumbnailUrl\x12\x19\n" +
+	"\bview_url\x18\x02 \x01(\tR\aviewUrl\"\xa9\x01\n" +
+	"\x15GetPhotoLinksResponse\x12@\n" +
+	"\x05links\x18\x01 \x03(\v2*.pidex.v1.GetPhotoLinksResponse.LinksEntryR\x05links\x1aN\n" +
+	"\n" +
+	"LinksEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.pidex.v1.PhotoLinksR\x05value:\x028\x01\"\xef\x01\n" +
 	"\x11ListPhotosRequest\x12\x1d\n" +
 	"\n" +
 	"subject_id\x18\x01 \x01(\tR\tsubjectId\x12\x19\n" +
@@ -1354,7 +1673,7 @@ const file_pidex_v1_library_proto_rawDesc = "" +
 	"withPhotos\"e\n" +
 	"\x15DeleteSubjectResponse\x12%\n" +
 	"\x0edeleted_photos\x18\x01 \x01(\x05R\rdeletedPhotos\x12%\n" +
-	"\x0eunfiled_photos\x18\x02 \x01(\x05R\runfiledPhotos2\xd0\a\n" +
+	"\x0eunfiled_photos\x18\x02 \x01(\x05R\runfiledPhotos2\xee\b\n" +
 	"\x0eLibraryService\x12G\n" +
 	"\n" +
 	"ListPhotos\x12\x1b.pidex.v1.ListPhotosRequest\x1a\x1c.pidex.v1.ListPhotosResponse\x12A\n" +
@@ -1369,7 +1688,9 @@ const file_pidex_v1_library_proto_rawDesc = "" +
 	"\x11SetSubjectProfile\x12\".pidex.v1.SetSubjectProfileRequest\x1a#.pidex.v1.SetSubjectProfileResponse\x12P\n" +
 	"\rMergeSubjects\x12\x1e.pidex.v1.MergeSubjectsRequest\x1a\x1f.pidex.v1.MergeSubjectsResponse\x12M\n" +
 	"\fDeletePhotos\x12\x1d.pidex.v1.DeletePhotosRequest\x1a\x1e.pidex.v1.DeletePhotosResponse\x12P\n" +
-	"\rDeleteSubject\x12\x1e.pidex.v1.DeleteSubjectRequest\x1a\x1f.pidex.v1.DeleteSubjectResponseB\x1cZ\x1apidex/gen/pidex/v1;pidexv1b\x06proto3"
+	"\rDeleteSubject\x12\x1e.pidex.v1.DeleteSubjectRequest\x1a\x1f.pidex.v1.DeleteSubjectResponse\x12J\n" +
+	"\vSyncLibrary\x12\x1c.pidex.v1.SyncLibraryRequest\x1a\x1d.pidex.v1.SyncLibraryResponse\x12P\n" +
+	"\rGetPhotoLinks\x12\x1e.pidex.v1.GetPhotoLinksRequest\x1a\x1f.pidex.v1.GetPhotoLinksResponseB\x1cZ\x1apidex/gen/pidex/v1;pidexv1b\x06proto3"
 
 var (
 	file_pidex_v1_library_proto_rawDescOnce sync.Once
@@ -1383,82 +1704,96 @@ func file_pidex_v1_library_proto_rawDescGZIP() []byte {
 	return file_pidex_v1_library_proto_rawDescData
 }
 
-var file_pidex_v1_library_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_pidex_v1_library_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_pidex_v1_library_proto_goTypes = []any{
-	(*ListPhotosRequest)(nil),         // 0: pidex.v1.ListPhotosRequest
-	(*ListPhotosResponse)(nil),        // 1: pidex.v1.ListPhotosResponse
-	(*GetPhotoRequest)(nil),           // 2: pidex.v1.GetPhotoRequest
-	(*GetPhotoResponse)(nil),          // 3: pidex.v1.GetPhotoResponse
-	(*AssignPhotosRequest)(nil),       // 4: pidex.v1.AssignPhotosRequest
-	(*AssignPhotosResponse)(nil),      // 5: pidex.v1.AssignPhotosResponse
-	(*UpdatePhotoTagsRequest)(nil),    // 6: pidex.v1.UpdatePhotoTagsRequest
-	(*UpdatePhotoTagsResponse)(nil),   // 7: pidex.v1.UpdatePhotoTagsResponse
-	(*ListSubjectsRequest)(nil),       // 8: pidex.v1.ListSubjectsRequest
-	(*ListSubjectsResponse)(nil),      // 9: pidex.v1.ListSubjectsResponse
-	(*GetSubjectRequest)(nil),         // 10: pidex.v1.GetSubjectRequest
-	(*GetSubjectResponse)(nil),        // 11: pidex.v1.GetSubjectResponse
-	(*CreateSubjectRequest)(nil),      // 12: pidex.v1.CreateSubjectRequest
-	(*CreateSubjectResponse)(nil),     // 13: pidex.v1.CreateSubjectResponse
-	(*RenameSubjectRequest)(nil),      // 14: pidex.v1.RenameSubjectRequest
-	(*SetSubjectProfileRequest)(nil),  // 15: pidex.v1.SetSubjectProfileRequest
-	(*SetSubjectProfileResponse)(nil), // 16: pidex.v1.SetSubjectProfileResponse
-	(*RenameSubjectResponse)(nil),     // 17: pidex.v1.RenameSubjectResponse
-	(*MergeSubjectsRequest)(nil),      // 18: pidex.v1.MergeSubjectsRequest
-	(*MergeSubjectsResponse)(nil),     // 19: pidex.v1.MergeSubjectsResponse
-	(*DeletePhotosRequest)(nil),       // 20: pidex.v1.DeletePhotosRequest
-	(*DeletePhotosResponse)(nil),      // 21: pidex.v1.DeletePhotosResponse
-	(*DeleteSubjectRequest)(nil),      // 22: pidex.v1.DeleteSubjectRequest
-	(*DeleteSubjectResponse)(nil),     // 23: pidex.v1.DeleteSubjectResponse
-	nil,                               // 24: pidex.v1.CreateSubjectRequest.IdentityEntry
-	(AssignmentState)(0),              // 25: pidex.v1.AssignmentState
-	(PhotoRole)(0),                    // 26: pidex.v1.PhotoRole
-	(*Photo)(nil),                     // 27: pidex.v1.Photo
-	(*Subject)(nil),                   // 28: pidex.v1.Subject
+	(*SyncLibraryRequest)(nil),        // 0: pidex.v1.SyncLibraryRequest
+	(*SyncLibraryResponse)(nil),       // 1: pidex.v1.SyncLibraryResponse
+	(*GetPhotoLinksRequest)(nil),      // 2: pidex.v1.GetPhotoLinksRequest
+	(*PhotoLinks)(nil),                // 3: pidex.v1.PhotoLinks
+	(*GetPhotoLinksResponse)(nil),     // 4: pidex.v1.GetPhotoLinksResponse
+	(*ListPhotosRequest)(nil),         // 5: pidex.v1.ListPhotosRequest
+	(*ListPhotosResponse)(nil),        // 6: pidex.v1.ListPhotosResponse
+	(*GetPhotoRequest)(nil),           // 7: pidex.v1.GetPhotoRequest
+	(*GetPhotoResponse)(nil),          // 8: pidex.v1.GetPhotoResponse
+	(*AssignPhotosRequest)(nil),       // 9: pidex.v1.AssignPhotosRequest
+	(*AssignPhotosResponse)(nil),      // 10: pidex.v1.AssignPhotosResponse
+	(*UpdatePhotoTagsRequest)(nil),    // 11: pidex.v1.UpdatePhotoTagsRequest
+	(*UpdatePhotoTagsResponse)(nil),   // 12: pidex.v1.UpdatePhotoTagsResponse
+	(*ListSubjectsRequest)(nil),       // 13: pidex.v1.ListSubjectsRequest
+	(*ListSubjectsResponse)(nil),      // 14: pidex.v1.ListSubjectsResponse
+	(*GetSubjectRequest)(nil),         // 15: pidex.v1.GetSubjectRequest
+	(*GetSubjectResponse)(nil),        // 16: pidex.v1.GetSubjectResponse
+	(*CreateSubjectRequest)(nil),      // 17: pidex.v1.CreateSubjectRequest
+	(*CreateSubjectResponse)(nil),     // 18: pidex.v1.CreateSubjectResponse
+	(*RenameSubjectRequest)(nil),      // 19: pidex.v1.RenameSubjectRequest
+	(*SetSubjectProfileRequest)(nil),  // 20: pidex.v1.SetSubjectProfileRequest
+	(*SetSubjectProfileResponse)(nil), // 21: pidex.v1.SetSubjectProfileResponse
+	(*RenameSubjectResponse)(nil),     // 22: pidex.v1.RenameSubjectResponse
+	(*MergeSubjectsRequest)(nil),      // 23: pidex.v1.MergeSubjectsRequest
+	(*MergeSubjectsResponse)(nil),     // 24: pidex.v1.MergeSubjectsResponse
+	(*DeletePhotosRequest)(nil),       // 25: pidex.v1.DeletePhotosRequest
+	(*DeletePhotosResponse)(nil),      // 26: pidex.v1.DeletePhotosResponse
+	(*DeleteSubjectRequest)(nil),      // 27: pidex.v1.DeleteSubjectRequest
+	(*DeleteSubjectResponse)(nil),     // 28: pidex.v1.DeleteSubjectResponse
+	nil,                               // 29: pidex.v1.GetPhotoLinksResponse.LinksEntry
+	nil,                               // 30: pidex.v1.CreateSubjectRequest.IdentityEntry
+	(*Photo)(nil),                     // 31: pidex.v1.Photo
+	(*Subject)(nil),                   // 32: pidex.v1.Subject
+	(AssignmentState)(0),              // 33: pidex.v1.AssignmentState
+	(PhotoRole)(0),                    // 34: pidex.v1.PhotoRole
 }
 var file_pidex_v1_library_proto_depIdxs = []int32{
-	25, // 0: pidex.v1.ListPhotosRequest.assignments:type_name -> pidex.v1.AssignmentState
-	26, // 1: pidex.v1.ListPhotosRequest.role:type_name -> pidex.v1.PhotoRole
-	27, // 2: pidex.v1.ListPhotosResponse.photos:type_name -> pidex.v1.Photo
-	27, // 3: pidex.v1.GetPhotoResponse.photo:type_name -> pidex.v1.Photo
-	27, // 4: pidex.v1.AssignPhotosResponse.photos:type_name -> pidex.v1.Photo
-	27, // 5: pidex.v1.UpdatePhotoTagsResponse.photo:type_name -> pidex.v1.Photo
-	28, // 6: pidex.v1.ListSubjectsResponse.subjects:type_name -> pidex.v1.Subject
-	28, // 7: pidex.v1.GetSubjectResponse.subject:type_name -> pidex.v1.Subject
-	27, // 8: pidex.v1.GetSubjectResponse.photos:type_name -> pidex.v1.Photo
-	24, // 9: pidex.v1.CreateSubjectRequest.identity:type_name -> pidex.v1.CreateSubjectRequest.IdentityEntry
-	28, // 10: pidex.v1.CreateSubjectResponse.subject:type_name -> pidex.v1.Subject
-	28, // 11: pidex.v1.SetSubjectProfileResponse.subject:type_name -> pidex.v1.Subject
-	28, // 12: pidex.v1.RenameSubjectResponse.subject:type_name -> pidex.v1.Subject
-	28, // 13: pidex.v1.MergeSubjectsResponse.subject:type_name -> pidex.v1.Subject
-	0,  // 14: pidex.v1.LibraryService.ListPhotos:input_type -> pidex.v1.ListPhotosRequest
-	2,  // 15: pidex.v1.LibraryService.GetPhoto:input_type -> pidex.v1.GetPhotoRequest
-	4,  // 16: pidex.v1.LibraryService.AssignPhotos:input_type -> pidex.v1.AssignPhotosRequest
-	6,  // 17: pidex.v1.LibraryService.UpdatePhotoTags:input_type -> pidex.v1.UpdatePhotoTagsRequest
-	8,  // 18: pidex.v1.LibraryService.ListSubjects:input_type -> pidex.v1.ListSubjectsRequest
-	10, // 19: pidex.v1.LibraryService.GetSubject:input_type -> pidex.v1.GetSubjectRequest
-	12, // 20: pidex.v1.LibraryService.CreateSubject:input_type -> pidex.v1.CreateSubjectRequest
-	14, // 21: pidex.v1.LibraryService.RenameSubject:input_type -> pidex.v1.RenameSubjectRequest
-	15, // 22: pidex.v1.LibraryService.SetSubjectProfile:input_type -> pidex.v1.SetSubjectProfileRequest
-	18, // 23: pidex.v1.LibraryService.MergeSubjects:input_type -> pidex.v1.MergeSubjectsRequest
-	20, // 24: pidex.v1.LibraryService.DeletePhotos:input_type -> pidex.v1.DeletePhotosRequest
-	22, // 25: pidex.v1.LibraryService.DeleteSubject:input_type -> pidex.v1.DeleteSubjectRequest
-	1,  // 26: pidex.v1.LibraryService.ListPhotos:output_type -> pidex.v1.ListPhotosResponse
-	3,  // 27: pidex.v1.LibraryService.GetPhoto:output_type -> pidex.v1.GetPhotoResponse
-	5,  // 28: pidex.v1.LibraryService.AssignPhotos:output_type -> pidex.v1.AssignPhotosResponse
-	7,  // 29: pidex.v1.LibraryService.UpdatePhotoTags:output_type -> pidex.v1.UpdatePhotoTagsResponse
-	9,  // 30: pidex.v1.LibraryService.ListSubjects:output_type -> pidex.v1.ListSubjectsResponse
-	11, // 31: pidex.v1.LibraryService.GetSubject:output_type -> pidex.v1.GetSubjectResponse
-	13, // 32: pidex.v1.LibraryService.CreateSubject:output_type -> pidex.v1.CreateSubjectResponse
-	17, // 33: pidex.v1.LibraryService.RenameSubject:output_type -> pidex.v1.RenameSubjectResponse
-	16, // 34: pidex.v1.LibraryService.SetSubjectProfile:output_type -> pidex.v1.SetSubjectProfileResponse
-	19, // 35: pidex.v1.LibraryService.MergeSubjects:output_type -> pidex.v1.MergeSubjectsResponse
-	21, // 36: pidex.v1.LibraryService.DeletePhotos:output_type -> pidex.v1.DeletePhotosResponse
-	23, // 37: pidex.v1.LibraryService.DeleteSubject:output_type -> pidex.v1.DeleteSubjectResponse
-	26, // [26:38] is the sub-list for method output_type
-	14, // [14:26] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	31, // 0: pidex.v1.SyncLibraryResponse.photos:type_name -> pidex.v1.Photo
+	32, // 1: pidex.v1.SyncLibraryResponse.subjects:type_name -> pidex.v1.Subject
+	29, // 2: pidex.v1.GetPhotoLinksResponse.links:type_name -> pidex.v1.GetPhotoLinksResponse.LinksEntry
+	33, // 3: pidex.v1.ListPhotosRequest.assignments:type_name -> pidex.v1.AssignmentState
+	34, // 4: pidex.v1.ListPhotosRequest.role:type_name -> pidex.v1.PhotoRole
+	31, // 5: pidex.v1.ListPhotosResponse.photos:type_name -> pidex.v1.Photo
+	31, // 6: pidex.v1.GetPhotoResponse.photo:type_name -> pidex.v1.Photo
+	31, // 7: pidex.v1.AssignPhotosResponse.photos:type_name -> pidex.v1.Photo
+	31, // 8: pidex.v1.UpdatePhotoTagsResponse.photo:type_name -> pidex.v1.Photo
+	32, // 9: pidex.v1.ListSubjectsResponse.subjects:type_name -> pidex.v1.Subject
+	32, // 10: pidex.v1.GetSubjectResponse.subject:type_name -> pidex.v1.Subject
+	31, // 11: pidex.v1.GetSubjectResponse.photos:type_name -> pidex.v1.Photo
+	30, // 12: pidex.v1.CreateSubjectRequest.identity:type_name -> pidex.v1.CreateSubjectRequest.IdentityEntry
+	32, // 13: pidex.v1.CreateSubjectResponse.subject:type_name -> pidex.v1.Subject
+	32, // 14: pidex.v1.SetSubjectProfileResponse.subject:type_name -> pidex.v1.Subject
+	32, // 15: pidex.v1.RenameSubjectResponse.subject:type_name -> pidex.v1.Subject
+	32, // 16: pidex.v1.MergeSubjectsResponse.subject:type_name -> pidex.v1.Subject
+	3,  // 17: pidex.v1.GetPhotoLinksResponse.LinksEntry.value:type_name -> pidex.v1.PhotoLinks
+	5,  // 18: pidex.v1.LibraryService.ListPhotos:input_type -> pidex.v1.ListPhotosRequest
+	7,  // 19: pidex.v1.LibraryService.GetPhoto:input_type -> pidex.v1.GetPhotoRequest
+	9,  // 20: pidex.v1.LibraryService.AssignPhotos:input_type -> pidex.v1.AssignPhotosRequest
+	11, // 21: pidex.v1.LibraryService.UpdatePhotoTags:input_type -> pidex.v1.UpdatePhotoTagsRequest
+	13, // 22: pidex.v1.LibraryService.ListSubjects:input_type -> pidex.v1.ListSubjectsRequest
+	15, // 23: pidex.v1.LibraryService.GetSubject:input_type -> pidex.v1.GetSubjectRequest
+	17, // 24: pidex.v1.LibraryService.CreateSubject:input_type -> pidex.v1.CreateSubjectRequest
+	19, // 25: pidex.v1.LibraryService.RenameSubject:input_type -> pidex.v1.RenameSubjectRequest
+	20, // 26: pidex.v1.LibraryService.SetSubjectProfile:input_type -> pidex.v1.SetSubjectProfileRequest
+	23, // 27: pidex.v1.LibraryService.MergeSubjects:input_type -> pidex.v1.MergeSubjectsRequest
+	25, // 28: pidex.v1.LibraryService.DeletePhotos:input_type -> pidex.v1.DeletePhotosRequest
+	27, // 29: pidex.v1.LibraryService.DeleteSubject:input_type -> pidex.v1.DeleteSubjectRequest
+	0,  // 30: pidex.v1.LibraryService.SyncLibrary:input_type -> pidex.v1.SyncLibraryRequest
+	2,  // 31: pidex.v1.LibraryService.GetPhotoLinks:input_type -> pidex.v1.GetPhotoLinksRequest
+	6,  // 32: pidex.v1.LibraryService.ListPhotos:output_type -> pidex.v1.ListPhotosResponse
+	8,  // 33: pidex.v1.LibraryService.GetPhoto:output_type -> pidex.v1.GetPhotoResponse
+	10, // 34: pidex.v1.LibraryService.AssignPhotos:output_type -> pidex.v1.AssignPhotosResponse
+	12, // 35: pidex.v1.LibraryService.UpdatePhotoTags:output_type -> pidex.v1.UpdatePhotoTagsResponse
+	14, // 36: pidex.v1.LibraryService.ListSubjects:output_type -> pidex.v1.ListSubjectsResponse
+	16, // 37: pidex.v1.LibraryService.GetSubject:output_type -> pidex.v1.GetSubjectResponse
+	18, // 38: pidex.v1.LibraryService.CreateSubject:output_type -> pidex.v1.CreateSubjectResponse
+	22, // 39: pidex.v1.LibraryService.RenameSubject:output_type -> pidex.v1.RenameSubjectResponse
+	21, // 40: pidex.v1.LibraryService.SetSubjectProfile:output_type -> pidex.v1.SetSubjectProfileResponse
+	24, // 41: pidex.v1.LibraryService.MergeSubjects:output_type -> pidex.v1.MergeSubjectsResponse
+	26, // 42: pidex.v1.LibraryService.DeletePhotos:output_type -> pidex.v1.DeletePhotosResponse
+	28, // 43: pidex.v1.LibraryService.DeleteSubject:output_type -> pidex.v1.DeleteSubjectResponse
+	1,  // 44: pidex.v1.LibraryService.SyncLibrary:output_type -> pidex.v1.SyncLibraryResponse
+	4,  // 45: pidex.v1.LibraryService.GetPhotoLinks:output_type -> pidex.v1.GetPhotoLinksResponse
+	32, // [32:46] is the sub-list for method output_type
+	18, // [18:32] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_library_proto_init() }
@@ -1473,7 +1808,7 @@ func file_pidex_v1_library_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pidex_v1_library_proto_rawDesc), len(file_pidex_v1_library_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

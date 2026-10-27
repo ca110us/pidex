@@ -59,6 +59,16 @@ internal protocol Pidex_V1_LibraryServiceClientInterface: Sendable {
     /// unfiled. Owners and admins only.
     @available(iOS 13, *)
     func `deleteSubject`(request: Pidex_V1_DeleteSubjectRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_DeleteSubjectResponse>
+
+    /// What changed in the collection since a phone last asked, so it keeps
+    /// its own copy: browsing works offline and photos are not fetched twice.
+    @available(iOS 13, *)
+    func `syncLibrary`(request: Pidex_V1_SyncLibraryRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_SyncLibraryResponse>
+
+    /// Short-lived links to photos' images, for photos the phone knows from
+    /// its copy (which carries no links) and has not stored yet.
+    @available(iOS 13, *)
+    func `getPhotoLinks`(request: Pidex_V1_GetPhotoLinksRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_GetPhotoLinksResponse>
 }
 
 /// Concrete implementation of `Pidex_V1_LibraryServiceClientInterface`.
@@ -129,6 +139,16 @@ internal final class Pidex_V1_LibraryServiceClient: Pidex_V1_LibraryServiceClien
         return await self.client.unary(path: "/pidex.v1.LibraryService/DeleteSubject", idempotencyLevel: .unknown, request: request, headers: headers)
     }
 
+    @available(iOS 13, *)
+    internal func `syncLibrary`(request: Pidex_V1_SyncLibraryRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Pidex_V1_SyncLibraryResponse> {
+        return await self.client.unary(path: "/pidex.v1.LibraryService/SyncLibrary", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
+    @available(iOS 13, *)
+    internal func `getPhotoLinks`(request: Pidex_V1_GetPhotoLinksRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Pidex_V1_GetPhotoLinksResponse> {
+        return await self.client.unary(path: "/pidex.v1.LibraryService/GetPhotoLinks", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
     internal enum Metadata {
         internal enum Methods {
             internal static let listPhotos = Connect.MethodSpec(name: "ListPhotos", service: "pidex.v1.LibraryService", type: .unary)
@@ -143,6 +163,8 @@ internal final class Pidex_V1_LibraryServiceClient: Pidex_V1_LibraryServiceClien
             internal static let mergeSubjects = Connect.MethodSpec(name: "MergeSubjects", service: "pidex.v1.LibraryService", type: .unary)
             internal static let deletePhotos = Connect.MethodSpec(name: "DeletePhotos", service: "pidex.v1.LibraryService", type: .unary)
             internal static let deleteSubject = Connect.MethodSpec(name: "DeleteSubject", service: "pidex.v1.LibraryService", type: .unary)
+            internal static let syncLibrary = Connect.MethodSpec(name: "SyncLibrary", service: "pidex.v1.LibraryService", type: .unary)
+            internal static let getPhotoLinks = Connect.MethodSpec(name: "GetPhotoLinks", service: "pidex.v1.LibraryService", type: .unary)
         }
     }
 }

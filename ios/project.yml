@@ -21,6 +21,10 @@ packages:
   Connect:
     url: https://github.com/connectrpc/connect-swift
     exactVersion: 1.2.2
+  # The phone's copy of each collection (Library/LocalLibrary.swift).
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    exactVersion: 7.11.1
 targets:
   Pidex:
     type: application
@@ -30,6 +34,7 @@ targets:
     dependencies:
       - package: SwiftProtobuf
       - package: Connect
+      - package: GRDB
     info:
       path: Pidex/Resources/Info.plist
       properties:

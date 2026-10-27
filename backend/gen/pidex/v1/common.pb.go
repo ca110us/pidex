@@ -946,8 +946,10 @@ type Photo struct {
 	ThumbnailUrl string `protobuf:"bytes,15,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
 	// Where it was taken, when the phone knew; not kept for high-privacy
 	// teams.
-	Place         *Place    `protobuf:"bytes,16,opt,name=place,proto3" json:"place,omitempty"`
-	Location      *GeoPoint `protobuf:"bytes,17,opt,name=location,proto3" json:"location,omitempty"`
+	Place    *Place    `protobuf:"bytes,16,opt,name=place,proto3" json:"place,omitempty"`
+	Location *GeoPoint `protobuf:"bytes,17,opt,name=location,proto3" json:"location,omitempty"`
+	// When the server received it; photos without captured_at sort by it.
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1101,6 +1103,13 @@ func (x *Photo) GetLocation() *GeoPoint {
 	return nil
 }
 
+func (x *Photo) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 // How many photos have a tag.
 type TagCount struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1221,7 +1230,7 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\n" +
 	"confidence\x18\x02 \x01(\x02R\n" +
 	"confidence\x12+\n" +
-	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\x9e\x06\n" +
+	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\xd9\x06\n" +
 	"\x05Photo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1246,7 +1255,9 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\x14suggested_subject_id\x18\x0e \x01(\tR\x12suggestedSubjectId\x12#\n" +
 	"\rthumbnail_url\x18\x0f \x01(\tR\fthumbnailUrl\x12%\n" +
 	"\x05place\x18\x10 \x01(\v2\x0f.pidex.v1.PlaceR\x05place\x12.\n" +
-	"\blocation\x18\x11 \x01(\v2\x12.pidex.v1.GeoPointR\blocation\x1aB\n" +
+	"\blocation\x18\x11 \x01(\v2\x12.pidex.v1.GeoPointR\blocation\x129\n" +
+	"\n" +
+	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x1aB\n" +
 	"\x14ExtractedFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"2\n" +
@@ -1328,11 +1339,12 @@ var file_pidex_v1_common_proto_depIdxs = []int32{
 	16, // 13: pidex.v1.Photo.extracted_fields:type_name -> pidex.v1.Photo.ExtractedFieldsEntry
 	5,  // 14: pidex.v1.Photo.place:type_name -> pidex.v1.Place
 	4,  // 15: pidex.v1.Photo.location:type_name -> pidex.v1.GeoPoint
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	17, // 16: pidex.v1.Photo.created_at:type_name -> google.protobuf.Timestamp
+	17, // [17:17] is the sub-list for method output_type
+	17, // [17:17] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_common_proto_init() }

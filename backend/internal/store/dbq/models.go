@@ -111,6 +111,7 @@ type Photo struct {
 	LookEmbedding        *pgvector_go.Vector
 	LookModel            *string
 	Place                []byte
+	SyncXid              int64
 }
 
 type PhotoTag struct {
@@ -161,6 +162,15 @@ type Subject struct {
 	ProfileEmbedding    *pgvector_go.Vector
 	ProfilePhotos       int32
 	ProfileByPerson     bool
+	SyncXid             int64
+}
+
+type SyncTombstone struct {
+	TeamID    uuid.UUID
+	Kind      string
+	ID        uuid.UUID
+	SyncXid   int64
+	DeletedAt time.Time
 }
 
 type Team struct {

@@ -1,12 +1,18 @@
 import Foundation
 import Observation
+import SwiftProtobuf
 
 /// A collection's photos as browsed: the newest, or those a picked tag
 /// filters to; editing the filters searches again without a model call.
+/// Unfiltered, photos come from the phone's copy of the collection, synced
+/// as it opens: at once, and offline too.
 @MainActor
 @Observable
 final class LibraryModel {
     let api: APIClient
+    let local: LocalLibrary?
+    /// The server could not be reached: what is shown is the phone's copy.
+    private(set) var offline = false
     private(set) var config: ScenarioConfig?
     private(set) var filters: Pidex_V1_SearchFilters?
     private(set) var photos: [Pidex_V1_Photo] = []
@@ -27,23 +33,69 @@ final class LibraryModel {
 
     init(api: APIClient) {
         self.api = api
+        local = LocalLibrary.for(api)
     }
 
     var isFiltered: Bool {
-        guard let f = filters else { return false }
-        return f.mode == .missing || !f.subjectQuery.isEmpty || !f.subjectIds.isEmpty || !f.tags.isEmpty
+        filters.map(Self.narrows) ?? false
+    }
+
+    private static func narrows(_ f: Pidex_V1_SearchFilters) -> Bool {
+        f.mode == .missing || !f.subjectQuery.isEmpty || !f.subjectIds.isEmpty || !f.tags.isEmpty
             || f.hasFrom || f.hasTo || !f.text.isEmpty || !f.roles.isEmpty || !f.place.isEmpty
     }
 
     /// Loads the scenario and the newest photos; `force` refreshes them
     /// unless a search is showing.
     func load(force: Bool = false) async {
-        if config == nil || force, let json = try? await api.activeConfig().configJson {
-            config = try? ScenarioConfig(json: json)
+        if config == nil || force, let r = await remembered("config", { try await self.api.activeConfig() }) {
+            config = try? ScenarioConfig(json: r.configJson)
         }
-        if (filters == nil && photos.isEmpty) || (force && !isFiltered) {
+        guard (filters == nil && photos.isEmpty) || (force && !isFiltered) else { return }
+        guard let local else {
             // Counted too, for the row of places to narrow by.
             await run { try await self.api.searchPhotos(filters: .init(), tagCounts: true) }
+            return
+        }
+        // What the phone has, at once; then what changed.
+        if local.hasSynced { await showLocal() }
+        do {
+            try await local.sync(with: api)
+            offline = false
+        } catch {
+            offline = true
+            if !local.hasSynced { self.error = error.localizedDescription }
+        }
+        await showLocal()
+    }
+
+    /// The newest photos from the phone's copy, unless a search is showing.
+    private func showLocal() async {
+        guard let local, !isFiltered else { return }
+        do {
+            let page = try local.photos(limit: max(120, photos.count))
+            let subs = try local.subjects()
+            await PhotoLinks.shared.know(page.map(\.id), in: api)
+            guard !isFiltered else { return }
+            filters = filters ?? .init()
+            photos = page
+            total = try local.shownCount()
+            places = try local.placeCounts()
+            remember(subs)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    /// A response from the server, kept on the phone; offline, the one
+    /// kept last time.
+    func remembered<M: SwiftProtobuf.Message>(_ key: String, _ fetch: () async throws -> M) async -> M? {
+        do {
+            let m = try await fetch()
+            try? local?.keep(m, as: key)
+            return m
+        } catch {
+            return local?.kept(M.self, as: key)
         }
     }
 
@@ -55,6 +107,11 @@ final class LibraryModel {
 
     /// Searches again with the given filters, as the user edited them.
     func apply(_ f: Pidex_V1_SearchFilters) async {
+        if local != nil && !Self.narrows(f) {
+            filters = f
+            await showLocal()
+            return
+        }
         let counts = (f.tagsRequired || !f.place.isEmpty) && f.text.isEmpty
         await run { try await self.api.searchPhotos(filters: f, tagCounts: counts) }
     }
@@ -102,6 +159,17 @@ final class LibraryModel {
         guard !working, !loadingMore, photos.count < total else { return }
         loadingMore = true
         defer { loadingMore = false }
+        if let local, !isFiltered {
+            do {
+                let next = try local.photos(offset: photos.count, limit: 120)
+                await PhotoLinks.shared.know(next.map(\.id), in: api)
+                photos += next
+                if next.isEmpty { total = photos.count }
+            } catch {
+                self.error = error.localizedDescription
+            }
+            return
+        }
         do {
             let r = try await api.searchPhotos(filters: filters ?? .init(), offset: photos.count, pageSize: 120)
             let known = Set(photos.map(\.id))
@@ -121,7 +189,7 @@ final class LibraryModel {
     }
 
     func clear() async {
-        await run { try await self.api.searchPhotos(filters: .init()) }
+        await apply(.init())
     }
 
     /// Photos deleted elsewhere: no longer shown or counted.
@@ -158,6 +226,7 @@ final class LibraryModel {
         defer { working = false }
         do {
             let r = try await call()
+            await PhotoLinks.shared.know(r.photos.map(\.id), in: api)
             filters = r.filters
             photos = r.photos
             subjects = r.subjects

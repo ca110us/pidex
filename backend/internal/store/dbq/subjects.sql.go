@@ -85,7 +85,7 @@ func (q *Queries) CountSubjectsByType(ctx context.Context, teamID uuid.UUID) ([]
 const createSubject = `-- name: CreateSubject :one
 INSERT INTO subjects (team_id, type_key, parent_id, display_name, identity, identity_norm, created_by)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person
+RETURNING id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid
 `
 
 type CreateSubjectParams struct {
@@ -129,6 +129,7 @@ func (q *Queries) CreateSubject(ctx context.Context, arg CreateSubjectParams) (S
 		&i.ProfileEmbedding,
 		&i.ProfilePhotos,
 		&i.ProfileByPerson,
+		&i.SyncXid,
 	)
 	return i, err
 }
@@ -166,7 +167,7 @@ func (q *Queries) DeleteSubjectAliases(ctx context.Context, arg DeleteSubjectAli
 }
 
 const findSubjectCandidates = `-- name: FindSubjectCandidates :many
-SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person FROM subjects
+SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid FROM subjects
 WHERE team_id = $1
   AND type_key = $2
   AND merged_into_id IS NULL
@@ -220,6 +221,7 @@ func (q *Queries) FindSubjectCandidates(ctx context.Context, arg FindSubjectCand
 			&i.ProfileEmbedding,
 			&i.ProfilePhotos,
 			&i.ProfileByPerson,
+			&i.SyncXid,
 		); err != nil {
 			return nil, err
 		}
@@ -232,7 +234,7 @@ func (q *Queries) FindSubjectCandidates(ctx context.Context, arg FindSubjectCand
 }
 
 const getSubject = `-- name: GetSubject :one
-SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person FROM subjects WHERE team_id = $1 AND id = $2
+SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid FROM subjects WHERE team_id = $1 AND id = $2
 `
 
 type GetSubjectParams struct {
@@ -263,12 +265,13 @@ func (q *Queries) GetSubject(ctx context.Context, arg GetSubjectParams) (Subject
 		&i.ProfileEmbedding,
 		&i.ProfilePhotos,
 		&i.ProfileByPerson,
+		&i.SyncXid,
 	)
 	return i, err
 }
 
 const getSubjectsByIDs = `-- name: GetSubjectsByIDs :many
-SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person FROM subjects WHERE team_id = $1 AND id = ANY($2::uuid[])
+SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid FROM subjects WHERE team_id = $1 AND id = ANY($2::uuid[])
 `
 
 type GetSubjectsByIDsParams struct {
@@ -305,6 +308,7 @@ func (q *Queries) GetSubjectsByIDs(ctx context.Context, arg GetSubjectsByIDsPara
 			&i.ProfileEmbedding,
 			&i.ProfilePhotos,
 			&i.ProfileByPerson,
+			&i.SyncXid,
 		); err != nil {
 			return nil, err
 		}
@@ -317,7 +321,7 @@ func (q *Queries) GetSubjectsByIDs(ctx context.Context, arg GetSubjectsByIDsPara
 }
 
 const listSubjects = `-- name: ListSubjects :many
-SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person FROM subjects
+SELECT id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid FROM subjects
 WHERE team_id = $1
   AND merged_into_id IS NULL
   AND ($2::text IS NULL OR type_key = $2::text)
@@ -379,6 +383,7 @@ func (q *Queries) ListSubjects(ctx context.Context, arg ListSubjectsParams) ([]S
 			&i.ProfileEmbedding,
 			&i.ProfilePhotos,
 			&i.ProfileByPerson,
+			&i.SyncXid,
 		); err != nil {
 			return nil, err
 		}
@@ -466,7 +471,7 @@ func (q *Queries) OrphanSubjectChildren(ctx context.Context, arg OrphanSubjectCh
 const renameSubject = `-- name: RenameSubject :one
 UPDATE subjects SET display_name = $1, updated_at = now()
 WHERE team_id = $2 AND id = $3 AND merged_into_id IS NULL
-RETURNING id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person
+RETURNING id, team_id, type_key, parent_id, display_name, identity, identity_norm, attributes, merged_into_id, created_by, created_at, updated_at, appearance, appearance_embedding, appearance_photo_id, profile, profile_embedding, profile_photos, profile_by_person, sync_xid
 `
 
 type RenameSubjectParams struct {
@@ -498,6 +503,7 @@ func (q *Queries) RenameSubject(ctx context.Context, arg RenameSubjectParams) (S
 		&i.ProfileEmbedding,
 		&i.ProfilePhotos,
 		&i.ProfileByPerson,
+		&i.SyncXid,
 	)
 	return i, err
 }

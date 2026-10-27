@@ -123,13 +123,17 @@ final class AppModel {
         showingCamera = true
     }
 
-    /// Forgets a workspace on this device. The team and its photos stay on
-    /// the server; adding its token again brings it back.
+    /// Forgets a workspace on this device, with the copy of it kept here.
+    /// The team and its photos stay on the server; adding its token again
+    /// brings it back.
     func remove(_ id: String) throws {
         if id == active?.id && !canSwitch {
             throw SwitchBlocked(pending: uploadStatus.pending)
         }
         let wasActive = id == active?.id
+        if let w = workspaces.items.first(where: { $0.id == id }) {
+            LocalLibrary.erase(token: w.token)
+        }
         workspaces.remove(id)
         if wasActive {
             saveAndRebuild()
@@ -144,6 +148,7 @@ final class AppModel {
         if let dir = Self.stagingDirectory(for: workspace) {
             try? FileManager.default.removeItem(at: dir)
         }
+        LocalLibrary.erase(token: workspace.token)
         if batch?.collection == workspace.name { batch = nil }
         let wasActive = workspace.id == active?.id
         workspaces.remove(workspace.id)

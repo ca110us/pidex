@@ -32,6 +32,51 @@ service LibraryService {
   // Deletes a subject. Its photos are deleted with it, or kept and left
   // unfiled. Owners and admins only.
   rpc DeleteSubject(DeleteSubjectRequest) returns (DeleteSubjectResponse);
+  // What changed in the collection since a phone last asked, so it keeps
+  // its own copy: browsing works offline and photos are not fetched twice.
+  rpc SyncLibrary(SyncLibraryRequest) returns (SyncLibraryResponse);
+  // Short-lived links to photos' images, for photos the phone knows from
+  // its copy (which carries no links) and has not stored yet.
+  rpc GetPhotoLinks(GetPhotoLinksRequest) returns (GetPhotoLinksResponse);
+}
+
+message SyncLibraryRequest {
+  // From the last response; empty to start from nothing.
+  string cursor = 1;
+  int32 page_size = 2;
+}
+
+message SyncLibraryResponse {
+  // Added or changed since the cursor, without links. Photos in any state:
+  // the phone shows the same ones search does (processed, not junk).
+  repeated Photo photos = 1;
+  // Added or changed subjects, without counts or covers.
+  repeated Subject subjects = 2;
+  // Deleted, or (subjects) merged into another.
+  repeated string deleted_photo_ids = 3;
+  repeated string deleted_subject_ids = 4;
+  // To ask with next time.
+  string cursor = 5;
+  // More changes wait: ask again with the cursor straight away.
+  bool more = 6;
+  // The cursor was too old to say what was deleted since: drop the copy
+  // and keep what follows, from this response on.
+  bool start_over = 7;
+}
+
+message GetPhotoLinksRequest {
+  // At most 200.
+  repeated string ids = 1;
+}
+
+message PhotoLinks {
+  string thumbnail_url = 1;
+  string view_url = 2;
+}
+
+message GetPhotoLinksResponse {
+  // By photo id; photos not found in the collection are left out.
+  map<string, PhotoLinks> links = 1;
 }
 
 message ListPhotosRequest {

@@ -2471,6 +2471,16 @@
         }
       }
     },
+    "Offline: showing the photos kept on this phone": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离线中：显示的是这台手机上保存的照片"
+          }
+        }
+      }
+    },
     "One feature a line, such as “black nose” or “a notch in the left ear”. Searches find it by these. What you write here is kept; new photos no longer rewrite it.": {
       "localizations": {
         "zh-Hans": {

@@ -161,6 +161,8 @@ message Photo {
   // teams.
   Place place = 16;
   GeoPoint location = 17;
+  // When the server received it; photos without captured_at sort by it.
+  google.protobuf.Timestamp created_at = 18;
 }
 
 // How many photos have a tag.

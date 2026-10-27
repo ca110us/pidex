@@ -16,6 +16,8 @@ nonisolated struct APIError: Error, LocalizedError, Sendable {
 /// returning Connect result wrappers.
 nonisolated final class APIClient: Sendable {
     let baseURL: URL
+    /// Names what this phone keeps of the collection (LocalLibrary).
+    let storeKey: String
     private let capture: Pidex_V1_CaptureServiceClient
     private let library: Pidex_V1_LibraryServiceClient
     private let config: Pidex_V1_ConfigServiceClient
@@ -26,6 +28,7 @@ nonisolated final class APIClient: Sendable {
 
     init(baseURL: URL, token: String) {
         self.baseURL = baseURL
+        storeKey = Self.storeKey(for: token)
         var host = baseURL.absoluteString
         while host.hasSuffix("/") { host.removeLast() }
         func client(timeout: TimeInterval) -> ProtocolClient {
@@ -201,6 +204,20 @@ nonisolated final class APIClient: Sendable {
         r.subjectIds = ids
         r.intoID = into
         return try Self.unwrap(await library.mergeSubjects(request: r, headers: headers)).subject
+    }
+
+    /// What changed in the collection since the cursor (empty: everything).
+    func syncLibrary(cursor: String) async throws -> Pidex_V1_SyncLibraryResponse {
+        var r = Pidex_V1_SyncLibraryRequest()
+        r.cursor = cursor
+        return try Self.unwrap(await library.syncLibrary(request: r, headers: headers))
+    }
+
+    /// Fresh links to photos' images, by photo id; at most 200 at a time.
+    func photoLinks(_ ids: [String]) async throws -> [String: Pidex_V1_PhotoLinks] {
+        var r = Pidex_V1_GetPhotoLinksRequest()
+        r.ids = ids
+        return try Self.unwrap(await library.getPhotoLinks(request: r, headers: headers)).links
     }
 
     func subjects(limit: Int32 = 200) async throws -> [Pidex_V1_Subject] {

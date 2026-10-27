@@ -71,6 +71,12 @@ struct CollectionView: View {
                 if !(overview?.tags.isEmpty ?? true) {
                     tagRow
                 }
+                if model.offline {
+                    Label("Offline: showing the photos kept on this phone", systemImage: "icloud.slash")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                }
                 ForEach([model.error].compactMap { $0 }, id: \.self) { text in
                     Label(text, systemImage: "exclamationmark.triangle")
                         .font(.footnote)
@@ -409,11 +415,17 @@ struct CollectionView: View {
 
     private func load() async {
         await model.load(force: true)
-        async let o = try? model.api.overview()
-        async let s = try? model.api.subjects()
-        async let t = try? model.api.team()
+        // Offline, as they were last seen.
+        let api = model.api
+        async let o = model.remembered("overview") { try await api.overview() }
+        async let s = model.remembered("subjects") {
+            var r = Pidex_V1_ListSubjectsResponse()
+            r.subjects = try await api.subjects()
+            return r
+        }
+        async let t = model.remembered("team") { try await api.team() }
         overview = await o
-        subjects = await s ?? []
+        subjects = await s?.subjects ?? []
         model.remember(subjects)
         role = await t?.role ?? ""
     }

@@ -68,6 +68,12 @@ const (
 	// LibraryServiceDeleteSubjectProcedure is the fully-qualified name of the LibraryService's
 	// DeleteSubject RPC.
 	LibraryServiceDeleteSubjectProcedure = "/pidex.v1.LibraryService/DeleteSubject"
+	// LibraryServiceSyncLibraryProcedure is the fully-qualified name of the LibraryService's
+	// SyncLibrary RPC.
+	LibraryServiceSyncLibraryProcedure = "/pidex.v1.LibraryService/SyncLibrary"
+	// LibraryServiceGetPhotoLinksProcedure is the fully-qualified name of the LibraryService's
+	// GetPhotoLinks RPC.
+	LibraryServiceGetPhotoLinksProcedure = "/pidex.v1.LibraryService/GetPhotoLinks"
 )
 
 // LibraryServiceClient is a client for the pidex.v1.LibraryService service.
@@ -96,6 +102,12 @@ type LibraryServiceClient interface {
 	// Deletes a subject. Its photos are deleted with it, or kept and left
 	// unfiled. Owners and admins only.
 	DeleteSubject(context.Context, *connect.Request[v1.DeleteSubjectRequest]) (*connect.Response[v1.DeleteSubjectResponse], error)
+	// What changed in the collection since a phone last asked, so it keeps
+	// its own copy: browsing works offline and photos are not fetched twice.
+	SyncLibrary(context.Context, *connect.Request[v1.SyncLibraryRequest]) (*connect.Response[v1.SyncLibraryResponse], error)
+	// Short-lived links to photos' images, for photos the phone knows from
+	// its copy (which carries no links) and has not stored yet.
+	GetPhotoLinks(context.Context, *connect.Request[v1.GetPhotoLinksRequest]) (*connect.Response[v1.GetPhotoLinksResponse], error)
 }
 
 // NewLibraryServiceClient constructs a client for the pidex.v1.LibraryService service. By default,
@@ -181,6 +193,18 @@ func NewLibraryServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(libraryServiceMethods.ByName("DeleteSubject")),
 			connect.WithClientOptions(opts...),
 		),
+		syncLibrary: connect.NewClient[v1.SyncLibraryRequest, v1.SyncLibraryResponse](
+			httpClient,
+			baseURL+LibraryServiceSyncLibraryProcedure,
+			connect.WithSchema(libraryServiceMethods.ByName("SyncLibrary")),
+			connect.WithClientOptions(opts...),
+		),
+		getPhotoLinks: connect.NewClient[v1.GetPhotoLinksRequest, v1.GetPhotoLinksResponse](
+			httpClient,
+			baseURL+LibraryServiceGetPhotoLinksProcedure,
+			connect.WithSchema(libraryServiceMethods.ByName("GetPhotoLinks")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -198,6 +222,8 @@ type libraryServiceClient struct {
 	mergeSubjects     *connect.Client[v1.MergeSubjectsRequest, v1.MergeSubjectsResponse]
 	deletePhotos      *connect.Client[v1.DeletePhotosRequest, v1.DeletePhotosResponse]
 	deleteSubject     *connect.Client[v1.DeleteSubjectRequest, v1.DeleteSubjectResponse]
+	syncLibrary       *connect.Client[v1.SyncLibraryRequest, v1.SyncLibraryResponse]
+	getPhotoLinks     *connect.Client[v1.GetPhotoLinksRequest, v1.GetPhotoLinksResponse]
 }
 
 // ListPhotos calls pidex.v1.LibraryService.ListPhotos.
@@ -260,6 +286,16 @@ func (c *libraryServiceClient) DeleteSubject(ctx context.Context, req *connect.R
 	return c.deleteSubject.CallUnary(ctx, req)
 }
 
+// SyncLibrary calls pidex.v1.LibraryService.SyncLibrary.
+func (c *libraryServiceClient) SyncLibrary(ctx context.Context, req *connect.Request[v1.SyncLibraryRequest]) (*connect.Response[v1.SyncLibraryResponse], error) {
+	return c.syncLibrary.CallUnary(ctx, req)
+}
+
+// GetPhotoLinks calls pidex.v1.LibraryService.GetPhotoLinks.
+func (c *libraryServiceClient) GetPhotoLinks(ctx context.Context, req *connect.Request[v1.GetPhotoLinksRequest]) (*connect.Response[v1.GetPhotoLinksResponse], error) {
+	return c.getPhotoLinks.CallUnary(ctx, req)
+}
+
 // LibraryServiceHandler is an implementation of the pidex.v1.LibraryService service.
 type LibraryServiceHandler interface {
 	ListPhotos(context.Context, *connect.Request[v1.ListPhotosRequest]) (*connect.Response[v1.ListPhotosResponse], error)
@@ -286,6 +322,12 @@ type LibraryServiceHandler interface {
 	// Deletes a subject. Its photos are deleted with it, or kept and left
 	// unfiled. Owners and admins only.
 	DeleteSubject(context.Context, *connect.Request[v1.DeleteSubjectRequest]) (*connect.Response[v1.DeleteSubjectResponse], error)
+	// What changed in the collection since a phone last asked, so it keeps
+	// its own copy: browsing works offline and photos are not fetched twice.
+	SyncLibrary(context.Context, *connect.Request[v1.SyncLibraryRequest]) (*connect.Response[v1.SyncLibraryResponse], error)
+	// Short-lived links to photos' images, for photos the phone knows from
+	// its copy (which carries no links) and has not stored yet.
+	GetPhotoLinks(context.Context, *connect.Request[v1.GetPhotoLinksRequest]) (*connect.Response[v1.GetPhotoLinksResponse], error)
 }
 
 // NewLibraryServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -367,6 +409,18 @@ func NewLibraryServiceHandler(svc LibraryServiceHandler, opts ...connect.Handler
 		connect.WithSchema(libraryServiceMethods.ByName("DeleteSubject")),
 		connect.WithHandlerOptions(opts...),
 	)
+	libraryServiceSyncLibraryHandler := connect.NewUnaryHandler(
+		LibraryServiceSyncLibraryProcedure,
+		svc.SyncLibrary,
+		connect.WithSchema(libraryServiceMethods.ByName("SyncLibrary")),
+		connect.WithHandlerOptions(opts...),
+	)
+	libraryServiceGetPhotoLinksHandler := connect.NewUnaryHandler(
+		LibraryServiceGetPhotoLinksProcedure,
+		svc.GetPhotoLinks,
+		connect.WithSchema(libraryServiceMethods.ByName("GetPhotoLinks")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pidex.v1.LibraryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case LibraryServiceListPhotosProcedure:
@@ -393,6 +447,10 @@ func NewLibraryServiceHandler(svc LibraryServiceHandler, opts ...connect.Handler
 			libraryServiceDeletePhotosHandler.ServeHTTP(w, r)
 		case LibraryServiceDeleteSubjectProcedure:
 			libraryServiceDeleteSubjectHandler.ServeHTTP(w, r)
+		case LibraryServiceSyncLibraryProcedure:
+			libraryServiceSyncLibraryHandler.ServeHTTP(w, r)
+		case LibraryServiceGetPhotoLinksProcedure:
+			libraryServiceGetPhotoLinksHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -448,4 +506,12 @@ func (UnimplementedLibraryServiceHandler) DeletePhotos(context.Context, *connect
 
 func (UnimplementedLibraryServiceHandler) DeleteSubject(context.Context, *connect.Request[v1.DeleteSubjectRequest]) (*connect.Response[v1.DeleteSubjectResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.LibraryService.DeleteSubject is not implemented"))
+}
+
+func (UnimplementedLibraryServiceHandler) SyncLibrary(context.Context, *connect.Request[v1.SyncLibraryRequest]) (*connect.Response[v1.SyncLibraryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.LibraryService.SyncLibrary is not implemented"))
+}
+
+func (UnimplementedLibraryServiceHandler) GetPhotoLinks(context.Context, *connect.Request[v1.GetPhotoLinksRequest]) (*connect.Response[v1.GetPhotoLinksResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.LibraryService.GetPhotoLinks is not implemented"))
 }

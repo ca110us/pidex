@@ -555,6 +555,16 @@ nonisolated struct Pidex_V1_Photo: @unchecked Sendable {
   /// Clears the value of `location`. Subsequent reads from it will return its default value.
   mutating func clearLocation() {_uniqueStorage()._location = nil}
 
+  /// When the server received it; photos without captured_at sort by it.
+  var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
+    get {_storage._createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_uniqueStorage()._createdAt = newValue}
+  }
+  /// Returns true if `createdAt` has been explicitly set.
+  var hasCreatedAt: Bool {_storage._createdAt != nil}
+  /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
+  mutating func clearCreatedAt() {_uniqueStorage()._createdAt = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -1041,7 +1051,7 @@ nonisolated extension Pidex_V1_Tag: SwiftProtobuf.Message, SwiftProtobuf._Messag
 
 nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".Photo"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0\u{1}place\0\u{1}location\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0\u{1}place\0\u{1}location\0\u{3}created_at\0")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -1061,6 +1071,7 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
     var _thumbnailURL: String = String()
     var _place: Pidex_V1_Place? = nil
     var _location: Pidex_V1_GeoPoint? = nil
+    var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1088,6 +1099,7 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
       _thumbnailURL = source._thumbnailURL
       _place = source._place
       _location = source._location
+      _createdAt = source._createdAt
     }
   }
 
@@ -1123,6 +1135,7 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
         case 15: try { try decoder.decodeSingularStringField(value: &_storage._thumbnailURL) }()
         case 16: try { try decoder.decodeSingularMessageField(value: &_storage._place) }()
         case 17: try { try decoder.decodeSingularMessageField(value: &_storage._location) }()
+        case 18: try { try decoder.decodeSingularMessageField(value: &_storage._createdAt) }()
         default: break
         }
       }
@@ -1186,6 +1199,9 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
       try { if let v = _storage._location {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
       } }()
+      try { if let v = _storage._createdAt {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1212,6 +1228,7 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
         if _storage._thumbnailURL != rhs_storage._thumbnailURL {return false}
         if _storage._place != rhs_storage._place {return false}
         if _storage._location != rhs_storage._location {return false}
+        if _storage._createdAt != rhs_storage._createdAt {return false}
         return true
       }
       if !storagesAreEqual {return false}

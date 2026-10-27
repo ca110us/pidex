@@ -20,6 +20,93 @@ fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobu
   typealias Version = _2
 }
 
+nonisolated struct Pidex_V1_SyncLibraryRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// From the last response; empty to start from nothing.
+  var cursor: String = String()
+
+  var pageSize: Int32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Pidex_V1_SyncLibraryResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Added or changed since the cursor, without links. Photos in any state:
+  /// the phone shows the same ones search does (processed, not junk).
+  var photos: [Pidex_V1_Photo] = []
+
+  /// Added or changed subjects, without counts or covers.
+  var subjects: [Pidex_V1_Subject] = []
+
+  /// Deleted, or (subjects) merged into another.
+  var deletedPhotoIds: [String] = []
+
+  var deletedSubjectIds: [String] = []
+
+  /// To ask with next time.
+  var cursor: String = String()
+
+  /// More changes wait: ask again with the cursor straight away.
+  var more: Bool = false
+
+  /// The cursor was too old to say what was deleted since: drop the copy
+  /// and keep what follows, from this response on.
+  var startOver: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Pidex_V1_GetPhotoLinksRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// At most 200.
+  var ids: [String] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Pidex_V1_PhotoLinks: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var thumbnailURL: String = String()
+
+  var viewURL: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+nonisolated struct Pidex_V1_GetPhotoLinksResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// By photo id; photos not found in the collection are left out.
+  var links: Dictionary<String,Pidex_V1_PhotoLinks> = [:]
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 nonisolated struct Pidex_V1_ListPhotosRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -426,6 +513,196 @@ nonisolated struct Pidex_V1_DeleteSubjectResponse: Sendable {
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate nonisolated let _protobuf_package = "pidex.v1"
+
+nonisolated extension Pidex_V1_SyncLibraryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".SyncLibraryRequest"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0\u{3}page_size\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.pageSize) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.cursor.isEmpty {
+      try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 1)
+    }
+    if self.pageSize != 0 {
+      try visitor.visitSingularInt32Field(value: self.pageSize, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_SyncLibraryRequest, rhs: Pidex_V1_SyncLibraryRequest) -> Bool {
+    if lhs.cursor != rhs.cursor {return false}
+    if lhs.pageSize != rhs.pageSize {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_SyncLibraryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".SyncLibraryResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}photos\0\u{1}subjects\0\u{3}deleted_photo_ids\0\u{3}deleted_subject_ids\0\u{1}cursor\0\u{1}more\0\u{3}start_over\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.photos) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.subjects) }()
+      case 3: try { try decoder.decodeRepeatedStringField(value: &self.deletedPhotoIds) }()
+      case 4: try { try decoder.decodeRepeatedStringField(value: &self.deletedSubjectIds) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.more) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.startOver) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.photos.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.photos, fieldNumber: 1)
+    }
+    if !self.subjects.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.subjects, fieldNumber: 2)
+    }
+    if !self.deletedPhotoIds.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.deletedPhotoIds, fieldNumber: 3)
+    }
+    if !self.deletedSubjectIds.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.deletedSubjectIds, fieldNumber: 4)
+    }
+    if !self.cursor.isEmpty {
+      try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 5)
+    }
+    if self.more != false {
+      try visitor.visitSingularBoolField(value: self.more, fieldNumber: 6)
+    }
+    if self.startOver != false {
+      try visitor.visitSingularBoolField(value: self.startOver, fieldNumber: 7)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_SyncLibraryResponse, rhs: Pidex_V1_SyncLibraryResponse) -> Bool {
+    if lhs.photos != rhs.photos {return false}
+    if lhs.subjects != rhs.subjects {return false}
+    if lhs.deletedPhotoIds != rhs.deletedPhotoIds {return false}
+    if lhs.deletedSubjectIds != rhs.deletedSubjectIds {return false}
+    if lhs.cursor != rhs.cursor {return false}
+    if lhs.more != rhs.more {return false}
+    if lhs.startOver != rhs.startOver {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_GetPhotoLinksRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetPhotoLinksRequest"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}ids\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.ids) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.ids.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.ids, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_GetPhotoLinksRequest, rhs: Pidex_V1_GetPhotoLinksRequest) -> Bool {
+    if lhs.ids != rhs.ids {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_PhotoLinks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PhotoLinks"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}thumbnail_url\0\u{3}view_url\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.thumbnailURL) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.viewURL) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.thumbnailURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.thumbnailURL, fieldNumber: 1)
+    }
+    if !self.viewURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.viewURL, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_PhotoLinks, rhs: Pidex_V1_PhotoLinks) -> Bool {
+    if lhs.thumbnailURL != rhs.thumbnailURL {return false}
+    if lhs.viewURL != rhs.viewURL {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_GetPhotoLinksResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".GetPhotoLinksResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}links\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Pidex_V1_PhotoLinks>.self, value: &self.links) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.links.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Pidex_V1_PhotoLinks>.self, value: self.links, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_GetPhotoLinksResponse, rhs: Pidex_V1_GetPhotoLinksResponse) -> Bool {
+    if lhs.links != rhs.links {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
 
 nonisolated extension Pidex_V1_ListPhotosRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ListPhotosRequest"

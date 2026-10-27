@@ -207,7 +207,14 @@ struct CollectionsView: View {
         await withTaskGroup(of: (String, Pidex_V1_GetOverviewResponse?).self) { group in
             for w in app.workspaces.items {
                 guard let api = app.api(for: w) else { continue }
-                group.addTask { (w.id, try? await api.overview()) }
+                group.addTask {
+                    // Offline, as last seen.
+                    let local = LocalLibrary.for(api)
+                    guard let o = try? await api.overview() else { return (w.id, local?.kept(Pidex_V1_GetOverviewResponse.self, as: "overview")) }
+                    try? local?.keep(o, as: "overview")
+                    await PhotoLinks.shared.know(o.recent.map(\.id), in: api)
+                    return (w.id, o)
+                }
             }
             for await (id, o) in group {
                 if let o { overviews[id] = o }

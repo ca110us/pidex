@@ -307,6 +307,10 @@ open ios/Pidex.xcodeproj
 - The look follows `ios/Pidex/App/Theme.swift`: black and white, after Grok, with colour kept for state (see `design/brand/README.md`).
 - The simulator has no camera. Tap the bottom-left corner to import photos from the photo library; this goes through exactly the same flow as taking a photo.
 
+**A copy on the phone**: each collection's photos and subjects are kept on the phone (SQLite through GRDB, `ios/Pidex/Library/LocalLibrary.swift`), one file per collection named from a hash of its token. A collection opens from the copy at once and then asks the server what changed (`SyncLibrary`); with no connection it is browsed from the copy, with its places, tags and subjects as last seen. Thumbnails are kept by photo id in Application Support, which the system does not clear for space. The copy carries no links: images not yet on the phone get short-lived links in batches of up to 200 (`GetPhotoLinks`), as do expired ones. Searches in words still run on the server, which sends the matching photos. Files are out of backups and readable only while the phone is unlocked (or they are open); removing a collection from the phone erases its copy.
+
+On the server, every write to a photo or subject stamps it with the transaction that made it, by trigger, so no code path can forget to; a change to a photo's tags, or to the name of the subject it is filed under, stamps the photo too, and deletions leave tombstones (migration `00012_sync.sql`). A sync reads, a page at a time, everything stamped since its cursor, and the next starts at the oldest transaction still running when this one began, so a write that commits late is not missed. Tombstones are kept 30 days; a phone away longer starts again from nothing.
+
 **Connecting a physical device to a local server**: the phone and the computer must be on the same Wi-Fi, and the server must listen on the LAN address:
 
 ```sh
