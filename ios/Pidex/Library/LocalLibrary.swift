@@ -22,7 +22,7 @@ nonisolated final class LocalLibrary: Sendable {
         try Self.migrator.migrate(db)
     }
 
-    private static var migrator: DatabaseMigrator {
+    static var migrator: DatabaseMigrator {
         var m = DatabaseMigrator()
         m.registerMigration("v1") { db in
             try db.execute(sql: """
@@ -43,6 +43,23 @@ nonisolated final class LocalLibrary: Sendable {
                 -- The sync cursor, and responses kept for when offline.
                 CREATE TABLE kept (key TEXT PRIMARY KEY, data BLOB NOT NULL);
                 """)
+        }
+        m.registerMigration("v2: matching on the phone") { db in
+            try db.execute(sql: """
+                -- Tags as |key|key|; every part of its place; and its words
+                -- (description, fields read, tags, place) to match a search.
+                ALTER TABLE photo ADD COLUMN tags TEXT NOT NULL DEFAULT '';
+                ALTER TABLE photo ADD COLUMN place_text TEXT NOT NULL DEFAULT '';
+                ALTER TABLE photo ADD COLUMN search_text TEXT NOT NULL DEFAULT '';
+                ALTER TABLE subject ADD COLUMN name TEXT NOT NULL DEFAULT '';
+                ALTER TABLE subject ADD COLUMN type_key TEXT NOT NULL DEFAULT '';
+                """)
+            for data in try Data.fetchAll(db, sql: "SELECT data FROM photo") {
+                if let p = try? Pidex_V1_Photo(serializedBytes: data) { try save(p, in: db) }
+            }
+            for data in try Data.fetchAll(db, sql: "SELECT data FROM subject") {
+                if let s = try? Pidex_V1_Subject(serializedBytes: data) { try save(s, in: db) }
+            }
         }
         return m
     }
@@ -81,8 +98,7 @@ nonisolated final class LocalLibrary: Sendable {
                 try Self.save(p, in: db)
             }
             for s in r.subjects {
-                let data: Data = try s.serializedData()
-                try db.execute(sql: "INSERT OR REPLACE INTO subject (id, data) VALUES (?, ?)", arguments: [s.id, data])
+                try Self.save(s, in: db)
             }
             for id in r.deletedPhotoIds {
                 try db.execute(sql: "DELETE FROM photo WHERE id = ?", arguments: [id])
@@ -110,12 +126,24 @@ nonisolated final class LocalLibrary: Sendable {
         let pl = p.place
         let city = pl.city.isEmpty ? pl.region : pl.city
         let area = pl.name.isEmpty ? pl.district : pl.name
+        let places = [pl.country, pl.region, pl.city, pl.district, pl.name].filter { !$0.isEmpty }
+        let tags = p.tags.map(\.key)
+        let words = ([p.description_p] + p.extractedFields.values.sorted() + tags + places).joined(separator: "\n")
         let data: Data = try p.serializedData()
         try db.execute(sql: """
-            INSERT OR REPLACE INTO photo (id, at, shown, subject_id, country, city, city_in, area, area_in, data)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO photo
+                (id, at, shown, subject_id, country, city, city_in, area, area_in, tags, place_text, search_text, data)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, arguments: [p.id, at.timeIntervalSince1970, shown, p.subjectID,
-                             pl.country, city, pl.country, area, city, data])
+                             pl.country, city, pl.country, area, city,
+                             tags.isEmpty ? "" : "|" + tags.joined(separator: "|") + "|",
+                             places.joined(separator: "\n"), words, data])
+    }
+
+    private static func save(_ s: Pidex_V1_Subject, in db: Database) throws {
+        let data: Data = try s.serializedData()
+        try db.execute(sql: "INSERT OR REPLACE INTO subject (id, name, type_key, data) VALUES (?, ?, ?, ?)",
+                       arguments: [s.id, s.displayName, s.typeKey, data])
     }
 
     /// The cursor to ask from; empty before the first sync.
@@ -175,6 +203,96 @@ nonisolated final class LocalLibrary: Sendable {
         try db.read { db in
             try Data.fetchAll(db, sql: "SELECT data FROM subject").compactMap { try? Pidex_V1_Subject(serializedBytes: $0) }
         }
+    }
+
+    // MARK: Matching on the phone
+
+    /// Whether the phone can find what filters ask for as the server
+    /// would: picked tags, a place, days, subjects. A search by meaning
+    /// (text, or tags only preferred), or for what is missing, is the
+    /// server's.
+    static func matchesExactly(_ f: Pidex_V1_SearchFilters) -> Bool {
+        f.mode != .missing && f.text.isEmpty && f.roles.isEmpty && f.subjectType.isEmpty
+            && (f.tags.isEmpty || f.tagsRequired)
+    }
+
+    /// Shown photos that match filters, newest first. Offline, text is
+    /// matched as words in what the phone knows of each photo, and tags
+    /// only preferred are required.
+    func photos(matching f: Pidex_V1_SearchFilters, offset: Int = 0, limit: Int) throws -> [Pidex_V1_Photo] {
+        let (sql, args) = Self.conditions(f)
+        return try db.read { db in
+            try Data.fetchAll(db, sql: "SELECT data FROM photo WHERE \(sql) ORDER BY at DESC, id DESC LIMIT ? OFFSET ?",
+                              arguments: args + [limit, offset])
+                .compactMap { try? Pidex_V1_Photo(serializedBytes: $0) }
+        }
+    }
+
+    func count(matching f: Pidex_V1_SearchFilters) throws -> Int {
+        let (sql, args) = Self.conditions(f)
+        return try db.read { db in try Int.fetchOne(db, sql: "SELECT count(*) FROM photo WHERE \(sql)", arguments: args) ?? 0 }
+    }
+
+    /// How many of the matches have each tag.
+    func tagCounts(matching f: Pidex_V1_SearchFilters) throws -> [String: Int] {
+        let (sql, args) = Self.conditions(f)
+        var out: [String: Int] = [:]
+        for tags in try db.read({ db in try String.fetchAll(db, sql: "SELECT tags FROM photo WHERE \(sql)", arguments: args) }) {
+            for key in tags.split(separator: "|") { out[String(key), default: 0] += 1 }
+        }
+        return out
+    }
+
+    /// Subjects whose names contain the words.
+    func subjects(named words: String) throws -> [Pidex_V1_Subject] {
+        try db.read { db in
+            try Data.fetchAll(db, sql: "SELECT data FROM subject WHERE name LIKE ? ESCAPE '\\'", arguments: ["%" + Self.escaped(words) + "%"])
+                .compactMap { try? Pidex_V1_Subject(serializedBytes: $0) }
+        }
+    }
+
+    /// Every name a place of a shown photo goes by.
+    func placeNames() throws -> Set<String> {
+        let all = try db.read { db in try String.fetchAll(db, sql: "SELECT DISTINCT place_text FROM photo WHERE shown AND place_text <> ''") }
+        return Set(all.flatMap { $0.split(separator: "\n").map(String.init) })
+    }
+
+    private static func conditions(_ f: Pidex_V1_SearchFilters) -> (String, StatementArguments) {
+        var sql = ["shown"]
+        var args: StatementArguments = []
+        for tag in f.tags {
+            sql.append("tags LIKE ? ESCAPE '\\'")
+            args += ["%|" + escaped(tag) + "|%"]
+        }
+        if !f.place.isEmpty {
+            sql.append("place_text LIKE ? ESCAPE '\\'")
+            args += ["%" + escaped(f.place) + "%"]
+        }
+        if f.hasFrom {
+            sql.append("at >= ?")
+            args += [f.from.date.timeIntervalSince1970]
+        }
+        if f.hasTo {
+            sql.append("at < ?")
+            args += [f.to.date.timeIntervalSince1970]
+        }
+        if !f.subjectIds.isEmpty {
+            sql.append("subject_id IN (" + f.subjectIds.map { _ in "?" }.joined(separator: ",") + ")")
+            args += StatementArguments(f.subjectIds)
+        }
+        if !f.subjectQuery.isEmpty {
+            sql.append("subject_id IN (SELECT id FROM subject WHERE name LIKE ? ESCAPE '\\')")
+            args += ["%" + escaped(f.subjectQuery) + "%"]
+        }
+        for word in f.text.split(whereSeparator: \.isWhitespace) {
+            sql.append("search_text LIKE ? ESCAPE '\\'")
+            args += ["%" + escaped(String(word)) + "%"]
+        }
+        return (sql.joined(separator: " AND "), args)
+    }
+
+    private static func escaped(_ s: String) -> String {
+        s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "%", with: "\\%").replacingOccurrences(of: "_", with: "\\_")
     }
 
     // MARK: Responses kept for offline

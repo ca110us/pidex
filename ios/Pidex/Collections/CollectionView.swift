@@ -71,7 +71,12 @@ struct CollectionView: View {
                 if !(overview?.tags.isEmpty ?? true) {
                     tagRow
                 }
-                if model.offline {
+                if model.matchedOffline {
+                    Label("Offline: matched by the names and words on this phone, not by meaning", systemImage: "icloud.slash")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                } else if model.offline {
                     Label("Offline: showing the photos kept on this phone", systemImage: "icloud.slash")
                         .font(.footnote)
                         .foregroundStyle(.secondary)

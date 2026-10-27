@@ -2481,6 +2481,16 @@
         }
       }
     },
+    "Offline: matched by the names and words on this phone, not by meaning": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离线中：按手机上已知的名称和文字匹配，不理解句子意思"
+          }
+        }
+      }
+    },
     "Offline: showing the photos kept on this phone": {
       "localizations": {
         "zh-Hans": {
