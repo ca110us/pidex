@@ -139,18 +139,25 @@ final class AskModel {
         if asksMany { saveGroup() }
     }
 
-    /// What the other collections replied to the last message: their
-    /// answers, or whose photos they showed. Said to a model, so in English.
+    /// What the other collections replied to the last few messages, oldest
+    /// first: their answers, or whose photos they showed, as far back as a
+    /// collection reads its own conversation. Said to a model, so in English.
     private func elsewhere(for i: Int) -> [Pidex_V1_ElsewhereReply] {
-        guard asksMany, let last = turns.last else { return [] }
-        return last.replies.compactMap { r in
-            guard r.workspace.id != parties[i].workspace.id, let m = r.message, let said = Self.said(m) else { return nil }
-            var e = Pidex_V1_ElsewhereReply()
-            e.collection = r.workspace.name
-            e.reply = said
-            return e
+        guard asksMany else { return [] }
+        return turns.suffix(Self.turnsRead).flatMap { turn in
+            turn.replies.compactMap { r in
+                guard r.workspace.id != parties[i].workspace.id, let m = r.message, let said = Self.said(m) else { return nil }
+                var e = Pidex_V1_ElsewhereReply()
+                e.request = turn.text
+                e.collection = r.workspace.name
+                e.reply = said
+                return e
+            }
         }
     }
+
+    /// How many earlier exchanges the server reads a message with.
+    static let turnsRead = 4
 
     static func said(_ m: Pidex_V1_ChatMessage) -> String? {
         if !m.text.isEmpty { return m.text }

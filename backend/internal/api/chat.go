@@ -272,17 +272,18 @@ func (s *chatService) planTurn(ctx context.Context, teamID uuid.UUID, cfg *teamc
 	return t
 }
 
-// Bounds on what other collections replied, as the app sends it.
+// Bounds on what other collections replied, as the app sends it: a few
+// collections over the turns a message is read with.
 const (
-	elsewhereReplies = 8
+	elsewhereReplies = 8 * historyTurns
 	elsewhereRunes   = 600
 )
 
-// elsewhere is what the app says other collections replied to the
-// previous message, bounded.
+// elsewhere is what the app says other collections replied to the last
+// few messages, bounded; the latest are kept.
 func elsewhere(rs []*pidexv1.ElsewhereReply) []search.Elsewhere {
 	var out []search.Elsewhere
-	for _, r := range rs[:min(len(rs), elsewhereReplies)] {
+	for _, r := range rs[max(0, len(rs)-elsewhereReplies):] {
 		reply := []rune(strings.TrimSpace(r.GetReply()))
 		if len(reply) == 0 {
 			continue
@@ -290,16 +291,18 @@ func elsewhere(rs []*pidexv1.ElsewhereReply) []search.Elsewhere {
 		if len(reply) > elsewhereRunes {
 			reply = append(reply[:elsewhereRunes], '…')
 		}
-		out = append(out, search.Elsewhere{Collection: strings.TrimSpace(r.GetCollection()), Reply: string(reply)})
+		out = append(out, search.Elsewhere{Request: strings.TrimSpace(r.GetRequest()), Collection: strings.TrimSpace(r.GetCollection()), Reply: string(reply)})
 	}
 	return out
 }
 
-// saidNothing: the last reply in the conversation showed no photos and
-// said nothing (it found nothing, or the message was not about photos).
+// saidNothing: the last reply about photos in the conversation showed no
+// photos and said nothing: it found nothing. Replies to messages not about
+// photos ("thanks", small talk) are passed over, as a follow-up after one
+// still means what came before.
 func saidNothing(msgs []dbq.ConversationMessage) bool {
 	for i := len(msgs) - 1; i >= 0; i-- {
-		if m := msgs[i]; m.Role == "assistant" {
+		if m := msgs[i]; m.Role == "assistant" && !unrelated(m) {
 			missing := m.Intent != nil && *m.Intent == "missing"
 			return len(m.PhotoIds) == 0 && m.Text == "" && !missing
 		}
@@ -321,6 +324,11 @@ func (s *chatService) history(ctx context.Context, teamID uuid.UUID, cfg *teamco
 			continue
 		}
 		h.Turns = append(h.Turns, search.Turn{Request: request, Reply: replySummary(m)})
+		if unrelated(m) {
+			// Small talk between: "these" still means what was shown
+			// before it, and the search before it is the one to adjust.
+			continue
+		}
 		shown = m.PhotoIds
 		if len(m.Filters) > 0 {
 			var pf pidexv1.SearchFilters
@@ -352,6 +360,11 @@ func known(tags []string, cfg *teamconfig.Config) []string {
 }
 
 // replySummary is a reply as the next turn reads it.
+// unrelated: a reply to a message that was not about photos.
+func unrelated(m dbq.ConversationMessage) bool {
+	return m.Intent != nil && *m.Intent == "unrelated"
+}
+
 func replySummary(m dbq.ConversationMessage) string {
 	switch {
 	case m.Text != "":

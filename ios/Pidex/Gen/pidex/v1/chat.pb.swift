@@ -306,8 +306,8 @@ nonisolated struct Pidex_V1_SendMessageRequest: Sendable {
   var timeZone: String = String()
 
   /// When the app asks several collections at once, what the others
-  /// replied to the previous message, so a follow-up ("their photos") can
-  /// be read against what another collection named or showed.
+  /// replied to the last few messages, oldest first, so a follow-up ("their
+  /// photos") can be read against what another collection named or showed.
   var elsewhere: [Pidex_V1_ElsewhereReply] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -315,7 +315,7 @@ nonisolated struct Pidex_V1_SendMessageRequest: Sendable {
   init() {}
 }
 
-/// Another collection's reply to the previous message.
+/// Another collection's reply to an earlier message.
 nonisolated struct Pidex_V1_ElsewhereReply: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -326,6 +326,9 @@ nonisolated struct Pidex_V1_ElsewhereReply: Sendable {
 
   /// Its answer, or what it showed ("4 photos of 土土, 圆圆").
   var reply: String = String()
+
+  /// The message it replied to.
+  var request: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -777,7 +780,7 @@ nonisolated extension Pidex_V1_SendMessageRequest: SwiftProtobuf.Message, SwiftP
 
 nonisolated extension Pidex_V1_ElsewhereReply: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".ElsewhereReply"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}collection\0\u{1}reply\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}collection\0\u{1}reply\0\u{1}request\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -787,6 +790,7 @@ nonisolated extension Pidex_V1_ElsewhereReply: SwiftProtobuf.Message, SwiftProto
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.collection) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.reply) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.request) }()
       default: break
       }
     }
@@ -799,12 +803,16 @@ nonisolated extension Pidex_V1_ElsewhereReply: SwiftProtobuf.Message, SwiftProto
     if !self.reply.isEmpty {
       try visitor.visitSingularStringField(value: self.reply, fieldNumber: 2)
     }
+    if !self.request.isEmpty {
+      try visitor.visitSingularStringField(value: self.request, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_ElsewhereReply, rhs: Pidex_V1_ElsewhereReply) -> Bool {
     if lhs.collection != rhs.collection {return false}
     if lhs.reply != rhs.reply {return false}
+    if lhs.request != rhs.request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

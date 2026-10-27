@@ -531,8 +531,8 @@ type SendMessageRequest struct {
 	// IANA time zone of the user, for "yesterday" or "last week".
 	TimeZone string `protobuf:"bytes,3,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
 	// When the app asks several collections at once, what the others
-	// replied to the previous message, so a follow-up ("their photos") can
-	// be read against what another collection named or showed.
+	// replied to the last few messages, oldest first, so a follow-up ("their
+	// photos") can be read against what another collection named or showed.
 	Elsewhere     []*ElsewhereReply `protobuf:"bytes,4,rep,name=elsewhere,proto3" json:"elsewhere,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -596,13 +596,15 @@ func (x *SendMessageRequest) GetElsewhere() []*ElsewhereReply {
 	return nil
 }
 
-// Another collection's reply to the previous message.
+// Another collection's reply to an earlier message.
 type ElsewhereReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The collection's name.
 	Collection string `protobuf:"bytes,1,opt,name=collection,proto3" json:"collection,omitempty"`
 	// Its answer, or what it showed ("4 photos of 土土, 圆圆").
-	Reply         string `protobuf:"bytes,2,opt,name=reply,proto3" json:"reply,omitempty"`
+	Reply string `protobuf:"bytes,2,opt,name=reply,proto3" json:"reply,omitempty"`
+	// The message it replied to.
+	Request       string `protobuf:"bytes,3,opt,name=request,proto3" json:"request,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -647,6 +649,13 @@ func (x *ElsewhereReply) GetCollection() string {
 func (x *ElsewhereReply) GetReply() string {
 	if x != nil {
 		return x.Reply
+	}
+	return ""
+}
+
+func (x *ElsewhereReply) GetRequest() string {
+	if x != nil {
+		return x.Request
 	}
 	return ""
 }
@@ -832,12 +841,13 @@ const file_pidex_v1_chat_proto_rawDesc = "" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12\x1b\n" +
 	"\ttime_zone\x18\x03 \x01(\tR\btimeZone\x126\n" +
-	"\telsewhere\x18\x04 \x03(\v2\x18.pidex.v1.ElsewhereReplyR\telsewhere\"F\n" +
+	"\telsewhere\x18\x04 \x03(\v2\x18.pidex.v1.ElsewhereReplyR\telsewhere\"`\n" +
 	"\x0eElsewhereReply\x12\x1e\n" +
 	"\n" +
 	"collection\x18\x01 \x01(\tR\n" +
 	"collection\x12\x14\n" +
-	"\x05reply\x18\x02 \x01(\tR\x05reply\"\xaf\x01\n" +
+	"\x05reply\x18\x02 \x01(\tR\x05reply\x12\x18\n" +
+	"\arequest\x18\x03 \x01(\tR\arequest\"\xaf\x01\n" +
 	"\x13SendMessageResponse\x12:\n" +
 	"\fconversation\x18\x01 \x01(\v2\x16.pidex.v1.ConversationR\fconversation\x12/\n" +
 	"\amessage\x18\x02 \x01(\v2\x15.pidex.v1.ChatMessageR\amessage\x12+\n" +

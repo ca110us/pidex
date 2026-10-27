@@ -257,7 +257,11 @@ func TestFollowUpAboutWhatAnotherCollectionNamed(t *testing.T) {
 	e.searchAnswers.push(`{"mode":"photos","subject_query":"","subject_type":"","tags":[],"date_from":"","date_to":"","text":"","intent":"photos","about_previous":true}`)
 	follow, err := chat.SendMessage(e.ctx, connect.NewRequest(&pidexv1.SendMessageRequest{
 		ConversationId: first.Msg.Conversation.Id, Text: "看看他们的照片", TimeZone: "UTC",
-		Elsewhere: []*pidexv1.ElsewhereReply{{Collection: "我家的猫", Reply: "您一共有四只猫，分别是羞羞、小虎、土土和圆圆。"}},
+		// Named two messages back, with small talk since.
+		Elsewhere: []*pidexv1.ElsewhereReply{
+			{Request: "我有几只猫", Collection: "我家的猫", Reply: "您一共有四只猫，分别是羞羞、小虎、土土和圆圆。"},
+			{Request: "谢谢", Collection: "旅行", Reply: "Showed 2 photos"},
+		},
 	}))
 	if err != nil {
 		t.Fatal(err)
@@ -266,7 +270,38 @@ func TestFollowUpAboutWhatAnotherCollectionNamed(t *testing.T) {
 		t.Errorf("\"their photos\" showed %d photos of a collection that named no one", n)
 	}
 	prompt := e.searchAnswers.prompts[len(e.searchAnswers.prompts)-1]
-	if !strings.Contains(prompt, "- 我家的猫: 您一共有四只猫") {
+	if !strings.Contains(prompt, "- Request: 我有几只猫\n  我家的猫: 您一共有四只猫") {
 		t.Errorf("the planner was not told what the other collection said:\n%s", prompt)
+	}
+}
+
+// TestFollowUpAfterSmallTalk: "these" after a message not about photos
+// still means the photos shown before it.
+func TestFollowUpAfterSmallTalk(t *testing.T) {
+	e := setup(t, "construction_renovation")
+	maple := e.addSubject("project", "Maple Court", map[string]string{"project_name": "Maple Court"}, nil)
+	tiling := e.addPhoto(fixturePhoto{subject: &maple, description: "Kitchen wall tiling in progress.", tags: []string{"tiling"}})
+	e.addPhoto(fixturePhoto{subject: &maple, description: "Membrane on the bathroom floor.", tags: []string{"waterproofing"}, daysAgo: 1})
+	chat := pidexv1connect.NewChatServiceClient(e.server.Client(), e.server.URL, withToken(e.token))
+	send := func(conv, text, plan string) *pidexv1.SendMessageResponse {
+		t.Helper()
+		e.searchAnswers.push(plan)
+		res, err := chat.SendMessage(e.ctx, connect.NewRequest(&pidexv1.SendMessageRequest{ConversationId: conv, Text: text, TimeZone: "UTC"}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res.Msg
+	}
+	first := send("", "Maple Court tiling", chatPlan("Maple Court", []string{"tiling"}, "photos", false))
+	if got := ids(first.Reply.Photos); !slices.Contains(got, tiling.String()) {
+		t.Fatalf("first search found %v", got)
+	}
+	conv := first.Conversation.Id
+	if r := send(conv, "thanks!", chatPlan("", nil, "unrelated", false)); r.Reply.Kind != pidexv1.ReplyKind_REPLY_KIND_UNRELATED {
+		t.Fatalf("small talk replied %v", r.Reply.Kind)
+	}
+	these := send(conv, "show me those again", chatPlan("", nil, "photos", true))
+	if got, want := ids(these.Reply.Photos), ids(first.Reply.Photos); !slices.Equal(got, want) {
+		t.Errorf("\"those\" after small talk showed %v, want %v", got, want)
 	}
 }

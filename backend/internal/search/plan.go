@@ -89,26 +89,32 @@ type Context struct {
 	// Turns are the last few exchanges, oldest first.
 	Turns []Turn
 	// Elsewhere is what other collections asked the same messages replied
-	// to the last one.
+	// to the last few, oldest first.
 	Elsewhere []Elsewhere
 }
 
-// Elsewhere is another collection's reply to the previous message.
+// Elsewhere is another collection's reply to an earlier message.
 type Elsewhere struct {
+	Request    string
 	Collection string
 	Reply      string
 }
 
-// ElsewherePrompt says what other collections replied, for a model that
-// reads a follow-up; "" when none did.
+// ElsewherePrompt says what other collections replied, by request, for a
+// model that reads a follow-up; "" when none did.
 func ElsewherePrompt(e []Elsewhere) string {
 	if len(e) == 0 {
 		return ""
 	}
 	var b strings.Builder
-	b.WriteString("The previous request was also put to the user's other collections, which replied:\n")
+	b.WriteString("The same requests were also put to the user's other collections, which replied, oldest first:\n")
+	request := "\x00"
 	for _, r := range e {
-		fmt.Fprintf(&b, "- %s: %s\n", r.Collection, r.Reply)
+		if r.Request != request {
+			request = r.Request
+			fmt.Fprintf(&b, "- Request: %s\n", r.Request)
+		}
+		fmt.Fprintf(&b, "  %s: %s\n", r.Collection, r.Reply)
 	}
 	return b.String()
 }
