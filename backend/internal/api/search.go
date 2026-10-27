@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -146,12 +148,12 @@ func (s *searchService) askPhotos(ctx context.Context, sp *tracing.Span, req *co
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, err)
 	}
-	out.Answer = answer
+	out.Answer, photos = cited(answer, photos)
 	if out.Cited, err = s.photosProto(ctx, s.Q, photos); err != nil {
 		return nil, err
 	}
 	sp.Set("photos", len(photos))
-	sp.Output(map[string]any{"answer": answer, "photo_ids": res.PhotoIDs, "filters": f})
+	sp.Output(map[string]any{"answer": out.Answer, "photo_ids": photoIDs(photos), "filters": f})
 	return connect.NewResponse(out), nil
 }
 
@@ -454,6 +456,8 @@ func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.C
 // tags describe it.
 const (
 	registerLimit = 100
+	// registerLooks bounds what the register says a subject looks like.
+	registerLooks = 400
 	registerTags  = 6
 )
 
@@ -516,6 +520,11 @@ func (s *Server) writeSubjectRegister(ctx context.Context, b *strings.Builder, t
 			fmt.Fprintf(b, "  - %s: %d photos", sub.DisplayName, counts[sub.ID])
 			if tags := tagsOf[sub.ID]; len(tags) > 0 {
 				fmt.Fprintf(b, "; tags on its photos: %s", strings.Join(tags, ", "))
+			}
+			// What it looks like, from its profile: a description of a
+			// photo names it rather than saying so again.
+			if looks := looksOf(sub.Profile); looks != "" {
+				fmt.Fprintf(b, "; looks: %s", looks)
 			}
 			b.WriteString("\n")
 		}
@@ -605,4 +614,46 @@ func filtersFrom(in *pidexv1.SearchFilters, cfg *teamconfig.Config) (search.Filt
 		}
 	}
 	return f, nil
+}
+
+// looksOf is a subject's profile on one line, cut to registerLooks runes.
+func looksOf(profile string) string {
+	var facts []string
+	for _, f := range strings.Split(profile, "\n") {
+		if f = strings.TrimSpace(f); f != "" {
+			facts = append(facts, strings.TrimRight(f, "。."))
+		}
+	}
+	looks := []rune(strings.Join(facts, "; "))
+	if len(looks) > registerLooks {
+		return string(looks[:registerLooks]) + "…"
+	}
+	return string(looks)
+}
+
+var citation = regexp.MustCompile(`\[(\d+)\]`)
+
+// cited keeps the photos an answer cites, in the order it first cites
+// them, and numbers its citations to match: "[2][7]" over twelve photos
+// becomes "[1][2]" over the two. An answer that cites none keeps none.
+func cited(answer string, photos []dbq.Photo) (string, []dbq.Photo) {
+	renumbered := map[int]int{}
+	var kept []dbq.Photo
+	for _, m := range citation.FindAllStringSubmatch(answer, -1) {
+		n, _ := strconv.Atoi(m[1])
+		if _, seen := renumbered[n]; seen || n < 1 || n > len(photos) {
+			continue
+		}
+		kept = append(kept, photos[n-1])
+		renumbered[n] = len(kept)
+	}
+	answer = citation.ReplaceAllStringFunc(answer, func(c string) string {
+		n, _ := strconv.Atoi(c[1 : len(c)-1])
+		if to, ok := renumbered[n]; ok {
+			return fmt.Sprintf("[%d]", to)
+		}
+		// A number with no photo cites nothing.
+		return ""
+	})
+	return answer, kept
 }

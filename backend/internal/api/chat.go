@@ -200,6 +200,12 @@ func (s *chatService) sendMessage(ctx context.Context, sp *tracing.Span, req *co
 			return nil, connect.NewError(connect.CodeUnavailable, err)
 		}
 		kind = "answer"
+		// Only the photos the answer rests on are shown with it.
+		answer, photos = cited(answer, photos)
+		photoIDs, total = make([]uuid.UUID, 0, len(photos)), len(photos)
+		for _, p := range photos {
+			photoIDs = append(photoIDs, p.ID)
+		}
 	}
 
 	filtersJSON, err := protojson.Marshal(filtersProto(f, res.SubjectIDs))

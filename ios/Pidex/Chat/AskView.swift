@@ -222,10 +222,11 @@ struct TurnView: View {
         }
     }
 
-    /// A reply with no photos to show (or not about photos at all), which a
-    /// collection asked among others does not show.
+    /// A reply with nothing to show (or not about photos at all), which a
+    /// collection asked among others does not show. An answer shows only the
+    /// photos it cites, so one from the subjects on file may show none.
     static func isEmpty(_ m: Pidex_V1_ChatMessage) -> Bool {
-        m.kind != .missing && m.photos.isEmpty
+        m.kind != .missing && m.photos.isEmpty && (m.kind != .answer || m.text.isEmpty)
     }
 }
 
@@ -472,7 +473,9 @@ struct MessageView: View {
             }
             switch message.kind {
             case .answer:
-                CitedPhotos(photos: message.photos, library: library)
+                if !message.photos.isEmpty {
+                    CitedPhotos(photos: message.photos, library: library)
+                }
             case .missing:
                 EmptyView()
             default:
