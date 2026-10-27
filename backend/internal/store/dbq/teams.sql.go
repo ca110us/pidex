@@ -359,15 +359,18 @@ func (q *Queries) SetActiveConfigVersion(ctx context.Context, arg SetActiveConfi
 }
 
 const teamObjectKeys = `-- name: TeamObjectKeys :many
-SELECT object_key, thumb_key FROM photos WHERE team_id = $1
+SELECT object_key, thumb_key, original_key, live_key FROM photos WHERE team_id = $1
 `
 
 type TeamObjectKeysRow struct {
-	ObjectKey string
-	ThumbKey  *string
+	ObjectKey   string
+	ThumbKey    *string
+	OriginalKey *string
+	LiveKey     *string
 }
 
-// Every stored file of a team's photos: originals and thumbnails.
+// Every stored file of a team's photos: working copies, thumbnails,
+// originals and Live Photos' motion.
 func (q *Queries) TeamObjectKeys(ctx context.Context, teamID uuid.UUID) ([]TeamObjectKeysRow, error) {
 	rows, err := q.db.Query(ctx, teamObjectKeys, teamID)
 	if err != nil {
@@ -377,7 +380,12 @@ func (q *Queries) TeamObjectKeys(ctx context.Context, teamID uuid.UUID) ([]TeamO
 	var items []TeamObjectKeysRow
 	for rows.Next() {
 		var i TeamObjectKeysRow
-		if err := rows.Scan(&i.ObjectKey, &i.ThumbKey); err != nil {
+		if err := rows.Scan(
+			&i.ObjectKey,
+			&i.ThumbKey,
+			&i.OriginalKey,
+			&i.LiveKey,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -72,8 +72,9 @@ ORDER BY c.version DESC
 LIMIT 100;
 
 -- name: TeamObjectKeys :many
--- Every stored file of a team's photos: originals and thumbnails.
-SELECT object_key, thumb_key FROM photos WHERE team_id = @team_id;
+-- Every stored file of a team's photos: working copies, thumbnails,
+-- originals and Live Photos' motion.
+SELECT object_key, thumb_key, original_key, live_key FROM photos WHERE team_id = @team_id;
 
 -- name: DeleteTeam :execrows
 -- Everything else belongs to the team and goes with it.

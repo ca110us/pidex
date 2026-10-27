@@ -13,7 +13,7 @@ import (
 )
 
 const listPhotoKeys = `-- name: ListPhotoKeys :many
-SELECT id, object_key, thumb_key, status FROM photos
+SELECT id, object_key, thumb_key, original_key, live_key, status FROM photos
 WHERE team_id = $1 AND id = ANY($2::uuid[])
 `
 
@@ -23,10 +23,12 @@ type ListPhotoKeysParams struct {
 }
 
 type ListPhotoKeysRow struct {
-	ID        uuid.UUID
-	ObjectKey string
-	ThumbKey  *string
-	Status    string
+	ID          uuid.UUID
+	ObjectKey   string
+	ThumbKey    *string
+	OriginalKey *string
+	LiveKey     *string
+	Status      string
 }
 
 func (q *Queries) ListPhotoKeys(ctx context.Context, arg ListPhotoKeysParams) ([]ListPhotoKeysRow, error) {
@@ -42,6 +44,8 @@ func (q *Queries) ListPhotoKeys(ctx context.Context, arg ListPhotoKeysParams) ([
 			&i.ID,
 			&i.ObjectKey,
 			&i.ThumbKey,
+			&i.OriginalKey,
+			&i.LiveKey,
 			&i.Status,
 		); err != nil {
 			return nil, err
@@ -55,7 +59,7 @@ func (q *Queries) ListPhotoKeys(ctx context.Context, arg ListPhotoKeysParams) ([
 }
 
 const listPhotosChangedSince = `-- name: ListPhotosChangedSince :many
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos
 WHERE team_id = $1 AND sync_xid >= $2::bigint AND id > $3::uuid
 ORDER BY id
 LIMIT $4
@@ -122,6 +126,11 @@ func (q *Queries) ListPhotosChangedSince(ctx context.Context, arg ListPhotosChan
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}

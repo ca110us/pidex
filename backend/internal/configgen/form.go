@@ -22,6 +22,7 @@ type formConfig struct {
 	Description  string                  `json:"description"`
 	Strictness   string                  `json:"strictness"`
 	Privacy      string                  `json:"privacy"`
+	LivePhotos   bool                    `json:"live_photos"`
 	DateOrder    string                  `json:"date_order"`
 	SubjectTypes []formType              `json:"subject_types"`
 	Tags         []formTag               `json:"tags"`
@@ -74,6 +75,7 @@ func (f formConfig) toConfig() *teamconfig.Config {
 		Description:   f.Description,
 		Strictness:    teamconfig.Strictness(f.Strictness),
 		Privacy:       teamconfig.Privacy(f.Privacy),
+		LivePhotos:    f.LivePhotos,
 		DateOrder:     f.DateOrder,
 		Session:       f.Session,
 	}
@@ -104,7 +106,7 @@ func (f formConfig) toConfig() *teamconfig.Config {
 func fromConfig(c *teamconfig.Config) formConfig {
 	f := formConfig{
 		Language: c.Language, Name: c.Name, Industry: c.Industry, Description: c.Description,
-		Strictness: string(c.Strictness), Privacy: string(c.Privacy), DateOrder: c.DateOrder,
+		Strictness: string(c.Strictness), Privacy: string(c.Privacy), LivePhotos: c.LivePhotos, DateOrder: c.DateOrder,
 		Session: c.Session, SubjectTypes: []formType{}, Tags: []formTag{},
 	}
 	for _, st := range c.SubjectTypes {
@@ -159,6 +161,7 @@ func schema() map[string]any {
 		"language": str, "name": str, "industry": str, "description": str,
 		"strictness":    enum("strict", "standard", "lenient"),
 		"privacy":       enum("high", "standard"),
+		"live_photos":   boolean,
 		"date_order":    enum("mdy", "dmy"),
 		"subject_types": arr(subjectType),
 		"tags":          arr(tag),

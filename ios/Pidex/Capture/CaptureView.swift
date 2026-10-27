@@ -138,7 +138,7 @@ struct CaptureView: View {
                 .pickerStyle(.inline)
                 .disabled(!app.canSwitch)
                 if !app.canSwitch {
-                    Text("Another collection once \(app.uploadStatus.pending) photos are uploaded")
+                    Text("Another collection once \(app.uploadStatus.unfinished) photos are uploaded")
                 }
             } label: {
                 HStack(spacing: 4) {

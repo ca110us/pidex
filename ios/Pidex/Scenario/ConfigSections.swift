@@ -15,6 +15,10 @@ struct ConfigSections: View {
                 Label("High privacy: names and IDs stay out of photo descriptions.", systemImage: "lock")
                     .font(.footnote)
             }
+            if config.livePhotos {
+                Label("Live Photos: shots taken in Pidex keep the moments around them, without sound.", systemImage: "livephoto")
+                    .font(.footnote)
+            }
         } header: {
             Text("Scenario")
         }

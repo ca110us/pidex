@@ -25,6 +25,11 @@ nonisolated struct PendingUpload: Codable, Sendable, Identifiable, Equatable {
     /// Once uploaded, the file stays on the phone as the photo's original
     /// rather than being deleted (not for high-privacy teams).
     var keepOriginal: Bool?
+    /// The photo's other files, sent once it is in. Optional so older
+    /// queues still decode.
+    var files: [PendingFile]?
+    /// The photo is in; only its other files are left to send.
+    var completed: Bool?
 
     var photoID: String?
     var bytesUploaded = false
@@ -33,8 +38,33 @@ nonisolated struct PendingUpload: Codable, Sendable, Identifiable, Equatable {
     var rejectedReason: String?
 }
 
+/// A photo's file beside the working copy: the file as the camera made it,
+/// or a Live Photo's motion.
+nonisolated struct PendingFile: Codable, Sendable, Equatable {
+    enum Kind: String, Codable, Sendable {
+        case original, live
+
+        var proto: Pidex_V1_PhotoFileKind {
+            switch self {
+            case .original: .original
+            case .live: .live
+            }
+        }
+    }
+
+    var kind: Kind
+    var fileName: String
+    var contentType: String
+    var sizeBytes: Int64
+}
+
 nonisolated struct UploadStatus: Sendable, Equatable {
+    /// Photos not in yet.
     var pending = 0
+    /// Photos in, whose other files are still being sent.
+    var files = 0
+    /// Everything still to send, for this collection's server only.
+    var unfinished: Int { pending + files }
     var rejected = 0
     var pausedReason: String?
     var lastError: String?
@@ -42,10 +72,11 @@ nonisolated struct UploadStatus: Sendable, Equatable {
     var pendingBySession: [String: Int] = [:]
 }
 
-/// Moves photos from the phone to the server, in order, one at a time.
-/// Each photo is written to disk before anything else happens; the file is
-/// deleted, or kept as the photo's original, only after the server confirms
-/// it has the photo.
+/// Moves photos from the phone to the server, in order, one at a time; their
+/// other files (as the camera made them, a Live Photo's motion) follow once
+/// every photo due is in, so photos are filed first. Each file is written to
+/// disk before anything else happens, and deleted, or the photo's kept as
+/// its original on the phone, only after the server confirms it has it.
 actor UploadQueue {
     private let directory: URL
     private var transport: UploadTransport?
@@ -92,10 +123,20 @@ actor UploadQueue {
     /// this one). `id` keeps a shot's own ID, so others can name it.
     func enqueue(jpeg: Data, sessionID: String, capturedAt: Date, onDevice: Pidex_V1_OnDeviceAnalysis,
                  lockedSubjectID: String?, subjectChosen: Bool = false, id: String? = nil, identityPhotoID: String? = nil,
-                 place: ShotPlace? = nil, keepOriginal: Bool = false) throws {
+                 place: ShotPlace? = nil, keepOriginal: Bool = false, files: [StagedFile] = []) throws {
         let id = id ?? UUID().uuidString.lowercased()
         let fileName = id + ".jpg"
         try jpeg.write(to: directory.appending(path: fileName), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        // Moved, not copied: they can be large.
+        var pendingFiles: [PendingFile] = []
+        for f in files {
+            let name = "\(id).\(f.kind.rawValue)"
+            let to = directory.appending(path: name)
+            try? FileManager.default.removeItem(at: to)
+            try FileManager.default.moveItem(at: f.url, to: to)
+            let size = (try? to.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap { $0 } ?? 0
+            pendingFiles.append(PendingFile(kind: f.kind, fileName: name, contentType: f.contentType, sizeBytes: Int64(size)))
+        }
         let item = PendingUpload(
             id: id, sessionID: sessionID, capturedAt: capturedAt, fileName: fileName,
             sizeBytes: Int64(jpeg.count), sha256: SHA256.hash(data: jpeg).map { String(format: "%02x", $0) }.joined(),
@@ -103,7 +144,8 @@ actor UploadQueue {
             subjectChosen: subjectChosen ? true : nil,
             identityPhotoID: lockedSubjectID == nil ? (identityPhotoID ?? id) : nil,
             place: place,
-            keepOriginal: keepOriginal ? true : nil
+            keepOriginal: keepOriginal ? true : nil,
+            files: pendingFiles.isEmpty ? nil : pendingFiles
         )
         items.append(item)
         try persist()
@@ -142,45 +184,96 @@ actor UploadQueue {
         }
     }
 
-    /// Tries every item that is due, in capture order. Stops at the first
-    /// network failure: if one upload cannot get through, the rest won't
-    /// either, and hammering a dead connection drains the battery.
+    /// Tries every item that is due, in capture order: photos first, then
+    /// their other files. Stops at the first network failure: if one upload
+    /// cannot get through, the rest won't either, and hammering a dead
+    /// connection drains the battery.
     func drainOnce() async {
         guard let transport else { return }
-        var index = 0
-        while index < items.count, pausedReason == nil {
-            let item = items[index]
-            if item.rejectedReason != nil || (item.nextAttemptAt.map { $0 > now() } ?? false) {
-                index += 1
-                continue
-            }
-            let outcome = await attempt(item, via: transport)
-            // The actor may have run enqueue() during the await; find the
-            // item again by ID rather than trusting the old position.
-            guard let i = items.firstIndex(where: { $0.id == item.id }) else { continue }
-            switch outcome {
-            case .done:
-                // As updated during the attempt: it now has the server's id.
-                let done = items.remove(at: i)
-                let file = directory.appending(path: done.fileName)
-                // The phone has the photo already: no need to fetch it again.
-                let kept = done.keepOriginal == true && done.photoID.map { keep?(file, $0) ?? false } ?? false
-                if !kept { try? FileManager.default.removeItem(at: file) }
-                lastError = nil
-                index = i
-            case .retryLater(let updated, let reason):
-                items[i] = updated
-                lastError = reason
+        for sendingFiles in [false, true] {
+            var index = 0
+            while index < items.count, pausedReason == nil {
+                let item = items[index]
+                if (item.completed == true) != sendingFiles || item.rejectedReason != nil
+                    || (item.nextAttemptAt.map { $0 > now() } ?? false) {
+                    index += 1
+                    continue
+                }
+                let outcome = sendingFiles ? await sendFiles(item, via: transport) : await attempt(item, via: transport)
+                // The actor may have run enqueue() during the await; find the
+                // item again by ID rather than trusting the old position.
+                guard let i = items.firstIndex(where: { $0.id == item.id }) else { continue }
+                switch outcome {
+                case .done:
+                    lastError = nil
+                    // As updated during the attempt: it now has the server's id.
+                    var done = items[i]
+                    if !sendingFiles {
+                        let file = directory.appending(path: done.fileName)
+                        // The phone has the photo already: no need to fetch it again.
+                        let kept = done.keepOriginal == true && done.photoID.map { keep?(file, $0) ?? false } ?? false
+                        if !kept { try? FileManager.default.removeItem(at: file) }
+                    }
+                    if !sendingFiles, !(done.files ?? []).isEmpty {
+                        done.completed = true
+                        done.attempts = 0
+                        done.nextAttemptAt = nil
+                        items[i] = done
+                        index = i + 1
+                    } else {
+                        items.remove(at: i)
+                        index = i
+                    }
+                case .retryLater(let updated, let reason):
+                    items[i] = updated
+                    lastError = reason
+                    save()
+                    return
+                case .skip(let updated):
+                    items[i] = updated
+                    index = i + 1
+                case .pause(let reason):
+                    pausedReason = reason
+                }
                 save()
-                return
-            case .skip(let updated):
-                items[i] = updated
-                index = i + 1
-            case .pause(let reason):
-                pausedReason = reason
             }
+        }
+    }
+
+    /// Sends a photo's other files, one at a time, each forgotten once the
+    /// server has it. One the server will not keep (a collection that
+    /// stopped keeping Live Photos) is dropped, not retried.
+    private func sendFiles(_ original: PendingUpload, via transport: UploadTransport) async -> Outcome {
+        var item = original
+        guard let photoID = item.photoID else { return .done }
+        while let file = item.files?.first {
+            do {
+                let created = try await transport.createFileUpload(photoID: photoID, file: file)
+                if !created.alreadyUploaded {
+                    guard let url = created.uploadURL else { throw UploadFailure.transient("no upload URL") }
+                    try await transport.put(file: directory.appending(path: file.fileName), to: url, headers: created.headers)
+                }
+                try await transport.completeFileUpload(photoID: photoID, file: file)
+            } catch let failure as UploadFailure {
+                switch failure {
+                case .transient(let reason):
+                    return backoff(item, reason: reason)
+                case .notReceived:
+                    return backoff(item, reason: "upload was not received; retrying")
+                case .unauthorized(let reason):
+                    return .pause(String(localized: "Sign-in problem: \(reason)"))
+                case .rejected:
+                    break
+                }
+            } catch {
+                return backoff(item, reason: error.localizedDescription)
+            }
+            try? FileManager.default.removeItem(at: directory.appending(path: file.fileName))
+            item.files?.removeFirst()
+            if let i = items.firstIndex(where: { $0.id == item.id }) { items[i] = item }
             save()
         }
+        return .done
     }
 
     private enum Outcome {
@@ -272,12 +365,14 @@ actor UploadQueue {
 
     private func publish() {
         let waiting = items.filter { $0.rejectedReason == nil }
+        let photos = waiting.filter { $0.completed != true }
         onChange(UploadStatus(
-            pending: waiting.count,
+            pending: photos.count,
+            files: waiting.count - photos.count,
             rejected: items.filter { $0.rejectedReason != nil }.count,
             pausedReason: pausedReason,
             lastError: lastError,
-            pendingBySession: Dictionary(grouping: waiting, by: \.sessionID).mapValues(\.count)
+            pendingBySession: Dictionary(grouping: photos, by: \.sessionID).mapValues(\.count)
         ))
     }
 }

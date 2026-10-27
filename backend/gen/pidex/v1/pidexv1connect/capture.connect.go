@@ -48,6 +48,12 @@ const (
 	// CaptureServiceGetSessionSummaryProcedure is the fully-qualified name of the CaptureService's
 	// GetSessionSummary RPC.
 	CaptureServiceGetSessionSummaryProcedure = "/pidex.v1.CaptureService/GetSessionSummary"
+	// CaptureServiceCreateFileUploadProcedure is the fully-qualified name of the CaptureService's
+	// CreateFileUpload RPC.
+	CaptureServiceCreateFileUploadProcedure = "/pidex.v1.CaptureService/CreateFileUpload"
+	// CaptureServiceCompleteFileUploadProcedure is the fully-qualified name of the CaptureService's
+	// CompleteFileUpload RPC.
+	CaptureServiceCompleteFileUploadProcedure = "/pidex.v1.CaptureService/CompleteFileUpload"
 )
 
 // CaptureServiceClient is a client for the pidex.v1.CaptureService service.
@@ -64,6 +70,11 @@ type CaptureServiceClient interface {
 	// tell (a serial number among other text on a screen). Nothing is stored.
 	IdentifyShot(context.Context, *connect.Request[v1.IdentifyShotRequest]) (*connect.Response[v1.IdentifyShotResponse], error)
 	GetSessionSummary(context.Context, *connect.Request[v1.GetSessionSummaryRequest]) (*connect.Response[v1.GetSessionSummaryResponse], error)
+	// CreateFileUpload and CompleteFileUpload send a photo's other files after
+	// the photo itself, the same way: the file as the camera made it, and a
+	// Live Photo's motion. The photo is filed without waiting for them.
+	CreateFileUpload(context.Context, *connect.Request[v1.CreateFileUploadRequest]) (*connect.Response[v1.CreateFileUploadResponse], error)
+	CompleteFileUpload(context.Context, *connect.Request[v1.CompleteFileUploadRequest]) (*connect.Response[v1.CompleteFileUploadResponse], error)
 }
 
 // NewCaptureServiceClient constructs a client for the pidex.v1.CaptureService service. By default,
@@ -107,16 +118,30 @@ func NewCaptureServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(captureServiceMethods.ByName("GetSessionSummary")),
 			connect.WithClientOptions(opts...),
 		),
+		createFileUpload: connect.NewClient[v1.CreateFileUploadRequest, v1.CreateFileUploadResponse](
+			httpClient,
+			baseURL+CaptureServiceCreateFileUploadProcedure,
+			connect.WithSchema(captureServiceMethods.ByName("CreateFileUpload")),
+			connect.WithClientOptions(opts...),
+		),
+		completeFileUpload: connect.NewClient[v1.CompleteFileUploadRequest, v1.CompleteFileUploadResponse](
+			httpClient,
+			baseURL+CaptureServiceCompleteFileUploadProcedure,
+			connect.WithSchema(captureServiceMethods.ByName("CompleteFileUpload")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // captureServiceClient implements CaptureServiceClient.
 type captureServiceClient struct {
-	createUpload      *connect.Client[v1.CreateUploadRequest, v1.CreateUploadResponse]
-	completeUpload    *connect.Client[v1.CompleteUploadRequest, v1.CompleteUploadResponse]
-	resolveAnchor     *connect.Client[v1.ResolveAnchorRequest, v1.ResolveAnchorResponse]
-	identifyShot      *connect.Client[v1.IdentifyShotRequest, v1.IdentifyShotResponse]
-	getSessionSummary *connect.Client[v1.GetSessionSummaryRequest, v1.GetSessionSummaryResponse]
+	createUpload       *connect.Client[v1.CreateUploadRequest, v1.CreateUploadResponse]
+	completeUpload     *connect.Client[v1.CompleteUploadRequest, v1.CompleteUploadResponse]
+	resolveAnchor      *connect.Client[v1.ResolveAnchorRequest, v1.ResolveAnchorResponse]
+	identifyShot       *connect.Client[v1.IdentifyShotRequest, v1.IdentifyShotResponse]
+	getSessionSummary  *connect.Client[v1.GetSessionSummaryRequest, v1.GetSessionSummaryResponse]
+	createFileUpload   *connect.Client[v1.CreateFileUploadRequest, v1.CreateFileUploadResponse]
+	completeFileUpload *connect.Client[v1.CompleteFileUploadRequest, v1.CompleteFileUploadResponse]
 }
 
 // CreateUpload calls pidex.v1.CaptureService.CreateUpload.
@@ -144,6 +169,16 @@ func (c *captureServiceClient) GetSessionSummary(ctx context.Context, req *conne
 	return c.getSessionSummary.CallUnary(ctx, req)
 }
 
+// CreateFileUpload calls pidex.v1.CaptureService.CreateFileUpload.
+func (c *captureServiceClient) CreateFileUpload(ctx context.Context, req *connect.Request[v1.CreateFileUploadRequest]) (*connect.Response[v1.CreateFileUploadResponse], error) {
+	return c.createFileUpload.CallUnary(ctx, req)
+}
+
+// CompleteFileUpload calls pidex.v1.CaptureService.CompleteFileUpload.
+func (c *captureServiceClient) CompleteFileUpload(ctx context.Context, req *connect.Request[v1.CompleteFileUploadRequest]) (*connect.Response[v1.CompleteFileUploadResponse], error) {
+	return c.completeFileUpload.CallUnary(ctx, req)
+}
+
 // CaptureServiceHandler is an implementation of the pidex.v1.CaptureService service.
 type CaptureServiceHandler interface {
 	// CreateUpload is idempotent on client_photo_id, so retries after a
@@ -158,6 +193,11 @@ type CaptureServiceHandler interface {
 	// tell (a serial number among other text on a screen). Nothing is stored.
 	IdentifyShot(context.Context, *connect.Request[v1.IdentifyShotRequest]) (*connect.Response[v1.IdentifyShotResponse], error)
 	GetSessionSummary(context.Context, *connect.Request[v1.GetSessionSummaryRequest]) (*connect.Response[v1.GetSessionSummaryResponse], error)
+	// CreateFileUpload and CompleteFileUpload send a photo's other files after
+	// the photo itself, the same way: the file as the camera made it, and a
+	// Live Photo's motion. The photo is filed without waiting for them.
+	CreateFileUpload(context.Context, *connect.Request[v1.CreateFileUploadRequest]) (*connect.Response[v1.CreateFileUploadResponse], error)
+	CompleteFileUpload(context.Context, *connect.Request[v1.CompleteFileUploadRequest]) (*connect.Response[v1.CompleteFileUploadResponse], error)
 }
 
 // NewCaptureServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -197,6 +237,18 @@ func NewCaptureServiceHandler(svc CaptureServiceHandler, opts ...connect.Handler
 		connect.WithSchema(captureServiceMethods.ByName("GetSessionSummary")),
 		connect.WithHandlerOptions(opts...),
 	)
+	captureServiceCreateFileUploadHandler := connect.NewUnaryHandler(
+		CaptureServiceCreateFileUploadProcedure,
+		svc.CreateFileUpload,
+		connect.WithSchema(captureServiceMethods.ByName("CreateFileUpload")),
+		connect.WithHandlerOptions(opts...),
+	)
+	captureServiceCompleteFileUploadHandler := connect.NewUnaryHandler(
+		CaptureServiceCompleteFileUploadProcedure,
+		svc.CompleteFileUpload,
+		connect.WithSchema(captureServiceMethods.ByName("CompleteFileUpload")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pidex.v1.CaptureService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CaptureServiceCreateUploadProcedure:
@@ -209,6 +261,10 @@ func NewCaptureServiceHandler(svc CaptureServiceHandler, opts ...connect.Handler
 			captureServiceIdentifyShotHandler.ServeHTTP(w, r)
 		case CaptureServiceGetSessionSummaryProcedure:
 			captureServiceGetSessionSummaryHandler.ServeHTTP(w, r)
+		case CaptureServiceCreateFileUploadProcedure:
+			captureServiceCreateFileUploadHandler.ServeHTTP(w, r)
+		case CaptureServiceCompleteFileUploadProcedure:
+			captureServiceCompleteFileUploadHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -236,4 +292,12 @@ func (UnimplementedCaptureServiceHandler) IdentifyShot(context.Context, *connect
 
 func (UnimplementedCaptureServiceHandler) GetSessionSummary(context.Context, *connect.Request[v1.GetSessionSummaryRequest]) (*connect.Response[v1.GetSessionSummaryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.CaptureService.GetSessionSummary is not implemented"))
+}
+
+func (UnimplementedCaptureServiceHandler) CreateFileUpload(context.Context, *connect.Request[v1.CreateFileUploadRequest]) (*connect.Response[v1.CreateFileUploadResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.CaptureService.CreateFileUpload is not implemented"))
+}
+
+func (UnimplementedCaptureServiceHandler) CompleteFileUpload(context.Context, *connect.Request[v1.CompleteFileUploadRequest]) (*connect.Response[v1.CompleteFileUploadResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pidex.v1.CaptureService.CompleteFileUpload is not implemented"))
 }

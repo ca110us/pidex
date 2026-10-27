@@ -21,5 +21,5 @@ WHERE team_id = @team_id AND sync_xid >= @since::bigint;
 DELETE FROM sync_tombstones WHERE deleted_at < @before;
 
 -- name: ListPhotoKeys :many
-SELECT id, object_key, thumb_key, status FROM photos
+SELECT id, object_key, thumb_key, original_key, live_key, status FROM photos
 WHERE team_id = @team_id AND id = ANY(@ids::uuid[]);

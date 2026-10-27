@@ -23,7 +23,42 @@ service CaptureService {
   // tell (a serial number among other text on a screen). Nothing is stored.
   rpc IdentifyShot(IdentifyShotRequest) returns (IdentifyShotResponse);
   rpc GetSessionSummary(GetSessionSummaryRequest) returns (GetSessionSummaryResponse);
+  // CreateFileUpload and CompleteFileUpload send a photo's other files after
+  // the photo itself, the same way: the file as the camera made it, and a
+  // Live Photo's motion. The photo is filed without waiting for them.
+  rpc CreateFileUpload(CreateFileUploadRequest) returns (CreateFileUploadResponse);
+  rpc CompleteFileUpload(CompleteFileUploadRequest) returns (CompleteFileUploadResponse);
 }
+
+enum PhotoFileKind {
+  PHOTO_FILE_KIND_UNSPECIFIED = 0;
+  // HEIC, JPEG or PNG, full size, with no location in it.
+  PHOTO_FILE_KIND_ORIGINAL = 1;
+  // QuickTime; only for collections that keep Live Photos.
+  PHOTO_FILE_KIND_LIVE = 2;
+}
+
+message CreateFileUploadRequest {
+  string photo_id = 1;
+  PhotoFileKind kind = 2;
+  string content_type = 3;
+  int64 size_bytes = 4;
+}
+
+message CreateFileUploadResponse {
+  string upload_url = 1;
+  map<string, string> upload_headers = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  // True when the file was already received on an earlier attempt.
+  bool already_uploaded = 4;
+}
+
+message CompleteFileUploadRequest {
+  string photo_id = 1;
+  PhotoFileKind kind = 2;
+}
+
+message CompleteFileUploadResponse {}
 
 message CreateUploadRequest {
   // Generated on the device (UUID) before the shot is queued.

@@ -217,7 +217,8 @@ struct BatchProgress: View {
 /// The batch in progress, minimized: a small floating capsule with a ring
 /// for how far it got, out of the way of the page. Tapping it opens the
 /// details. Once everything is filed and nothing needs a person, it says so
-/// in a toast and goes.
+/// in a toast and goes; with the details seen and closed with Done, it goes
+/// too.
 struct BatchPill: View {
     @Environment(AppModel.self) private var app
 
@@ -259,7 +260,9 @@ struct BatchPill: View {
             .buttonStyle(.plain)
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .accessibilityIdentifier("batchPill")
-            .task(id: settled) {
+            // Checked again when the camera or the details close: a batch
+            // that finished behind them goes then.
+            .task(id: [settled, app.showingCamera, app.showingBatch]) {
                 // Done and nothing to check: a toast says so, and it goes.
                 guard settled, !app.showingCamera, !app.showingBatch else { return }
                 try? await Task.sleep(for: .seconds(1.5))

@@ -72,6 +72,10 @@ message GetPhotoLinksRequest {
 message PhotoLinks {
   string thumbnail_url = 1;
   string view_url = 2;
+  // The file as the camera made it, and a Live Photo's motion (QuickTime),
+  // when kept.
+  string original_url = 3;
+  string live_url = 4;
 }
 
 message GetPhotoLinksResponse {

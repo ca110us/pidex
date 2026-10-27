@@ -93,4 +93,33 @@ struct ImageFeaturesTests {
         a.text = [t]
         #expect(OnDeviceAnalyzer.mayCarryIdentity(a))
     }
+
+    @Test func originalsKeepTheirFormatButNotWhereTheyWereTaken() throws {
+        // A HEIC as the camera made it, with where it was taken.
+        let image = gradient(width: 400, height: 300)
+        let out = NSMutableData()
+        let dest = try #require(CGImageDestinationCreateWithData(out, UTType.heic.identifier as CFString, 1, nil))
+        CGImageDestinationAddImage(dest, image, [
+            kCGImagePropertyGPSDictionary: [kCGImagePropertyGPSLatitude: 38.9, kCGImagePropertyGPSLatitudeRef: "N",
+                                            kCGImagePropertyGPSLongitude: 121.6, kCGImagePropertyGPSLongitudeRef: "E"],
+            kCGImagePropertyExifDictionary: [kCGImagePropertyExifDateTimeOriginal: "2026:10:21 09:00:00"],
+        ] as CFDictionary)
+        #expect(CGImageDestinationFinalize(dest))
+        let heic = out as Data
+
+        let original = try #require(ImageFeatures.original(from: heic, maxEdge: 100))
+        #expect(original.contentType == "image/heic")
+        let src = try #require(CGImageSourceCreateWithData(original.data as CFData, nil))
+        let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] ?? [:]
+        #expect(props[kCGImagePropertyGPSDictionary] == nil)
+        #expect((props[kCGImagePropertyExifDictionary] as? [CFString: Any])?[kCGImagePropertyExifDateTimeOriginal] as? String == "2026:10:21 09:00:00")
+        #expect(props[kCGImagePropertyPixelWidth] as? Int == 400)
+
+        // Nothing to take out: the very bytes.
+        let plain = jpeg(image)
+        #expect(ImageFeatures.original(from: plain, maxEdge: 100)?.data == plain)
+        // A JPEG no bigger than the working copy says nothing more.
+        #expect(ImageFeatures.original(from: plain, maxEdge: 400) == nil)
+        #expect(ImageFeatures.original(from: Data("not an image".utf8)) == nil)
+    }
 }

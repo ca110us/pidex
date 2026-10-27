@@ -74,11 +74,11 @@ final class AppModel {
 
     /// Queued photos belong to the active workspace and server, so neither
     /// may change until they are uploaded.
-    var canSwitch: Bool { uploadStatus.pending == 0 }
+    var canSwitch: Bool { uploadStatus.unfinished == 0 }
 
     /// Checks a server and token, then saves them as the active workspace.
     func connect(serverURL: String, token: String) async throws {
-        guard serverURL == self.serverURL || canSwitch else { throw SwitchBlocked(pending: uploadStatus.pending) }
+        guard serverURL == self.serverURL || canSwitch else { throw SwitchBlocked(pending: uploadStatus.unfinished) }
         guard let url = URL(string: serverURL) else { throw URLError(.badURL) }
         let team = try await APIClient(baseURL: url, token: token).team()
         self.serverURL = serverURL
@@ -99,7 +99,7 @@ final class AppModel {
 
     func switchTo(_ id: String) throws {
         guard id != active?.id else { return }
-        guard canSwitch else { throw SwitchBlocked(pending: uploadStatus.pending) }
+        guard canSwitch else { throw SwitchBlocked(pending: uploadStatus.unfinished) }
         workspaces.activate(id)
         saveAndRebuild()
     }
@@ -128,7 +128,7 @@ final class AppModel {
     /// brings it back.
     func remove(_ id: String) throws {
         if id == active?.id && !canSwitch {
-            throw SwitchBlocked(pending: uploadStatus.pending)
+            throw SwitchBlocked(pending: uploadStatus.unfinished)
         }
         let wasActive = id == active?.id
         if let w = workspaces.items.first(where: { $0.id == id }) {
@@ -168,6 +168,19 @@ final class AppModel {
             let b = UploadBatch(sessionID: session, api: api, collection: active?.name ?? "", expected: count)
             batch = b
             b.follow(pending: count)
+        }
+    }
+
+    /// Closes the batch's details. Once all of it is filed, it was seen:
+    /// it goes, with any photos still needing someone left to the
+    /// collection's unfiled.
+    func closeBatch() {
+        guard let batch else { return showingBatch = false }
+        let pending = uploadStatus.pendingBySession[batch.sessionID.uuidString.lowercased()] ?? 0
+        if batch.phase(pending: pending) == .done {
+            dismissBatch()
+        } else {
+            showingBatch = false
         }
     }
 

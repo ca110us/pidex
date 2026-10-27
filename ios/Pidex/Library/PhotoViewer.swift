@@ -22,6 +22,7 @@ struct PhotoViewer: View {
     @State private var zoomed = false
     @State private var showingInfo = false
     @State private var confirmingDelete = false
+    @State private var saving = false
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
 
@@ -93,6 +94,11 @@ struct PhotoViewer: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { showingInfo = true } label: { Label("Details and tags", systemImage: "info.circle") }
+                    if model.canSaveToPhotos, let photo {
+                        Button { Task { await save(photo) } } label: { Label("Save to Photos", systemImage: "square.and.arrow.down") }
+                            .disabled(saving)
+                            .accessibilityIdentifier("saveToPhotos")
+                    }
                     Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete photo", systemImage: "trash") }
                         .accessibilityIdentifier("deletePhoto")
                 } label: {
@@ -120,6 +126,21 @@ struct PhotoViewer: View {
 
     private var photo: Pidex_V1_Photo? {
         current.flatMap { photos.indices.contains($0) ? photos[$0] : nil }
+    }
+
+    private func save(_ photo: Pidex_V1_Photo) async {
+        saving = true
+        defer { saving = false }
+        do {
+            let saved = try await SaveToPhotos.save([photo], from: model.api)
+            if saved == 1 {
+                app.show(String(localized: "Saved to Photos"))
+            } else {
+                app.show(String(localized: "The photo could not be saved"), tone: .problem)
+            }
+        } catch {
+            app.show(error.localizedDescription, tone: .problem)
+        }
     }
 
     /// Deletes the photo showing; the next one shows, or the viewer
@@ -158,6 +179,11 @@ private struct PhotoPage: View {
     var body: some View {
         ZoomableImage(image: image, zoomed: $zoomed, onTap: onTap, onSwipeUp: onSwipeUp, onSwipeDown: onSwipeDown)
             .overlay { if image == nil { ProgressView() } }
+            .overlay {
+                if photo.live && photo.originalKept && !zoomed {
+                    LiveBadge(photo: photo, placeholder: image)
+                }
+            }
             .accessibilityElement()
             .accessibilityLabel(Text(verbatim: photo.description_p))
             .accessibilityAddTraits(.isImage)

@@ -949,7 +949,12 @@ type Photo struct {
 	Place    *Place    `protobuf:"bytes,16,opt,name=place,proto3" json:"place,omitempty"`
 	Location *GeoPoint `protobuf:"bytes,17,opt,name=location,proto3" json:"location,omitempty"`
 	// When the server received it; photos without captured_at sort by it.
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// The file as the camera made it (HEIC, full size) is kept beside the
+	// working copy that view_url shows.
+	OriginalKept bool `protobuf:"varint,19,opt,name=original_kept,json=originalKept,proto3" json:"original_kept,omitempty"`
+	// A Live Photo: the seconds of motion around the shot are kept too.
+	Live          bool `protobuf:"varint,20,opt,name=live,proto3" json:"live,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1110,6 +1115,20 @@ func (x *Photo) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Photo) GetOriginalKept() bool {
+	if x != nil {
+		return x.OriginalKept
+	}
+	return false
+}
+
+func (x *Photo) GetLive() bool {
+	if x != nil {
+		return x.Live
+	}
+	return false
+}
+
 // How many photos have a tag.
 type TagCount struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1230,7 +1249,7 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\n" +
 	"confidence\x18\x02 \x01(\x02R\n" +
 	"confidence\x12+\n" +
-	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\xd9\x06\n" +
+	"\x06source\x18\x03 \x01(\x0e2\x13.pidex.v1.TagSourceR\x06source\"\x92\a\n" +
 	"\x05Photo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1257,7 +1276,9 @@ const file_pidex_v1_common_proto_rawDesc = "" +
 	"\x05place\x18\x10 \x01(\v2\x0f.pidex.v1.PlaceR\x05place\x12.\n" +
 	"\blocation\x18\x11 \x01(\v2\x12.pidex.v1.GeoPointR\blocation\x129\n" +
 	"\n" +
-	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x1aB\n" +
+	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12#\n" +
+	"\roriginal_kept\x18\x13 \x01(\bR\foriginalKept\x12\x12\n" +
+	"\x04live\x18\x14 \x01(\bR\x04live\x1aB\n" +
 	"\x14ExtractedFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"2\n" +

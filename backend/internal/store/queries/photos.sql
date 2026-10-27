@@ -131,7 +131,7 @@ ORDER BY confidence DESC;
 -- name: DeletePhotos :many
 -- Tags go with the photo (cascade); cost records keep their sums, unlinked.
 DELETE FROM photos WHERE team_id = @team_id AND id = ANY(@ids::uuid[])
-RETURNING id, object_key, thumb_key, session_id, subject_id, suggested_subject_id, locked_subject_id;
+RETURNING id, object_key, thumb_key, original_key, live_key, session_id, subject_id, suggested_subject_id, locked_subject_id;
 
 -- name: ForgetPhotosInMessages :exec
 -- Replies keep their words; the photos they showed are gone.
@@ -195,3 +195,17 @@ SELECT p.id FROM photos p JOIN teams t ON t.id = p.team_id
 WHERE t.name = @team_name AND p.status IN ('processed', 'failed')
   AND (@role::text = '' OR p.role = @role::text)
 ORDER BY p.created_at;
+
+-- name: SetOriginalType :exec
+-- The type of a photo's original about to be uploaded; once one has
+-- arrived, it stays.
+UPDATE photos SET original_type = @content_type
+WHERE team_id = @team_id AND id = @id AND original_key IS NULL;
+
+-- name: ReceiveOriginal :execrows
+UPDATE photos SET original_key = @object_key, original_bytes = @size_bytes
+WHERE team_id = @team_id AND id = @id AND original_type IS NOT NULL;
+
+-- name: ReceiveLive :execrows
+UPDATE photos SET live_key = @object_key, live_bytes = @size_bytes
+WHERE team_id = @team_id AND id = @id;

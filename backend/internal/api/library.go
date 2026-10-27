@@ -623,8 +623,10 @@ func (s *libraryService) deletePhotos(ctx context.Context, pr Principal, ids []u
 		}
 		for _, d := range deleted {
 			keys = append(keys, d.ObjectKey)
-			if d.ThumbKey != nil {
-				keys = append(keys, *d.ThumbKey)
+			for _, k := range []*string{d.ThumbKey, d.OriginalKey, d.LiveKey} {
+				if k != nil {
+					keys = append(keys, *k)
+				}
 			}
 			if d.SessionID != nil {
 				sessions[*d.SessionID] = true

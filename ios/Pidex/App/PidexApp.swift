@@ -40,7 +40,7 @@ struct PidexApp: App {
                 if let batch = app.batch {
                     NavigationStack {
                         SessionSummaryView(batch: batch) {
-                            app.showingBatch = false
+                            app.closeBatch()
                         }
                     }
                     .overlay { ToastOverlay() }

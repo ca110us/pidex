@@ -192,7 +192,7 @@ min_fields is how many identity fields must agree before a photo is filed under 
 
 barcode: enable it only if carriers usually carry a barcode or QR code encoding one identity field, and name that field. Its pattern is checked against the raw code before normalization; capture group 1, if any, becomes the value. strong is true only when the code alone identifies the subject with certainty (hospital wristband).
 
-strictness: strict when filing a photo under the wrong subject causes real harm (health, legal evidence, money); lenient when it is easily fixed and low stakes; standard otherwise. privacy: high when subjects are people or health information is involved, else standard. date_order: dmy only when the description says the team works in a country that writes the day first; otherwise mdy.
+strictness: strict when filing a photo under the wrong subject causes real harm (health, legal evidence, money); lenient when it is easily fixed and low stakes; standard otherwise. privacy: high when subjects are people or health information is involved, else standard. live_photos: true only when the user asks to keep Live Photos or the motion around each shot; otherwise false, and kept as it was when editing. date_order: dmy only when the description says the team works in a country that writes the day first; otherwise mdy.
 
 name: a short name for what the collection holds in general ("Travels", "Pets", "Site photos", "Wound care"). Never name it after one place, date, person or animal the user mentions as an example, unless they say the whole collection is about only that.
 

@@ -220,9 +220,13 @@ func (x *GetPhotoLinksRequest) GetIds() []string {
 }
 
 type PhotoLinks struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ThumbnailUrl  string                 `protobuf:"bytes,1,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
-	ViewUrl       string                 `protobuf:"bytes,2,opt,name=view_url,json=viewUrl,proto3" json:"view_url,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	ThumbnailUrl string                 `protobuf:"bytes,1,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	ViewUrl      string                 `protobuf:"bytes,2,opt,name=view_url,json=viewUrl,proto3" json:"view_url,omitempty"`
+	// The file as the camera made it, and a Live Photo's motion (QuickTime),
+	// when kept.
+	OriginalUrl   string `protobuf:"bytes,3,opt,name=original_url,json=originalUrl,proto3" json:"original_url,omitempty"`
+	LiveUrl       string `protobuf:"bytes,4,opt,name=live_url,json=liveUrl,proto3" json:"live_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -267,6 +271,20 @@ func (x *PhotoLinks) GetThumbnailUrl() string {
 func (x *PhotoLinks) GetViewUrl() string {
 	if x != nil {
 		return x.ViewUrl
+	}
+	return ""
+}
+
+func (x *PhotoLinks) GetOriginalUrl() string {
+	if x != nil {
+		return x.OriginalUrl
+	}
+	return ""
+}
+
+func (x *PhotoLinks) GetLiveUrl() string {
+	if x != nil {
+		return x.LiveUrl
 	}
 	return ""
 }
@@ -1580,11 +1598,13 @@ const file_pidex_v1_library_proto_rawDesc = "" +
 	"\n" +
 	"start_over\x18\a \x01(\bR\tstartOver\"(\n" +
 	"\x14GetPhotoLinksRequest\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\tR\x03ids\"L\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"\x8a\x01\n" +
 	"\n" +
 	"PhotoLinks\x12#\n" +
 	"\rthumbnail_url\x18\x01 \x01(\tR\fthumbnailUrl\x12\x19\n" +
-	"\bview_url\x18\x02 \x01(\tR\aviewUrl\"\xa9\x01\n" +
+	"\bview_url\x18\x02 \x01(\tR\aviewUrl\x12!\n" +
+	"\foriginal_url\x18\x03 \x01(\tR\voriginalUrl\x12\x19\n" +
+	"\blive_url\x18\x04 \x01(\tR\aliveUrl\"\xa9\x01\n" +
 	"\x15GetPhotoLinksResponse\x12@\n" +
 	"\x05links\x18\x01 \x03(\v2*.pidex.v1.GetPhotoLinksResponse.LinksEntryR\x05links\x1aN\n" +
 	"\n" +

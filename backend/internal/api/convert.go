@@ -139,6 +139,18 @@ func (s *Server) photoLinks(ctx context.Context, status, objectKey string, thumb
 	return view, thumb
 }
 
+// fileLinks are short-lived links to a photo's other files, each empty
+// unless it is kept.
+func (s *Server) fileLinks(ctx context.Context, originalKey, liveKey *string) (original, live string) {
+	if originalKey != nil {
+		original, _ = s.Storage.PresignGet(ctx, *originalKey, viewURLTTL)
+	}
+	if liveKey != nil {
+		live, _ = s.Storage.PresignGet(ctx, *liveKey, viewURLTTL)
+	}
+	return original, live
+}
+
 // photoData converts a photo without links, as phones keep it.
 func photoData(ph dbq.Photo, tags []dbq.PhotoTag, names map[uuid.UUID]string) *pidexv1.Photo {
 	ex := pipeline.DecodeExtracted(ph.Extracted)
@@ -156,6 +168,8 @@ func photoData(ph dbq.Photo, tags []dbq.PhotoTag, names map[uuid.UUID]string) *p
 		ExtractedFields:      ex.DisplayFields(),
 		Place:                placeProto(ph.Place),
 		CreatedAt:            timestamppb.New(ph.CreatedAt),
+		OriginalKept:         ph.OriginalKey != nil,
+		Live:                 ph.LiveKey != nil,
 	}
 	if ph.Role != nil {
 		out.Role = roleToProto[*ph.Role]

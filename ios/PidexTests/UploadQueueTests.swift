@@ -13,11 +13,14 @@ actor FakeTransport: UploadTransport {
     var completeFailures: [UploadFailure] = []
     var alreadyUploaded = false
     var completed: [Pidex_V1_CompleteUploadRequest] = []
+    var fileFailures: [UploadFailure] = []
+    var filesReceived: [String] = []
 
     func failNextPut(_ f: UploadFailure) { putFailures.append(f) }
     func failNextComplete(_ f: UploadFailure) { completeFailures.append(f) }
     func failNextCreate(_ f: UploadFailure) { createFailures.append(f) }
     func setAlreadyUploaded(_ v: Bool) { alreadyUploaded = v }
+    func failNextFile(_ f: UploadFailure) { fileFailures.append(f) }
 
     func createUpload(clientPhotoID: String, sizeBytes: Int64, sha256: String) async throws(UploadFailure) -> CreatedUpload {
         calls.append("create")
@@ -36,6 +39,17 @@ actor FakeTransport: UploadTransport {
         calls.append("complete")
         if !completeFailures.isEmpty { throw completeFailures.removeFirst() }
         completed.append(request)
+    }
+
+    func createFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure) -> CreatedUpload {
+        calls.append("create \(file.kind.rawValue)")
+        if !fileFailures.isEmpty { throw fileFailures.removeFirst() }
+        return CreatedUpload(photoID: photoID, uploadURL: URL(string: "https://s3.test/put"), headers: [:], alreadyUploaded: false)
+    }
+
+    func completeFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure) {
+        calls.append("complete \(file.kind.rawValue)")
+        filesReceived.append("\(photoID) \(file.kind.rawValue) \(file.contentType) \(file.sizeBytes)")
     }
 }
 
@@ -99,6 +113,69 @@ struct UploadQueueTests {
         #expect(await q.pending.isEmpty)
         #expect(try jpegFiles().isEmpty)
         #expect(try FileManager.default.contentsOfDirectory(atPath: kept.path) == ["photo-a"])
+    }
+
+    /// A shot's files as the camera made them, staged where the camera
+    /// keeps them.
+    func staged(_ id: String) throws -> [StagedFile] {
+        let shots = dir.deletingLastPathComponent().appending(path: "shots-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: shots, withIntermediateDirectories: true)
+        let original = shots.appending(path: id + ".original"), motion = shots.appending(path: id + ".mov")
+        try Data(repeating: 1, count: 300).write(to: original)
+        try Data(repeating: 2, count: 500).write(to: motion)
+        return [StagedFile(kind: .original, url: original, contentType: "image/heic"),
+                StagedFile(kind: .live, url: motion, contentType: "video/quicktime")]
+    }
+
+    @Test func filesFollowOnceThePhotosAreIn() async throws {
+        let q = try makeQueue()
+        for id in ["a", "b"] {
+            try await q.enqueue(jpeg: Data(repeating: 7, count: 64), sessionID: "s1", capturedAt: clock.now,
+                                onDevice: analysis(), lockedSubjectID: "subject-1", id: id, files: try staged(id))
+        }
+        // Moved into the queue, not copied.
+        #expect(try FileManager.default.contentsOfDirectory(atPath: dir.path).count == 7)
+        await transport.failNextFile(.transient("offline"))
+        await q.drainOnce()
+
+        // Both photos went first; their files wait for the network.
+        #expect(await transport.calls == ["create", "put", "complete", "create", "put", "complete", "create original"])
+        let waiting = await q.pending
+        #expect(waiting.count == 2 && waiting.allSatisfy { $0.completed == true })
+        #expect(try jpegFiles().isEmpty)
+
+        clock.now += UploadQueue.maxBackoff + 1
+        await q.drainOnce()
+        #expect(await q.pending.isEmpty)
+        #expect(await transport.filesReceived == [
+            "photo-a original image/heic 300", "photo-a live video/quicktime 500",
+            "photo-b original image/heic 300", "photo-b live video/quicktime 500",
+        ])
+        #expect(try FileManager.default.contentsOfDirectory(atPath: dir.path) == ["index.json"])
+    }
+
+    @Test func aFileTheServerWillNotKeepIsDropped() async throws {
+        let q = try makeQueue()
+        try await q.enqueue(jpeg: Data(repeating: 7, count: 64), sessionID: "s1", capturedAt: clock.now,
+                            onDevice: analysis(), lockedSubjectID: "subject-1", id: "a", files: try staged("a"))
+        await transport.failNextFile(.rejected("this collection keeps no Live Photos"))
+        await q.drainOnce()
+        #expect(await q.pending.isEmpty)
+        #expect(await transport.filesReceived == ["photo-a live video/quicktime 500"])
+    }
+
+    @Test func photosStillToSendAreToldFromFiles() async throws {
+        let log = StatusLog()
+        let q = try UploadQueue(directory: dir, transport: transport, now: { [clock] in clock.now }, autoDrain: false,
+                                onChange: { log.add($0) })
+        try await q.enqueue(jpeg: Data(repeating: 7, count: 64), sessionID: "s1", capturedAt: clock.now,
+                            onDevice: analysis(), lockedSubjectID: "subject-1", id: "a", files: try staged("a"))
+        #expect(log.last?.pending == 1 && log.last?.files == 0)
+        await transport.failNextFile(.transient("offline"))
+        await q.drainOnce()
+        // The batch counts the photo in; the collection still has its files to send.
+        #expect(log.last?.pending == 0 && log.last?.files == 1 && log.last?.unfinished == 1)
+        #expect(log.last?.pendingBySession["s1"] == nil)
     }
 
     @Test func networkFailureKeepsPhotoAndBacksOff() async throws {
@@ -192,4 +269,12 @@ struct UploadQueueTests {
         await second.drainOnce()
         #expect(await second.pending.isEmpty)
     }
+}
+
+final class StatusLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var statuses: [UploadStatus] = []
+
+    func add(_ s: UploadStatus) { lock.withLock { statuses.append(s) } }
+    var last: UploadStatus? { lock.withLock { statuses.last } }
 }

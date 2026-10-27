@@ -61,6 +61,16 @@
         }
       }
     },
+    "NSPhotoLibraryAddUsageDescription": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidex 会把你选中的照片存到照片图库，但从不读取你的图库。"
+          }
+        }
+      }
+    },
     "NSSpeechRecognitionUsageDescription": {
       "localizations": {
         "zh-Hans": {

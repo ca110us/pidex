@@ -25,6 +25,9 @@ nonisolated protocol UploadTransport: Sendable {
     func createUpload(clientPhotoID: String, sizeBytes: Int64, sha256: String) async throws(UploadFailure) -> CreatedUpload
     func put(file: URL, to url: URL, headers: [String: String]) async throws(UploadFailure)
     func complete(_ request: Pidex_V1_CompleteUploadRequest) async throws(UploadFailure)
+    /// A photo's other file, once the photo is in.
+    func createFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure) -> CreatedUpload
+    func completeFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure)
 }
 
 nonisolated struct LiveUploadTransport: UploadTransport {
@@ -71,6 +74,32 @@ nonisolated struct LiveUploadTransport: UploadTransport {
     func complete(_ request: Pidex_V1_CompleteUploadRequest) async throws(UploadFailure) {
         do {
             _ = try await api.completeUpload(request)
+        } catch {
+            throw Self.classify(error)
+        }
+    }
+
+    func createFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure) -> CreatedUpload {
+        var r = Pidex_V1_CreateFileUploadRequest()
+        r.photoID = photoID
+        r.kind = file.kind.proto
+        r.contentType = file.contentType
+        r.sizeBytes = file.sizeBytes
+        do {
+            let resp = try await api.createFileUpload(r)
+            return CreatedUpload(photoID: photoID, uploadURL: URL(string: resp.uploadURL), headers: resp.uploadHeaders,
+                                 alreadyUploaded: resp.alreadyUploaded)
+        } catch {
+            throw Self.classify(error)
+        }
+    }
+
+    func completeFileUpload(photoID: String, file: PendingFile) async throws(UploadFailure) {
+        var r = Pidex_V1_CompleteFileUploadRequest()
+        r.photoID = photoID
+        r.kind = file.kind.proto
+        do {
+            try await api.completeFileUpload(r)
         } catch {
             throw Self.classify(error)
         }

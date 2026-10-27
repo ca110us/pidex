@@ -44,6 +44,12 @@ final class LibraryModel {
         local = LocalLibrary.for(api)
     }
 
+    /// Photos may go to the phone's own library, where it might sync them
+    /// to a personal cloud: not for high-privacy teams.
+    var canSaveToPhotos: Bool {
+        config.map { $0.privacy != "high" } ?? false
+    }
+
     var isFiltered: Bool {
         filters.map(Self.narrows) ?? false
     }

@@ -22,6 +22,57 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type PhotoFileKind int32
+
+const (
+	PhotoFileKind_PHOTO_FILE_KIND_UNSPECIFIED PhotoFileKind = 0
+	// HEIC, JPEG or PNG, full size, with no location in it.
+	PhotoFileKind_PHOTO_FILE_KIND_ORIGINAL PhotoFileKind = 1
+	// QuickTime; only for collections that keep Live Photos.
+	PhotoFileKind_PHOTO_FILE_KIND_LIVE PhotoFileKind = 2
+)
+
+// Enum value maps for PhotoFileKind.
+var (
+	PhotoFileKind_name = map[int32]string{
+		0: "PHOTO_FILE_KIND_UNSPECIFIED",
+		1: "PHOTO_FILE_KIND_ORIGINAL",
+		2: "PHOTO_FILE_KIND_LIVE",
+	}
+	PhotoFileKind_value = map[string]int32{
+		"PHOTO_FILE_KIND_UNSPECIFIED": 0,
+		"PHOTO_FILE_KIND_ORIGINAL":    1,
+		"PHOTO_FILE_KIND_LIVE":        2,
+	}
+)
+
+func (x PhotoFileKind) Enum() *PhotoFileKind {
+	p := new(PhotoFileKind)
+	*p = x
+	return p
+}
+
+func (x PhotoFileKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PhotoFileKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_pidex_v1_capture_proto_enumTypes[0].Descriptor()
+}
+
+func (PhotoFileKind) Type() protoreflect.EnumType {
+	return &file_pidex_v1_capture_proto_enumTypes[0]
+}
+
+func (x PhotoFileKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PhotoFileKind.Descriptor instead.
+func (PhotoFileKind) EnumDescriptor() ([]byte, []int) {
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{0}
+}
+
 type AnchorState int32
 
 const (
@@ -64,11 +115,11 @@ func (x AnchorState) String() string {
 }
 
 func (AnchorState) Descriptor() protoreflect.EnumDescriptor {
-	return file_pidex_v1_capture_proto_enumTypes[0].Descriptor()
+	return file_pidex_v1_capture_proto_enumTypes[1].Descriptor()
 }
 
 func (AnchorState) Type() protoreflect.EnumType {
-	return &file_pidex_v1_capture_proto_enumTypes[0]
+	return &file_pidex_v1_capture_proto_enumTypes[1]
 }
 
 func (x AnchorState) Number() protoreflect.EnumNumber {
@@ -77,7 +128,232 @@ func (x AnchorState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AnchorState.Descriptor instead.
 func (AnchorState) EnumDescriptor() ([]byte, []int) {
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{1}
+}
+
+type CreateFileUploadRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PhotoId       string                 `protobuf:"bytes,1,opt,name=photo_id,json=photoId,proto3" json:"photo_id,omitempty"`
+	Kind          PhotoFileKind          `protobuf:"varint,2,opt,name=kind,proto3,enum=pidex.v1.PhotoFileKind" json:"kind,omitempty"`
+	ContentType   string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	SizeBytes     int64                  `protobuf:"varint,4,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateFileUploadRequest) Reset() {
+	*x = CreateFileUploadRequest{}
+	mi := &file_pidex_v1_capture_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateFileUploadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateFileUploadRequest) ProtoMessage() {}
+
+func (x *CreateFileUploadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_capture_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateFileUploadRequest.ProtoReflect.Descriptor instead.
+func (*CreateFileUploadRequest) Descriptor() ([]byte, []int) {
 	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CreateFileUploadRequest) GetPhotoId() string {
+	if x != nil {
+		return x.PhotoId
+	}
+	return ""
+}
+
+func (x *CreateFileUploadRequest) GetKind() PhotoFileKind {
+	if x != nil {
+		return x.Kind
+	}
+	return PhotoFileKind_PHOTO_FILE_KIND_UNSPECIFIED
+}
+
+func (x *CreateFileUploadRequest) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *CreateFileUploadRequest) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+type CreateFileUploadResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UploadUrl     string                 `protobuf:"bytes,1,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
+	UploadHeaders map[string]string      `protobuf:"bytes,2,rep,name=upload_headers,json=uploadHeaders,proto3" json:"upload_headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// True when the file was already received on an earlier attempt.
+	AlreadyUploaded bool `protobuf:"varint,4,opt,name=already_uploaded,json=alreadyUploaded,proto3" json:"already_uploaded,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CreateFileUploadResponse) Reset() {
+	*x = CreateFileUploadResponse{}
+	mi := &file_pidex_v1_capture_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateFileUploadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateFileUploadResponse) ProtoMessage() {}
+
+func (x *CreateFileUploadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_capture_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateFileUploadResponse.ProtoReflect.Descriptor instead.
+func (*CreateFileUploadResponse) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateFileUploadResponse) GetUploadUrl() string {
+	if x != nil {
+		return x.UploadUrl
+	}
+	return ""
+}
+
+func (x *CreateFileUploadResponse) GetUploadHeaders() map[string]string {
+	if x != nil {
+		return x.UploadHeaders
+	}
+	return nil
+}
+
+func (x *CreateFileUploadResponse) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+func (x *CreateFileUploadResponse) GetAlreadyUploaded() bool {
+	if x != nil {
+		return x.AlreadyUploaded
+	}
+	return false
+}
+
+type CompleteFileUploadRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PhotoId       string                 `protobuf:"bytes,1,opt,name=photo_id,json=photoId,proto3" json:"photo_id,omitempty"`
+	Kind          PhotoFileKind          `protobuf:"varint,2,opt,name=kind,proto3,enum=pidex.v1.PhotoFileKind" json:"kind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteFileUploadRequest) Reset() {
+	*x = CompleteFileUploadRequest{}
+	mi := &file_pidex_v1_capture_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteFileUploadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteFileUploadRequest) ProtoMessage() {}
+
+func (x *CompleteFileUploadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_capture_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteFileUploadRequest.ProtoReflect.Descriptor instead.
+func (*CompleteFileUploadRequest) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CompleteFileUploadRequest) GetPhotoId() string {
+	if x != nil {
+		return x.PhotoId
+	}
+	return ""
+}
+
+func (x *CompleteFileUploadRequest) GetKind() PhotoFileKind {
+	if x != nil {
+		return x.Kind
+	}
+	return PhotoFileKind_PHOTO_FILE_KIND_UNSPECIFIED
+}
+
+type CompleteFileUploadResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteFileUploadResponse) Reset() {
+	*x = CompleteFileUploadResponse{}
+	mi := &file_pidex_v1_capture_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteFileUploadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteFileUploadResponse) ProtoMessage() {}
+
+func (x *CompleteFileUploadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_capture_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteFileUploadResponse.ProtoReflect.Descriptor instead.
+func (*CompleteFileUploadResponse) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{3}
 }
 
 type CreateUploadRequest struct {
@@ -93,7 +369,7 @@ type CreateUploadRequest struct {
 
 func (x *CreateUploadRequest) Reset() {
 	*x = CreateUploadRequest{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[0]
+	mi := &file_pidex_v1_capture_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -105,7 +381,7 @@ func (x *CreateUploadRequest) String() string {
 func (*CreateUploadRequest) ProtoMessage() {}
 
 func (x *CreateUploadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[0]
+	mi := &file_pidex_v1_capture_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,7 +394,7 @@ func (x *CreateUploadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUploadRequest.ProtoReflect.Descriptor instead.
 func (*CreateUploadRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{0}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateUploadRequest) GetClientPhotoId() string {
@@ -163,7 +439,7 @@ type CreateUploadResponse struct {
 
 func (x *CreateUploadResponse) Reset() {
 	*x = CreateUploadResponse{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[1]
+	mi := &file_pidex_v1_capture_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +451,7 @@ func (x *CreateUploadResponse) String() string {
 func (*CreateUploadResponse) ProtoMessage() {}
 
 func (x *CreateUploadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[1]
+	mi := &file_pidex_v1_capture_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +464,7 @@ func (x *CreateUploadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUploadResponse.ProtoReflect.Descriptor instead.
 func (*CreateUploadResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{1}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateUploadResponse) GetPhotoId() string {
@@ -252,7 +528,7 @@ type CompleteUploadRequest struct {
 
 func (x *CompleteUploadRequest) Reset() {
 	*x = CompleteUploadRequest{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[2]
+	mi := &file_pidex_v1_capture_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -264,7 +540,7 @@ func (x *CompleteUploadRequest) String() string {
 func (*CompleteUploadRequest) ProtoMessage() {}
 
 func (x *CompleteUploadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[2]
+	mi := &file_pidex_v1_capture_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -277,7 +553,7 @@ func (x *CompleteUploadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteUploadRequest.ProtoReflect.Descriptor instead.
 func (*CompleteUploadRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{2}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CompleteUploadRequest) GetPhotoId() string {
@@ -352,7 +628,7 @@ type CompleteUploadResponse struct {
 
 func (x *CompleteUploadResponse) Reset() {
 	*x = CompleteUploadResponse{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[3]
+	mi := &file_pidex_v1_capture_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -364,7 +640,7 @@ func (x *CompleteUploadResponse) String() string {
 func (*CompleteUploadResponse) ProtoMessage() {}
 
 func (x *CompleteUploadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[3]
+	mi := &file_pidex_v1_capture_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -377,7 +653,7 @@ func (x *CompleteUploadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteUploadResponse.ProtoReflect.Descriptor instead.
 func (*CompleteUploadResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{3}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CompleteUploadResponse) GetPhoto() *Photo {
@@ -396,7 +672,7 @@ type ResolveAnchorRequest struct {
 
 func (x *ResolveAnchorRequest) Reset() {
 	*x = ResolveAnchorRequest{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[4]
+	mi := &file_pidex_v1_capture_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -408,7 +684,7 @@ func (x *ResolveAnchorRequest) String() string {
 func (*ResolveAnchorRequest) ProtoMessage() {}
 
 func (x *ResolveAnchorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[4]
+	mi := &file_pidex_v1_capture_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,7 +697,7 @@ func (x *ResolveAnchorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveAnchorRequest.ProtoReflect.Descriptor instead.
 func (*ResolveAnchorRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{4}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ResolveAnchorRequest) GetOnDevice() *OnDeviceAnalysis {
@@ -446,7 +722,7 @@ type IdentifyShotRequest struct {
 
 func (x *IdentifyShotRequest) Reset() {
 	*x = IdentifyShotRequest{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[5]
+	mi := &file_pidex_v1_capture_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -458,7 +734,7 @@ func (x *IdentifyShotRequest) String() string {
 func (*IdentifyShotRequest) ProtoMessage() {}
 
 func (x *IdentifyShotRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[5]
+	mi := &file_pidex_v1_capture_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -471,7 +747,7 @@ func (x *IdentifyShotRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdentifyShotRequest.ProtoReflect.Descriptor instead.
 func (*IdentifyShotRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{5}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *IdentifyShotRequest) GetJpeg() []byte {
@@ -504,7 +780,7 @@ type IdentifyShotResponse struct {
 
 func (x *IdentifyShotResponse) Reset() {
 	*x = IdentifyShotResponse{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[6]
+	mi := &file_pidex_v1_capture_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -516,7 +792,7 @@ func (x *IdentifyShotResponse) String() string {
 func (*IdentifyShotResponse) ProtoMessage() {}
 
 func (x *IdentifyShotResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[6]
+	mi := &file_pidex_v1_capture_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -529,7 +805,7 @@ func (x *IdentifyShotResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdentifyShotResponse.ProtoReflect.Descriptor instead.
 func (*IdentifyShotResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{6}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *IdentifyShotResponse) GetAnchor() *ResolveAnchorResponse {
@@ -553,7 +829,7 @@ type ResolveAnchorResponse struct {
 
 func (x *ResolveAnchorResponse) Reset() {
 	*x = ResolveAnchorResponse{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[7]
+	mi := &file_pidex_v1_capture_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -565,7 +841,7 @@ func (x *ResolveAnchorResponse) String() string {
 func (*ResolveAnchorResponse) ProtoMessage() {}
 
 func (x *ResolveAnchorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[7]
+	mi := &file_pidex_v1_capture_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -578,7 +854,7 @@ func (x *ResolveAnchorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveAnchorResponse.ProtoReflect.Descriptor instead.
 func (*ResolveAnchorResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{7}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ResolveAnchorResponse) GetState() AnchorState {
@@ -632,7 +908,7 @@ type GetSessionSummaryRequest struct {
 
 func (x *GetSessionSummaryRequest) Reset() {
 	*x = GetSessionSummaryRequest{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[8]
+	mi := &file_pidex_v1_capture_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -644,7 +920,7 @@ func (x *GetSessionSummaryRequest) String() string {
 func (*GetSessionSummaryRequest) ProtoMessage() {}
 
 func (x *GetSessionSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[8]
+	mi := &file_pidex_v1_capture_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -657,7 +933,7 @@ func (x *GetSessionSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionSummaryRequest.ProtoReflect.Descriptor instead.
 func (*GetSessionSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{8}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetSessionSummaryRequest) GetSessionId() string {
@@ -678,7 +954,7 @@ type SubjectGroup struct {
 
 func (x *SubjectGroup) Reset() {
 	*x = SubjectGroup{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[9]
+	mi := &file_pidex_v1_capture_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -690,7 +966,7 @@ func (x *SubjectGroup) String() string {
 func (*SubjectGroup) ProtoMessage() {}
 
 func (x *SubjectGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[9]
+	mi := &file_pidex_v1_capture_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -703,7 +979,7 @@ func (x *SubjectGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubjectGroup.ProtoReflect.Descriptor instead.
 func (*SubjectGroup) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{9}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SubjectGroup) GetSubject() *Subject {
@@ -743,7 +1019,7 @@ type GetSessionSummaryResponse struct {
 
 func (x *GetSessionSummaryResponse) Reset() {
 	*x = GetSessionSummaryResponse{}
-	mi := &file_pidex_v1_capture_proto_msgTypes[10]
+	mi := &file_pidex_v1_capture_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -755,7 +1031,7 @@ func (x *GetSessionSummaryResponse) String() string {
 func (*GetSessionSummaryResponse) ProtoMessage() {}
 
 func (x *GetSessionSummaryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_capture_proto_msgTypes[10]
+	mi := &file_pidex_v1_capture_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -768,7 +1044,7 @@ func (x *GetSessionSummaryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSessionSummaryResponse.ProtoReflect.Descriptor instead.
 func (*GetSessionSummaryResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{10}
+	return file_pidex_v1_capture_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetSessionSummaryResponse) GetGroups() []*SubjectGroup {
@@ -817,7 +1093,27 @@ var File_pidex_v1_capture_proto protoreflect.FileDescriptor
 
 const file_pidex_v1_capture_proto_rawDesc = "" +
 	"\n" +
-	"\x16pidex/v1/capture.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9e\x01\n" +
+	"\x16pidex/v1/capture.proto\x12\bpidex.v1\x1a\x15pidex/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa3\x01\n" +
+	"\x17CreateFileUploadRequest\x12\x19\n" +
+	"\bphoto_id\x18\x01 \x01(\tR\aphotoId\x12+\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x17.pidex.v1.PhotoFileKindR\x04kind\x12!\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\"\xbf\x02\n" +
+	"\x18CreateFileUploadResponse\x12\x1d\n" +
+	"\n" +
+	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\\\n" +
+	"\x0eupload_headers\x18\x02 \x03(\v25.pidex.v1.CreateFileUploadResponse.UploadHeadersEntryR\ruploadHeaders\x129\n" +
+	"\n" +
+	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12)\n" +
+	"\x10already_uploaded\x18\x04 \x01(\bR\x0falreadyUploaded\x1a@\n" +
+	"\x12UploadHeadersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"c\n" +
+	"\x19CompleteFileUploadRequest\x12\x19\n" +
+	"\bphoto_id\x18\x01 \x01(\tR\aphotoId\x12+\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x17.pidex.v1.PhotoFileKindR\x04kind\"\x1c\n" +
+	"\x1aCompleteFileUploadResponse\"\x9e\x01\n" +
 	"\x13CreateUploadRequest\x12&\n" +
 	"\x0fclient_photo_id\x18\x01 \x01(\tR\rclientPhotoId\x12!\n" +
 	"\fcontent_type\x18\x02 \x01(\tR\vcontentType\x12\x1d\n" +
@@ -889,19 +1185,25 @@ const file_pidex_v1_capture_proto_rawDesc = "" +
 	"\x10processing_count\x18\x04 \x01(\x05R\x0fprocessingCount\x12\x1f\n" +
 	"\vtotal_count\x18\x05 \x01(\x05R\n" +
 	"totalCount\x12@\n" +
-	"\x12suggested_subjects\x18\x06 \x03(\v2\x11.pidex.v1.SubjectR\x11suggestedSubjects*\x9c\x01\n" +
+	"\x12suggested_subjects\x18\x06 \x03(\v2\x11.pidex.v1.SubjectR\x11suggestedSubjects*h\n" +
+	"\rPhotoFileKind\x12\x1f\n" +
+	"\x1bPHOTO_FILE_KIND_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18PHOTO_FILE_KIND_ORIGINAL\x10\x01\x12\x18\n" +
+	"\x14PHOTO_FILE_KIND_LIVE\x10\x02*\x9c\x01\n" +
 	"\vAnchorState\x12\x1c\n" +
 	"\x18ANCHOR_STATE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17ANCHOR_STATE_NOT_ANCHOR\x10\x01\x12\x18\n" +
 	"\x14ANCHOR_STATE_MATCHED\x10\x02\x12\x1c\n" +
 	"\x18ANCHOR_STATE_NEW_SUBJECT\x10\x03\x12\x1a\n" +
-	"\x16ANCHOR_STATE_AMBIGUOUS\x10\x042\xb3\x03\n" +
+	"\x16ANCHOR_STATE_AMBIGUOUS\x10\x042\xef\x04\n" +
 	"\x0eCaptureService\x12M\n" +
 	"\fCreateUpload\x12\x1d.pidex.v1.CreateUploadRequest\x1a\x1e.pidex.v1.CreateUploadResponse\x12S\n" +
 	"\x0eCompleteUpload\x12\x1f.pidex.v1.CompleteUploadRequest\x1a .pidex.v1.CompleteUploadResponse\x12P\n" +
 	"\rResolveAnchor\x12\x1e.pidex.v1.ResolveAnchorRequest\x1a\x1f.pidex.v1.ResolveAnchorResponse\x12M\n" +
 	"\fIdentifyShot\x12\x1d.pidex.v1.IdentifyShotRequest\x1a\x1e.pidex.v1.IdentifyShotResponse\x12\\\n" +
-	"\x11GetSessionSummary\x12\".pidex.v1.GetSessionSummaryRequest\x1a#.pidex.v1.GetSessionSummaryResponseB\x1cZ\x1apidex/gen/pidex/v1;pidexv1b\x06proto3"
+	"\x11GetSessionSummary\x12\".pidex.v1.GetSessionSummaryRequest\x1a#.pidex.v1.GetSessionSummaryResponse\x12Y\n" +
+	"\x10CreateFileUpload\x12!.pidex.v1.CreateFileUploadRequest\x1a\".pidex.v1.CreateFileUploadResponse\x12_\n" +
+	"\x12CompleteFileUpload\x12#.pidex.v1.CompleteFileUploadRequest\x1a$.pidex.v1.CompleteFileUploadResponseB\x1cZ\x1apidex/gen/pidex/v1;pidexv1b\x06proto3"
 
 var (
 	file_pidex_v1_capture_proto_rawDescOnce sync.Once
@@ -915,64 +1217,78 @@ func file_pidex_v1_capture_proto_rawDescGZIP() []byte {
 	return file_pidex_v1_capture_proto_rawDescData
 }
 
-var file_pidex_v1_capture_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_pidex_v1_capture_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_pidex_v1_capture_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_pidex_v1_capture_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_pidex_v1_capture_proto_goTypes = []any{
-	(AnchorState)(0),                  // 0: pidex.v1.AnchorState
-	(*CreateUploadRequest)(nil),       // 1: pidex.v1.CreateUploadRequest
-	(*CreateUploadResponse)(nil),      // 2: pidex.v1.CreateUploadResponse
-	(*CompleteUploadRequest)(nil),     // 3: pidex.v1.CompleteUploadRequest
-	(*CompleteUploadResponse)(nil),    // 4: pidex.v1.CompleteUploadResponse
-	(*ResolveAnchorRequest)(nil),      // 5: pidex.v1.ResolveAnchorRequest
-	(*IdentifyShotRequest)(nil),       // 6: pidex.v1.IdentifyShotRequest
-	(*IdentifyShotResponse)(nil),      // 7: pidex.v1.IdentifyShotResponse
-	(*ResolveAnchorResponse)(nil),     // 8: pidex.v1.ResolveAnchorResponse
-	(*GetSessionSummaryRequest)(nil),  // 9: pidex.v1.GetSessionSummaryRequest
-	(*SubjectGroup)(nil),              // 10: pidex.v1.SubjectGroup
-	(*GetSessionSummaryResponse)(nil), // 11: pidex.v1.GetSessionSummaryResponse
-	nil,                               // 12: pidex.v1.CreateUploadResponse.UploadHeadersEntry
-	nil,                               // 13: pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
-	(*timestamppb.Timestamp)(nil),     // 14: google.protobuf.Timestamp
-	(*GeoPoint)(nil),                  // 15: pidex.v1.GeoPoint
-	(*OnDeviceAnalysis)(nil),          // 16: pidex.v1.OnDeviceAnalysis
-	(*Place)(nil),                     // 17: pidex.v1.Place
-	(*Photo)(nil),                     // 18: pidex.v1.Photo
-	(*Subject)(nil),                   // 19: pidex.v1.Subject
+	(PhotoFileKind)(0),                 // 0: pidex.v1.PhotoFileKind
+	(AnchorState)(0),                   // 1: pidex.v1.AnchorState
+	(*CreateFileUploadRequest)(nil),    // 2: pidex.v1.CreateFileUploadRequest
+	(*CreateFileUploadResponse)(nil),   // 3: pidex.v1.CreateFileUploadResponse
+	(*CompleteFileUploadRequest)(nil),  // 4: pidex.v1.CompleteFileUploadRequest
+	(*CompleteFileUploadResponse)(nil), // 5: pidex.v1.CompleteFileUploadResponse
+	(*CreateUploadRequest)(nil),        // 6: pidex.v1.CreateUploadRequest
+	(*CreateUploadResponse)(nil),       // 7: pidex.v1.CreateUploadResponse
+	(*CompleteUploadRequest)(nil),      // 8: pidex.v1.CompleteUploadRequest
+	(*CompleteUploadResponse)(nil),     // 9: pidex.v1.CompleteUploadResponse
+	(*ResolveAnchorRequest)(nil),       // 10: pidex.v1.ResolveAnchorRequest
+	(*IdentifyShotRequest)(nil),        // 11: pidex.v1.IdentifyShotRequest
+	(*IdentifyShotResponse)(nil),       // 12: pidex.v1.IdentifyShotResponse
+	(*ResolveAnchorResponse)(nil),      // 13: pidex.v1.ResolveAnchorResponse
+	(*GetSessionSummaryRequest)(nil),   // 14: pidex.v1.GetSessionSummaryRequest
+	(*SubjectGroup)(nil),               // 15: pidex.v1.SubjectGroup
+	(*GetSessionSummaryResponse)(nil),  // 16: pidex.v1.GetSessionSummaryResponse
+	nil,                                // 17: pidex.v1.CreateFileUploadResponse.UploadHeadersEntry
+	nil,                                // 18: pidex.v1.CreateUploadResponse.UploadHeadersEntry
+	nil,                                // 19: pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
+	(*timestamppb.Timestamp)(nil),      // 20: google.protobuf.Timestamp
+	(*GeoPoint)(nil),                   // 21: pidex.v1.GeoPoint
+	(*OnDeviceAnalysis)(nil),           // 22: pidex.v1.OnDeviceAnalysis
+	(*Place)(nil),                      // 23: pidex.v1.Place
+	(*Photo)(nil),                      // 24: pidex.v1.Photo
+	(*Subject)(nil),                    // 25: pidex.v1.Subject
 }
 var file_pidex_v1_capture_proto_depIdxs = []int32{
-	12, // 0: pidex.v1.CreateUploadResponse.upload_headers:type_name -> pidex.v1.CreateUploadResponse.UploadHeadersEntry
-	14, // 1: pidex.v1.CreateUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
-	14, // 2: pidex.v1.CompleteUploadRequest.captured_at:type_name -> google.protobuf.Timestamp
-	15, // 3: pidex.v1.CompleteUploadRequest.location:type_name -> pidex.v1.GeoPoint
-	16, // 4: pidex.v1.CompleteUploadRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	17, // 5: pidex.v1.CompleteUploadRequest.place:type_name -> pidex.v1.Place
-	18, // 6: pidex.v1.CompleteUploadResponse.photo:type_name -> pidex.v1.Photo
-	16, // 7: pidex.v1.ResolveAnchorRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	16, // 8: pidex.v1.IdentifyShotRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
-	8,  // 9: pidex.v1.IdentifyShotResponse.anchor:type_name -> pidex.v1.ResolveAnchorResponse
-	0,  // 10: pidex.v1.ResolveAnchorResponse.state:type_name -> pidex.v1.AnchorState
-	19, // 11: pidex.v1.ResolveAnchorResponse.subject:type_name -> pidex.v1.Subject
-	19, // 12: pidex.v1.ResolveAnchorResponse.candidates:type_name -> pidex.v1.Subject
-	13, // 13: pidex.v1.ResolveAnchorResponse.extracted_identity:type_name -> pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
-	19, // 14: pidex.v1.SubjectGroup.subject:type_name -> pidex.v1.Subject
-	10, // 15: pidex.v1.GetSessionSummaryResponse.groups:type_name -> pidex.v1.SubjectGroup
-	18, // 16: pidex.v1.GetSessionSummaryResponse.needs_review:type_name -> pidex.v1.Photo
-	19, // 17: pidex.v1.GetSessionSummaryResponse.suggested_subjects:type_name -> pidex.v1.Subject
-	1,  // 18: pidex.v1.CaptureService.CreateUpload:input_type -> pidex.v1.CreateUploadRequest
-	3,  // 19: pidex.v1.CaptureService.CompleteUpload:input_type -> pidex.v1.CompleteUploadRequest
-	5,  // 20: pidex.v1.CaptureService.ResolveAnchor:input_type -> pidex.v1.ResolveAnchorRequest
-	6,  // 21: pidex.v1.CaptureService.IdentifyShot:input_type -> pidex.v1.IdentifyShotRequest
-	9,  // 22: pidex.v1.CaptureService.GetSessionSummary:input_type -> pidex.v1.GetSessionSummaryRequest
-	2,  // 23: pidex.v1.CaptureService.CreateUpload:output_type -> pidex.v1.CreateUploadResponse
-	4,  // 24: pidex.v1.CaptureService.CompleteUpload:output_type -> pidex.v1.CompleteUploadResponse
-	8,  // 25: pidex.v1.CaptureService.ResolveAnchor:output_type -> pidex.v1.ResolveAnchorResponse
-	7,  // 26: pidex.v1.CaptureService.IdentifyShot:output_type -> pidex.v1.IdentifyShotResponse
-	11, // 27: pidex.v1.CaptureService.GetSessionSummary:output_type -> pidex.v1.GetSessionSummaryResponse
-	23, // [23:28] is the sub-list for method output_type
-	18, // [18:23] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	0,  // 0: pidex.v1.CreateFileUploadRequest.kind:type_name -> pidex.v1.PhotoFileKind
+	17, // 1: pidex.v1.CreateFileUploadResponse.upload_headers:type_name -> pidex.v1.CreateFileUploadResponse.UploadHeadersEntry
+	20, // 2: pidex.v1.CreateFileUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: pidex.v1.CompleteFileUploadRequest.kind:type_name -> pidex.v1.PhotoFileKind
+	18, // 4: pidex.v1.CreateUploadResponse.upload_headers:type_name -> pidex.v1.CreateUploadResponse.UploadHeadersEntry
+	20, // 5: pidex.v1.CreateUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
+	20, // 6: pidex.v1.CompleteUploadRequest.captured_at:type_name -> google.protobuf.Timestamp
+	21, // 7: pidex.v1.CompleteUploadRequest.location:type_name -> pidex.v1.GeoPoint
+	22, // 8: pidex.v1.CompleteUploadRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
+	23, // 9: pidex.v1.CompleteUploadRequest.place:type_name -> pidex.v1.Place
+	24, // 10: pidex.v1.CompleteUploadResponse.photo:type_name -> pidex.v1.Photo
+	22, // 11: pidex.v1.ResolveAnchorRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
+	22, // 12: pidex.v1.IdentifyShotRequest.on_device:type_name -> pidex.v1.OnDeviceAnalysis
+	13, // 13: pidex.v1.IdentifyShotResponse.anchor:type_name -> pidex.v1.ResolveAnchorResponse
+	1,  // 14: pidex.v1.ResolveAnchorResponse.state:type_name -> pidex.v1.AnchorState
+	25, // 15: pidex.v1.ResolveAnchorResponse.subject:type_name -> pidex.v1.Subject
+	25, // 16: pidex.v1.ResolveAnchorResponse.candidates:type_name -> pidex.v1.Subject
+	19, // 17: pidex.v1.ResolveAnchorResponse.extracted_identity:type_name -> pidex.v1.ResolveAnchorResponse.ExtractedIdentityEntry
+	25, // 18: pidex.v1.SubjectGroup.subject:type_name -> pidex.v1.Subject
+	15, // 19: pidex.v1.GetSessionSummaryResponse.groups:type_name -> pidex.v1.SubjectGroup
+	24, // 20: pidex.v1.GetSessionSummaryResponse.needs_review:type_name -> pidex.v1.Photo
+	25, // 21: pidex.v1.GetSessionSummaryResponse.suggested_subjects:type_name -> pidex.v1.Subject
+	6,  // 22: pidex.v1.CaptureService.CreateUpload:input_type -> pidex.v1.CreateUploadRequest
+	8,  // 23: pidex.v1.CaptureService.CompleteUpload:input_type -> pidex.v1.CompleteUploadRequest
+	10, // 24: pidex.v1.CaptureService.ResolveAnchor:input_type -> pidex.v1.ResolveAnchorRequest
+	11, // 25: pidex.v1.CaptureService.IdentifyShot:input_type -> pidex.v1.IdentifyShotRequest
+	14, // 26: pidex.v1.CaptureService.GetSessionSummary:input_type -> pidex.v1.GetSessionSummaryRequest
+	2,  // 27: pidex.v1.CaptureService.CreateFileUpload:input_type -> pidex.v1.CreateFileUploadRequest
+	4,  // 28: pidex.v1.CaptureService.CompleteFileUpload:input_type -> pidex.v1.CompleteFileUploadRequest
+	7,  // 29: pidex.v1.CaptureService.CreateUpload:output_type -> pidex.v1.CreateUploadResponse
+	9,  // 30: pidex.v1.CaptureService.CompleteUpload:output_type -> pidex.v1.CompleteUploadResponse
+	13, // 31: pidex.v1.CaptureService.ResolveAnchor:output_type -> pidex.v1.ResolveAnchorResponse
+	12, // 32: pidex.v1.CaptureService.IdentifyShot:output_type -> pidex.v1.IdentifyShotResponse
+	16, // 33: pidex.v1.CaptureService.GetSessionSummary:output_type -> pidex.v1.GetSessionSummaryResponse
+	3,  // 34: pidex.v1.CaptureService.CreateFileUpload:output_type -> pidex.v1.CreateFileUploadResponse
+	5,  // 35: pidex.v1.CaptureService.CompleteFileUpload:output_type -> pidex.v1.CompleteFileUploadResponse
+	29, // [29:36] is the sub-list for method output_type
+	22, // [22:29] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_capture_proto_init() }
@@ -986,8 +1302,8 @@ func file_pidex_v1_capture_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pidex_v1_capture_proto_rawDesc), len(file_pidex_v1_capture_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   13,
+			NumEnums:      2,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

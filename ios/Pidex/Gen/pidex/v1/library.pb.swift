@@ -89,6 +89,12 @@ nonisolated struct Pidex_V1_PhotoLinks: Sendable {
 
   var viewURL: String = String()
 
+  /// The file as the camera made it, and a Live Photo's motion (QuickTime),
+  /// when kept.
+  var originalURL: String = String()
+
+  var liveURL: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -641,7 +647,7 @@ nonisolated extension Pidex_V1_GetPhotoLinksRequest: SwiftProtobuf.Message, Swif
 
 nonisolated extension Pidex_V1_PhotoLinks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PhotoLinks"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}thumbnail_url\0\u{3}view_url\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}thumbnail_url\0\u{3}view_url\0\u{3}original_url\0\u{3}live_url\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -651,6 +657,8 @@ nonisolated extension Pidex_V1_PhotoLinks: SwiftProtobuf.Message, SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.thumbnailURL) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.viewURL) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.originalURL) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.liveURL) }()
       default: break
       }
     }
@@ -663,12 +671,20 @@ nonisolated extension Pidex_V1_PhotoLinks: SwiftProtobuf.Message, SwiftProtobuf.
     if !self.viewURL.isEmpty {
       try visitor.visitSingularStringField(value: self.viewURL, fieldNumber: 2)
     }
+    if !self.originalURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.originalURL, fieldNumber: 3)
+    }
+    if !self.liveURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.liveURL, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Pidex_V1_PhotoLinks, rhs: Pidex_V1_PhotoLinks) -> Bool {
     if lhs.thumbnailURL != rhs.thumbnailURL {return false}
     if lhs.viewURL != rhs.viewURL {return false}
+    if lhs.originalURL != rhs.originalURL {return false}
+    if lhs.liveURL != rhs.liveURL {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

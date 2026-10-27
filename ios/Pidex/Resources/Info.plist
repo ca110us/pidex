@@ -33,6 +33,8 @@
 	<string>Pidex notes where each photo is taken, so you can find and group photos by place, such as everything from a trip.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Pidex listens while you dictate a scenario description.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pidex saves the photos you choose to your photo library. It never reads your library.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Pidex turns what you say into text for the scenario description.</string>
 	<key>UILaunchScreen</key>

@@ -565,6 +565,19 @@ nonisolated struct Pidex_V1_Photo: @unchecked Sendable {
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
   mutating func clearCreatedAt() {_uniqueStorage()._createdAt = nil}
 
+  /// The file as the camera made it (HEIC, full size) is kept beside the
+  /// working copy that view_url shows.
+  var originalKept: Bool {
+    get {_storage._originalKept}
+    set {_uniqueStorage()._originalKept = newValue}
+  }
+
+  /// A Live Photo: the seconds of motion around the shot are kept too.
+  var live: Bool {
+    get {_storage._live}
+    set {_uniqueStorage()._live = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -1051,7 +1064,7 @@ nonisolated extension Pidex_V1_Tag: SwiftProtobuf.Message, SwiftProtobuf._Messag
 
 nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".Photo"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0\u{1}place\0\u{1}location\0\u{3}created_at\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}session_id\0\u{3}subject_id\0\u{1}assignment\0\u{3}assignment_confidence\0\u{1}role\0\u{1}status\0\u{3}captured_at\0\u{3}uploaded_by\0\u{1}tags\0\u{3}extracted_fields\0\u{1}description\0\u{3}view_url\0\u{3}suggested_subject_id\0\u{3}thumbnail_url\0\u{1}place\0\u{1}location\0\u{3}created_at\0\u{3}original_kept\0\u{1}live\0")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -1072,6 +1085,8 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
     var _place: Pidex_V1_Place? = nil
     var _location: Pidex_V1_GeoPoint? = nil
     var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+    var _originalKept: Bool = false
+    var _live: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1100,6 +1115,8 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
       _place = source._place
       _location = source._location
       _createdAt = source._createdAt
+      _originalKept = source._originalKept
+      _live = source._live
     }
   }
 
@@ -1136,6 +1153,8 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
         case 16: try { try decoder.decodeSingularMessageField(value: &_storage._place) }()
         case 17: try { try decoder.decodeSingularMessageField(value: &_storage._location) }()
         case 18: try { try decoder.decodeSingularMessageField(value: &_storage._createdAt) }()
+        case 19: try { try decoder.decodeSingularBoolField(value: &_storage._originalKept) }()
+        case 20: try { try decoder.decodeSingularBoolField(value: &_storage._live) }()
         default: break
         }
       }
@@ -1202,6 +1221,12 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
       try { if let v = _storage._createdAt {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
       } }()
+      if _storage._originalKept != false {
+        try visitor.visitSingularBoolField(value: _storage._originalKept, fieldNumber: 19)
+      }
+      if _storage._live != false {
+        try visitor.visitSingularBoolField(value: _storage._live, fieldNumber: 20)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1229,6 +1254,8 @@ nonisolated extension Pidex_V1_Photo: SwiftProtobuf.Message, SwiftProtobuf._Mess
         if _storage._place != rhs_storage._place {return false}
         if _storage._location != rhs_storage._location {return false}
         if _storage._createdAt != rhs_storage._createdAt {return false}
+        if _storage._originalKept != rhs_storage._originalKept {return false}
+        if _storage._live != rhs_storage._live {return false}
         return true
       }
       if !storagesAreEqual {return false}

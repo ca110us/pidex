@@ -31,6 +31,39 @@ nonisolated enum ImageFeatures {
         return (out as Data, image)
     }
 
+    /// The file to keep as the photo's original: as the camera made it,
+    /// with any location taken out (the place is sent apart, if at all).
+    /// Copied, not encoded again, where the format allows. Nil when it would
+    /// say no more than the working copy (a JPEG no larger), or is of a kind
+    /// not kept.
+    static func original(from data: Data, maxEdge: Int = 2048) -> (data: Data, contentType: String)? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil), let uti = CGImageSourceGetType(source),
+              let mime = UTType(uti as String)?.preferredMIMEType, keptTypes.contains(mime) else { return nil }
+        let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] ?? [:]
+        let w = props[kCGImagePropertyPixelWidth] as? Int ?? 0
+        let h = props[kCGImagePropertyPixelHeight] as? Int ?? 0
+        if mime == "image/jpeg" && max(w, h) <= maxEdge { return nil }
+        // Nothing to take out: the bytes as they are.
+        guard props[kCGImagePropertyGPSDictionary] != nil else { return (data, mime) }
+        let out = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(out, uti, 1, nil) else { return nil }
+        let copy: [CFString: Any] = [kCGImageDestinationMergeMetadata: true, kCGImageMetadataShouldExcludeGPS: true]
+        if CGImageDestinationCopyImageSource(dest, source, copy as CFDictionary, nil) {
+            return (out as Data, mime)
+        }
+        // A format that cannot be copied as is: encoded again, finely.
+        let again = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(again, uti, 1, nil) else { return nil }
+        CGImageDestinationAddImageFromSource(dest, source, 0, [
+            kCGImagePropertyGPSDictionary: kCFNull as Any,
+            kCGImageDestinationLossyCompressionQuality: 0.95,
+        ] as CFDictionary)
+        return CGImageDestinationFinalize(dest) ? (again as Data, mime) : nil
+    }
+
+    /// The kinds of original the server keeps.
+    static let keptTypes: Set<String> = ["image/heic", "image/heif", "image/jpeg", "image/png"]
+
     /// 64-bit difference hash: robust to small changes, so the server can
     /// spot near-identical burst shots and skip a second model call.
     static func differenceHash(_ image: CGImage) -> UInt64 {

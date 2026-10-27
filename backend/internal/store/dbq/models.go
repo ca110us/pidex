@@ -112,6 +112,11 @@ type Photo struct {
 	LookModel            *string
 	Place                []byte
 	SyncXid              int64
+	OriginalKey          *string
+	OriginalType         *string
+	OriginalBytes        *int64
+	LiveKey              *string
+	LiveBytes            *int64
 }
 
 type PhotoTag struct {

@@ -151,17 +151,23 @@ func (s *teamService) DeleteTeam(ctx context.Context, req *connect.Request[pidex
 	if strings.TrimSpace(req.Msg.ConfirmName) != team.Name {
 		return nil, invalid("confirm_name must be the collection's name exactly")
 	}
-	var keys []string
+	var (
+		keys   []string
+		photos int
+	)
 	err = store.WithTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		q := s.Q.WithTx(tx)
 		rows, err := q.TeamObjectKeys(ctx, pr.TeamID)
 		if err != nil {
 			return err
 		}
+		photos = len(rows)
 		for _, r := range rows {
 			keys = append(keys, r.ObjectKey)
-			if r.ThumbKey != nil {
-				keys = append(keys, *r.ThumbKey)
+			for _, k := range []*string{r.ThumbKey, r.OriginalKey, r.LiveKey} {
+				if k != nil {
+					keys = append(keys, *k)
+				}
 			}
 		}
 		_, err = q.DeleteTeam(ctx, pr.TeamID)
@@ -174,11 +180,5 @@ func (s *teamService) DeleteTeam(ctx context.Context, req *connect.Request[pidex
 		s.Log.Error("photo files of a deleted team remain", "team", pr.TeamID, "files", len(keys), "err", err)
 	}
 	s.Log.Info("team deleted", "team", pr.TeamID, "by", pr.UserID, "files", len(keys))
-	photos := 0
-	for _, k := range keys {
-		if !strings.HasPrefix(k, "thumbs/") {
-			photos++
-		}
-	}
 	return connect.NewResponse(&pidexv1.DeleteTeamResponse{DeletedPhotos: int32(photos)}), nil
 }

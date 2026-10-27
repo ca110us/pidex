@@ -163,6 +163,11 @@ message Photo {
   GeoPoint location = 17;
   // When the server received it; photos without captured_at sort by it.
   google.protobuf.Timestamp created_at = 18;
+  // The file as the camera made it (HEIC, full size) is kept beside the
+  // working copy that view_url shows.
+  bool original_kept = 19;
+  // A Live Photo: the seconds of motion around the shot are kept too.
+  bool live = 20;
 }
 
 // How many photos have a tag.

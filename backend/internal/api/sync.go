@@ -176,7 +176,8 @@ func (s *libraryService) GetPhotoLinks(ctx context.Context, req *connect.Request
 	out := &pidexv1.GetPhotoLinksResponse{Links: make(map[string]*pidexv1.PhotoLinks, len(rows))}
 	for _, r := range rows {
 		view, thumb := s.photoLinks(ctx, r.Status, r.ObjectKey, r.ThumbKey)
-		out.Links[r.ID.String()] = &pidexv1.PhotoLinks{ViewUrl: view, ThumbnailUrl: thumb}
+		original, live := s.fileLinks(ctx, r.OriginalKey, r.LiveKey)
+		out.Links[r.ID.String()] = &pidexv1.PhotoLinks{ViewUrl: view, ThumbnailUrl: thumb, OriginalUrl: original, LiveUrl: live}
 	}
 	return connect.NewResponse(out), nil
 }

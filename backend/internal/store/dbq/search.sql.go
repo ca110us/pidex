@@ -13,7 +13,7 @@ import (
 )
 
 const getPhotosByIDs = `-- name: GetPhotosByIDs :many
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos WHERE team_id = $1 AND id = ANY($2::uuid[])
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos WHERE team_id = $1 AND id = ANY($2::uuid[])
 `
 
 type GetPhotosByIDsParams struct {
@@ -70,6 +70,11 @@ func (q *Queries) GetPhotosByIDs(ctx context.Context, arg GetPhotosByIDsParams) 
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}

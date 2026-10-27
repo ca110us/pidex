@@ -23,15 +23,32 @@ actor PhotoLinks {
         for id in ids { owners[id] = api }
     }
 
-    /// A link to a photo's original, or its thumbnail (the original until it
-    /// has one); nil for a photo not known or not found.
-    func link(for id: String, original: Bool) async -> URL? {
+    enum Kind: Sendable {
+        /// Small, for grids; the working copy until there is one.
+        case thumbnail
+        /// The working copy, for viewing.
+        case view
+        /// The file as the camera made it, when kept.
+        case original
+        /// A Live Photo's motion, when kept.
+        case live
+    }
+
+    /// A link to one of a photo's images; nil for a photo not known or not
+    /// found, or a file it does not have.
+    func link(for id: String, _ kind: Kind) async -> URL? {
         if links[id].map({ $0.until < .now }) ?? true {
             guard let api = owners[id] else { return nil }
             await fetch(id, api)
         }
         guard let l = links[id]?.links else { return nil }
-        return URL(string: original || l.thumbnailURL.isEmpty ? l.viewURL : l.thumbnailURL)
+        let url = switch kind {
+        case .thumbnail: l.thumbnailURL.isEmpty ? l.viewURL : l.thumbnailURL
+        case .view: l.viewURL
+        case .original: l.originalURL
+        case .live: l.liveURL
+        }
+        return url.isEmpty ? nil : URL(string: url)
     }
 
     private func fetch(_ id: String, _ api: APIClient) async {

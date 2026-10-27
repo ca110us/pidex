@@ -57,6 +57,14 @@ nonisolated final class APIClient: Sendable {
         try Self.unwrap(await capture.completeUpload(request: r, headers: headers))
     }
 
+    func createFileUpload(_ r: Pidex_V1_CreateFileUploadRequest) async throws -> Pidex_V1_CreateFileUploadResponse {
+        try Self.unwrap(await capture.createFileUpload(request: r, headers: headers))
+    }
+
+    func completeFileUpload(_ r: Pidex_V1_CompleteFileUploadRequest) async throws {
+        _ = try Self.unwrap(await capture.completeFileUpload(request: r, headers: headers))
+    }
+
     func resolveAnchor(_ onDevice: Pidex_V1_OnDeviceAnalysis) async throws -> Pidex_V1_ResolveAnchorResponse {
         var r = Pidex_V1_ResolveAnchorRequest()
         r.onDevice = onDevice

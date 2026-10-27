@@ -47,6 +47,7 @@ targets:
         # A camera app stays upright; iPad then needs full screen.
         UIRequiresFullScreen: true
         NSCameraUsageDescription: Pidex uses the camera to take work photos and to read the labels, numbers and barcodes that identify what you photograph.
+        NSPhotoLibraryAddUsageDescription: Pidex saves the photos you choose to your photo library. It never reads your library.
         NSLocationWhenInUseUsageDescription: Pidex notes where each photo is taken, so you can find and group photos by place, such as everything from a trip.
         NSLocalNetworkUsageDescription: Pidex connects to your team's server on the local network during development.
         NSMicrophoneUsageDescription: Pidex listens while you dictate a scenario description.

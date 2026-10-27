@@ -2031,6 +2031,16 @@
         }
       }
     },
+    "LIVE": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "实况"
+          }
+        }
+      }
+    },
     "Labels, tags or numbers": {
       "localizations": {
         "zh-Hans": {
@@ -2067,6 +2077,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "改回根据照片生成"
+          }
+        }
+      }
+    },
+    "Live Photos: shots taken in Pidex keep the moments around them, without sound.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live 图：在 Pidex 里拍的照片会保留前后几秒的动态画面，不录声音。"
           }
         }
       }
@@ -2741,6 +2761,26 @@
         }
       }
     },
+    "Pidex may not add to Photos. Allow it in Settings › Pidex › Photos.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidex 没有添加到照片的权限。请在“设置 › Pidex › 照片”中允许。"
+          }
+        }
+      }
+    },
+    "Play Live Photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "播放 Live 图"
+          }
+        }
+      }
+    },
     "Privacy is lowered: photo descriptions may now include names and IDs.": {
       "localizations": {
         "zh-Hans": {
@@ -2967,6 +3007,64 @@
           "stringUnit": {
             "state": "translated",
             "value": "保存"
+          }
+        }
+      }
+    },
+    "Save to Photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存到照片"
+          }
+        }
+      }
+    },
+    "Saved %lld of %lld photos to Photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已存 %lld 张照片到照片，共 %lld 张"
+          }
+        }
+      }
+    },
+    "Saved %lld photos to Photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已把 %lld 张照片存到照片"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saved %lld photo to Photos"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saved %lld photos to Photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Saved to Photos": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已存到照片"
           }
         }
       }
@@ -3457,6 +3555,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "模型没有及时响应，请再试一次。"
+          }
+        }
+      }
+    },
+    "The photo could not be saved": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这张照片没能保存"
           }
         }
       }

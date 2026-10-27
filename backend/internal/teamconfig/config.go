@@ -64,6 +64,9 @@ type Config struct {
 	Language   string     `json:"language,omitempty"`
 	Strictness Strictness `json:"strictness"`
 	Privacy    Privacy    `json:"privacy"`
+	// LivePhotos keeps the seconds of motion around each shot taken in the
+	// app (no sound), beside the photo. Off unless the team asks for it.
+	LivePhotos bool `json:"live_photos,omitempty"`
 	// DateOrder resolves ambiguous dates like 03/04/1985: "mdy" or "dmy".
 	DateOrder    string        `json:"date_order"`
 	SubjectTypes []SubjectType `json:"subject_types"`

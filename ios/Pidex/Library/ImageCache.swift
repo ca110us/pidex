@@ -22,7 +22,7 @@ actor ImageCache {
     /// The image at url, else at a fresh link: none was given, or it expired.
     private func download(id: String, url: URL?, original: Bool) async -> (Data, UIImage)? {
         if let url, let got = await Self.get(url) { return got }
-        guard let fresh = await PhotoLinks.shared.link(for: id, original: original), fresh != url else { return nil }
+        guard let fresh = await PhotoLinks.shared.link(for: id, original ? .view : .thumbnail), fresh != url else { return nil }
         return await Self.get(fresh)
     }
 

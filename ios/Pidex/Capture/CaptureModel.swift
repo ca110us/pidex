@@ -51,6 +51,8 @@ final class CaptureModel {
     private var reading = 0
     /// Shots already shown to the model to recognize by look: each once.
     private var tried: Set<String> = []
+    /// Live Photos' motion still being made, by shot ID: sending waits.
+    private var motions: [String: Task<Void, Never>] = [:]
 
     let camera = CameraController()
     let api: APIClient
@@ -81,6 +83,7 @@ final class CaptureModel {
             recognizesByLook = !config.subjectTypes.isEmpty && config.subjectTypes.allSatisfy(\.byAppearance)
             filesByPlace = config.subjectTypes.isEmpty
             keepsOriginals = config.privacy != "high"
+            camera.keepMotion(config.livePhotos)
         }
         tracker.start()
         do {
@@ -243,8 +246,11 @@ final class CaptureModel {
         isShooting = true
         defer { isShooting = false }
         do {
-            let data = try await camera.capture()
-            await handle(photoData: data, capturedAt: Date(), location: tracker.current)
+            let shot = try await camera.capture()
+            let id = await handle(photoData: shot.data, capturedAt: Date(), location: tracker.current)
+            if let motionID = shot.motionID {
+                keepMotion(motionID, for: id)
+            }
         } catch {
             lastError = error.localizedDescription
         }
@@ -260,13 +266,37 @@ final class CaptureModel {
         await handle(photoData: data, capturedAt: meta.date ?? Date(), location: meta.location)
     }
 
-    private func handle(photoData: Data, capturedAt: Date, location: CLLocation? = nil) async {
-        let prepared: (jpeg: Data, analysis: Pidex_V1_OnDeviceAnalysis)
+    /// Keeps a shot's motion once the camera has made it; dropped if the
+    /// shot is gone by then.
+    private func keepMotion(_ motionID: Int64, for id: String?) {
+        let camera = camera
+        let task = Task { [weak self] in
+            guard let movie = await camera.motion(of: motionID) else { return }
+            guard let self, let id, let store, let i = self.shots.firstIndex(where: { $0.id == id }),
+                  let name = try? store.adopt(movie, id: id, as: "mov") else {
+                try? FileManager.default.removeItem(at: movie)
+                return
+            }
+            self.shots[i].motion = name
+            self.persist()
+        }
+        if let id {
+            motions[id] = Task {
+                await task.value
+                self.motions[id] = nil
+            }
+        }
+    }
+
+    /// Stages a shot; its ID, or nil if it could not be kept.
+    @discardableResult
+    private func handle(photoData: Data, capturedAt: Date, location: CLLocation? = nil) async -> String? {
+        let prepared: Prepared
         do {
             prepared = try await Self.prepare(photoData)
         } catch {
             lastError = String(localized: "Could not read the photo: \(error.localizedDescription)")
-            return
+            return nil
         }
         let id = UUID().uuidString.lowercased()
         var shot: StagedShot
@@ -274,6 +304,10 @@ final class CaptureModel {
             guard let store else { throw CocoaError(.fileNoSuchFile) }
             let name = try store.write(prepared.jpeg, id: id)
             shot = StagedShot(id: id, fileName: name, capturedAt: capturedAt, onDevice: try prepared.analysis.serializedData())
+            if let original = prepared.original {
+                shot.original = try store.write(original.data, id: id, as: "original")
+                shot.originalType = original.contentType
+            }
             shot.place = location.map(ShotPlace.init)
             if let p = nextPick, shots.isEmpty || owners[shots.last!.id]?.subjectID != p.subjectID {
                 shot.pick = p
@@ -286,7 +320,7 @@ final class CaptureModel {
             if let place = shot.place { nameLater(id, place) }
         } catch {
             lastError = String(localized: "Could not save the photo: \(error.localizedDescription)")
-            return
+            return nil
         }
         let jpeg = prepared.jpeg
         if recognizesByLook {
@@ -295,12 +329,21 @@ final class CaptureModel {
             // In the background: the next shot need not wait for a model.
             Task { await identify(shotID: id, from: prepared.analysis, jpeg: jpeg) }
         }
+        return id
+    }
+
+    /// A shot ready to stage: its working copy, what the phone saw in it,
+    /// and the file as the camera made it when that says more.
+    private struct Prepared: Sendable {
+        var jpeg: Data
+        var analysis: Pidex_V1_OnDeviceAnalysis
+        var original: (data: Data, contentType: String)?
     }
 
     @concurrent
-    private static func prepare(_ data: Data) async throws -> (jpeg: Data, analysis: Pidex_V1_OnDeviceAnalysis) {
+    private static func prepare(_ data: Data) async throws -> Prepared {
         let (jpeg, image) = try ImageFeatures.uprightJPEG(from: data)
-        return (jpeg, OnDeviceAnalyzer.analyze(image))
+        return Prepared(jpeg: jpeg, analysis: OnDeviceAnalyzer.analyze(image), original: ImageFeatures.original(from: data))
     }
 
     /// Names where a shot was taken, in the background: the shot is kept at
@@ -401,6 +444,8 @@ final class CaptureModel {
         guard canSend, let store else { return 0 }
         isSending = true
         defer { isSending = false }
+        // Live Photos' motion is made a moment after the shot.
+        for motion in motions.values { await motion.value }
         let owners = owners
         let session = sessionID.uuidString.lowercased()
         var sent = 0
@@ -413,7 +458,7 @@ final class CaptureModel {
                     onDevice: try Pidex_V1_OnDeviceAnalysis(serializedBytes: shot.onDevice),
                     lockedSubjectID: owner?.subjectID, subjectChosen: owner?.chosen ?? false,
                     id: shot.id, identityPhotoID: owner?.identityShotID, place: shot.place,
-                    keepOriginal: keepsOriginals
+                    keepOriginal: keepsOriginals, files: shot.files(in: store)
                 )
             } catch {
                 lastError = String(localized: "Could not send the photo: \(error.localizedDescription)")

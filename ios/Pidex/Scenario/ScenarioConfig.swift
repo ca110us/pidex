@@ -8,11 +8,13 @@ nonisolated struct ScenarioConfig: Decodable, Sendable {
     var description: String?
     var strictness: String
     var privacy: String
+    /// Shots taken in the app keep the motion around them (Live Photos).
+    var livePhotos: Bool
     var subjectTypes: [SubjectType]
     var tags: [Tag]
 
     private enum CodingKeys: String, CodingKey {
-        case name, industry, description, strictness, privacy, subjectTypes, tags
+        case name, industry, description, strictness, privacy, livePhotos, subjectTypes, tags
     }
 
     init(from decoder: Decoder) throws {
@@ -22,6 +24,7 @@ nonisolated struct ScenarioConfig: Decodable, Sendable {
         description = try c.decodeIfPresent(String.self, forKey: .description)
         strictness = try c.decode(String.self, forKey: .strictness)
         privacy = try c.decode(String.self, forKey: .privacy)
+        livePhotos = try c.decodeIfPresent(Bool.self, forKey: .livePhotos) ?? false
         // A collection kept by place and time has no subject types; a
         // server may write that as null or leave it out.
         subjectTypes = try c.decodeIfPresent([SubjectType].self, forKey: .subjectTypes) ?? []

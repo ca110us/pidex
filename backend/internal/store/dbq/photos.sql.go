@@ -45,7 +45,7 @@ UPDATE photos SET
     size_bytes          = $10,
     updated_at          = now()
 WHERE team_id = $11 AND id = $12 AND status IN ('awaiting_upload', 'uploaded')
-RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid
+RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes
 `
 
 type CompletePhotoUploadParams struct {
@@ -119,6 +119,11 @@ func (q *Queries) CompletePhotoUpload(ctx context.Context, arg CompletePhotoUplo
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
@@ -127,7 +132,7 @@ const createPhotoUpload = `-- name: CreatePhotoUpload :one
 INSERT INTO photos (id, team_id, uploaded_by, client_photo_id, object_key, content_type, size_bytes, sha256_hex)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 ON CONFLICT (team_id, client_photo_id) DO UPDATE SET updated_at = now()
-RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid
+RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes
 `
 
 type CreatePhotoUploadParams struct {
@@ -195,6 +200,11 @@ func (q *Queries) CreatePhotoUpload(ctx context.Context, arg CreatePhotoUploadPa
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
@@ -237,7 +247,7 @@ func (q *Queries) DeleteEmptyAutoSubjects(ctx context.Context, arg DeleteEmptyAu
 
 const deletePhotos = `-- name: DeletePhotos :many
 DELETE FROM photos WHERE team_id = $1 AND id = ANY($2::uuid[])
-RETURNING id, object_key, thumb_key, session_id, subject_id, suggested_subject_id, locked_subject_id
+RETURNING id, object_key, thumb_key, original_key, live_key, session_id, subject_id, suggested_subject_id, locked_subject_id
 `
 
 type DeletePhotosParams struct {
@@ -249,6 +259,8 @@ type DeletePhotosRow struct {
 	ID                 uuid.UUID
 	ObjectKey          string
 	ThumbKey           *string
+	OriginalKey        *string
+	LiveKey            *string
 	SessionID          *uuid.UUID
 	SubjectID          *uuid.UUID
 	SuggestedSubjectID *uuid.UUID
@@ -269,6 +281,8 @@ func (q *Queries) DeletePhotos(ctx context.Context, arg DeletePhotosParams) ([]D
 			&i.ID,
 			&i.ObjectKey,
 			&i.ThumbKey,
+			&i.OriginalKey,
+			&i.LiveKey,
 			&i.SessionID,
 			&i.SubjectID,
 			&i.SuggestedSubjectID,
@@ -345,7 +359,7 @@ func (q *Queries) ForgetSubjectsInMessages(ctx context.Context, arg ForgetSubjec
 }
 
 const getPhoto = `-- name: GetPhoto :one
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos WHERE team_id = $1 AND id = $2
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos WHERE team_id = $1 AND id = $2
 `
 
 type GetPhotoParams struct {
@@ -396,12 +410,17 @@ func (q *Queries) GetPhoto(ctx context.Context, arg GetPhotoParams) (Photo, erro
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
 
 const getPhotoByClientID = `-- name: GetPhotoByClientID :one
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos WHERE team_id = $1 AND client_photo_id = $2
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos WHERE team_id = $1 AND client_photo_id = $2
 `
 
 type GetPhotoByClientIDParams struct {
@@ -452,12 +471,17 @@ func (q *Queries) GetPhotoByClientID(ctx context.Context, arg GetPhotoByClientID
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
 
 const getPhotoByID = `-- name: GetPhotoByID :one
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos WHERE id = $1
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos WHERE id = $1
 `
 
 func (q *Queries) GetPhotoByID(ctx context.Context, id uuid.UUID) (Photo, error) {
@@ -503,6 +527,11 @@ func (q *Queries) GetPhotoByID(ctx context.Context, id uuid.UUID) (Photo, error)
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
@@ -557,7 +586,7 @@ func (q *Queries) ListPhotoTags(ctx context.Context, photoIds []uuid.UUID) ([]Ph
 }
 
 const listPhotos = `-- name: ListPhotos :many
-SELECT p.id, p.team_id, p.uploaded_by, p.client_photo_id, p.session_id, p.object_key, p.content_type, p.size_bytes, p.sha256_hex, p.status, p.captured_at, p.received_at, p.latitude, p.longitude, p.location_accuracy_m, p.on_device, p.locked_subject_id, p.config_version, p.role, p.extracted, p.description, p.subject_id, p.suggested_subject_id, p.assignment, p.assignment_confidence, p.embedding, p.processing_attempts, p.processing_error, p.created_at, p.updated_at, p.thumb_key, p.search_text, p.text_embedding, p.text_embedding_model, p.indexed_at, p.look_embedding, p.look_model, p.place, p.sync_xid FROM photos p
+SELECT p.id, p.team_id, p.uploaded_by, p.client_photo_id, p.session_id, p.object_key, p.content_type, p.size_bytes, p.sha256_hex, p.status, p.captured_at, p.received_at, p.latitude, p.longitude, p.location_accuracy_m, p.on_device, p.locked_subject_id, p.config_version, p.role, p.extracted, p.description, p.subject_id, p.suggested_subject_id, p.assignment, p.assignment_confidence, p.embedding, p.processing_attempts, p.processing_error, p.created_at, p.updated_at, p.thumb_key, p.search_text, p.text_embedding, p.text_embedding_model, p.indexed_at, p.look_embedding, p.look_model, p.place, p.sync_xid, p.original_key, p.original_type, p.original_bytes, p.live_key, p.live_bytes FROM photos p
 WHERE p.team_id = $1
   AND ($2::uuid IS NULL OR p.subject_id = $2::uuid)
   AND ($3::text IS NULL OR p.role = $3::text)
@@ -646,6 +675,11 @@ func (q *Queries) ListPhotos(ctx context.Context, arg ListPhotosParams) ([]Photo
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}
@@ -715,7 +749,7 @@ func (q *Queries) ListPhotosToName(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 const listSessionPhotos = `-- name: ListSessionPhotos :many
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos
 WHERE team_id = $1 AND session_id = $2
 ORDER BY captured_at NULLS LAST, created_at
 `
@@ -774,6 +808,11 @@ func (q *Queries) ListSessionPhotos(ctx context.Context, arg ListSessionPhotosPa
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}
@@ -786,7 +825,7 @@ func (q *Queries) ListSessionPhotos(ctx context.Context, arg ListSessionPhotosPa
 }
 
 const listSubjectPhotos = `-- name: ListSubjectPhotos :many
-SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid FROM photos
+SELECT id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes FROM photos
 WHERE team_id = $1 AND subject_id = $2
 ORDER BY captured_at NULLS LAST, created_at
 `
@@ -845,6 +884,11 @@ func (q *Queries) ListSubjectPhotos(ctx context.Context, arg ListSubjectPhotosPa
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}
@@ -897,7 +941,7 @@ UPDATE photos SET
     assignment_confidence = 1,
     updated_at            = now()
 WHERE team_id = $2 AND id = ANY($3::uuid[])
-RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid
+RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes
 `
 
 type ManualAssignPhotosParams struct {
@@ -955,6 +999,11 @@ func (q *Queries) ManualAssignPhotos(ctx context.Context, arg ManualAssignPhotos
 			&i.LookModel,
 			&i.Place,
 			&i.SyncXid,
+			&i.OriginalKey,
+			&i.OriginalType,
+			&i.OriginalBytes,
+			&i.LiveKey,
+			&i.LiveBytes,
 		); err != nil {
 			return nil, err
 		}
@@ -987,7 +1036,7 @@ UPDATE photos SET
     processing_attempts = processing_attempts + 1,
     updated_at          = now()
 WHERE id = $1
-RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid
+RETURNING id, team_id, uploaded_by, client_photo_id, session_id, object_key, content_type, size_bytes, sha256_hex, status, captured_at, received_at, latitude, longitude, location_accuracy_m, on_device, locked_subject_id, config_version, role, extracted, description, subject_id, suggested_subject_id, assignment, assignment_confidence, embedding, processing_attempts, processing_error, created_at, updated_at, thumb_key, search_text, text_embedding, text_embedding_model, indexed_at, look_embedding, look_model, place, sync_xid, original_key, original_type, original_bytes, live_key, live_bytes
 `
 
 func (q *Queries) MarkPhotoProcessing(ctx context.Context, id uuid.UUID) (Photo, error) {
@@ -1033,6 +1082,11 @@ func (q *Queries) MarkPhotoProcessing(ctx context.Context, id uuid.UUID) (Photo,
 		&i.LookModel,
 		&i.Place,
 		&i.SyncXid,
+		&i.OriginalKey,
+		&i.OriginalType,
+		&i.OriginalBytes,
+		&i.LiveKey,
+		&i.LiveBytes,
 	)
 	return i, err
 }
@@ -1069,6 +1123,56 @@ func (q *Queries) PhotoUploaders(ctx context.Context, arg PhotoUploadersParams) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const receiveLive = `-- name: ReceiveLive :execrows
+UPDATE photos SET live_key = $1, live_bytes = $2
+WHERE team_id = $3 AND id = $4
+`
+
+type ReceiveLiveParams struct {
+	ObjectKey *string
+	SizeBytes *int64
+	TeamID    uuid.UUID
+	ID        uuid.UUID
+}
+
+func (q *Queries) ReceiveLive(ctx context.Context, arg ReceiveLiveParams) (int64, error) {
+	result, err := q.db.Exec(ctx, receiveLive,
+		arg.ObjectKey,
+		arg.SizeBytes,
+		arg.TeamID,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const receiveOriginal = `-- name: ReceiveOriginal :execrows
+UPDATE photos SET original_key = $1, original_bytes = $2
+WHERE team_id = $3 AND id = $4 AND original_type IS NOT NULL
+`
+
+type ReceiveOriginalParams struct {
+	ObjectKey *string
+	SizeBytes *int64
+	TeamID    uuid.UUID
+	ID        uuid.UUID
+}
+
+func (q *Queries) ReceiveOriginal(ctx context.Context, arg ReceiveOriginalParams) (int64, error) {
+	result, err := q.db.Exec(ctx, receiveOriginal,
+		arg.ObjectKey,
+		arg.SizeBytes,
+		arg.TeamID,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const rejectTag = `-- name: RejectTag :exec
@@ -1132,6 +1236,24 @@ type SaveShotVerdictParams struct {
 
 func (q *Queries) SaveShotVerdict(ctx context.Context, arg SaveShotVerdictParams) error {
 	_, err := q.db.Exec(ctx, saveShotVerdict, arg.TeamID, arg.ClientPhotoID, arg.Appearance)
+	return err
+}
+
+const setOriginalType = `-- name: SetOriginalType :exec
+UPDATE photos SET original_type = $1
+WHERE team_id = $2 AND id = $3 AND original_key IS NULL
+`
+
+type SetOriginalTypeParams struct {
+	ContentType *string
+	TeamID      uuid.UUID
+	ID          uuid.UUID
+}
+
+// The type of a photo's original about to be uploaded; once one has
+// arrived, it stays.
+func (q *Queries) SetOriginalType(ctx context.Context, arg SetOriginalTypeParams) error {
+	_, err := q.db.Exec(ctx, setOriginalType, arg.ContentType, arg.TeamID, arg.ID)
 	return err
 }
 

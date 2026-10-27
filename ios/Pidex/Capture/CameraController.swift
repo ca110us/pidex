@@ -21,7 +21,19 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable {
     private let queue = DispatchQueue(label: "app.pidex.camera")
     private var configured = false
     // Guarded by `queue`.
-    private var waiting: [Int64: CheckedContinuation<Data, Error>] = [:]
+    private var waiting: [Int64: CheckedContinuation<Shot, Error>] = [:]
+    private var motionWanted = false
+    private var movies: [Int64: URL] = [:]
+    /// Motion finished before anyone asked for it (nil: none was made).
+    private var motions: [Int64: URL?] = [:]
+    private var motionWaiting: [Int64: CheckedContinuation<URL?, Never>] = [:]
+
+    /// A shot as the camera made it. With Live Photos kept, the motion
+    /// around it comes a second or two later, by `motion(of:)`.
+    struct Shot: Sendable {
+        var data: Data
+        var motionID: Int64?
+    }
 
     func start() async throws {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -60,20 +72,56 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable {
         session.addInput(input)
         session.addOutput(output)
         output.maxPhotoQualityPrioritization = .balanced
+        output.isLivePhotoCaptureEnabled = motionWanted && output.isLivePhotoCaptureSupported
         configured = true
     }
 
-    /// Takes one photo and returns its encoded bytes (HEIC or JPEG, with
-    /// orientation metadata; ImageFeatures normalizes it).
-    func capture() async throws -> Data {
+    /// Keeps the motion around each shot (a Live Photo) where the camera
+    /// can. No sound is recorded: the session has no microphone.
+    func keepMotion(_ on: Bool) {
+        queue.async {
+            self.motionWanted = on
+            guard self.configured else { return }
+            let enabled = on && self.output.isLivePhotoCaptureSupported
+            guard self.output.isLivePhotoCaptureEnabled != enabled else { return }
+            self.session.beginConfiguration()
+            self.output.isLivePhotoCaptureEnabled = enabled
+            self.session.commitConfiguration()
+        }
+    }
+
+    /// The motion of a shot taken with it, as a QuickTime file the caller
+    /// then owns; nil if none could be made.
+    func motion(of id: Int64) async -> URL? {
+        await withCheckedContinuation { cont in
+            queue.async {
+                if let done = self.motions.removeValue(forKey: id) {
+                    cont.resume(returning: done)
+                } else {
+                    self.motionWaiting[id] = cont
+                }
+            }
+        }
+    }
+
+    /// Takes one photo and returns its encoded bytes (HEIC where the phone
+    /// can, else JPEG, with orientation metadata; ImageFeatures normalizes
+    /// it), and whether its motion follows.
+    func capture() async throws -> Shot {
         try await withCheckedThrowingContinuation { cont in
             queue.async {
                 guard self.configured, self.session.isRunning else {
                     cont.resume(throwing: Failure.unavailable)
                     return
                 }
-                let settings = AVCapturePhotoSettings()
+                let settings = self.output.availablePhotoCodecTypes.contains(.hevc)
+                    ? AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+                    : AVCapturePhotoSettings()
                 settings.photoQualityPrioritization = .balanced
+                if self.output.isLivePhotoCaptureEnabled {
+                    settings.livePhotoMovieFileURL = FileManager.default.temporaryDirectory
+                        .appending(path: UUID().uuidString + ".mov")
+                }
                 if let conn = self.output.connection(with: .video), conn.isVideoRotationAngleSupported(90) {
                     conn.videoRotationAngle = 90 // portrait
                 }
@@ -87,16 +135,37 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable {
 extension CameraController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         let id = photo.resolvedSettings.uniqueID
-        let result: Result<Data, Error>
+        let live = photo.resolvedSettings.livePhotoMovieDimensions.width > 0
+        let result: Result<Shot, Error>
         if let error {
             result = .failure(Failure.captureFailed(error.localizedDescription))
         } else if let data = photo.fileDataRepresentation() {
-            result = .success(data)
+            result = .success(Shot(data: data, motionID: live ? id : nil))
         } else {
             result = .failure(Failure.captureFailed("no image data"))
         }
         queue.async {
             self.waiting.removeValue(forKey: id)?.resume(with: result)
+        }
+    }
+
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingLivePhotoToMovieFileAt outputFileURL: URL,
+                     duration: CMTime, photoDisplayTime: CMTime, resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+        let id = resolvedSettings.uniqueID
+        guard error == nil else { return }
+        queue.async { self.movies[id] = outputFileURL }
+    }
+
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+        let id = resolvedSettings.uniqueID
+        guard resolvedSettings.livePhotoMovieDimensions.width > 0 else { return }
+        queue.async {
+            let movie = self.movies.removeValue(forKey: id)
+            if let waiting = self.motionWaiting.removeValue(forKey: id) {
+                waiting.resume(returning: movie)
+            } else {
+                self.motions.updateValue(movie, forKey: id)
+            }
         }
     }
 }

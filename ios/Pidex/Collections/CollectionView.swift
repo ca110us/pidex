@@ -17,9 +17,10 @@ struct CollectionView: View {
     @State private var showingHistory = false
     @State private var ask: AskRoute?
     @State private var query = ""
-    /// Photos marked for deleting; nil when not selecting.
+    /// Photos selected to save or delete; nil when not selecting.
     @State private var selected: Set<String>?
     @State private var confirmingDelete = false
+    @State private var saving = false
     @State private var renaming: Pidex_V1_Subject?
     @State private var deletingSubject: Pidex_V1_Subject?
     @State private var shownSubject: Pidex_V1_Subject?
@@ -138,6 +139,13 @@ struct CollectionView: View {
                     Text(selected.isEmpty ? String(localized: "Select photos") : String(localized: "\(selected.count) selected"))
                         .font(.subheadline.weight(.semibold))
                     Spacer()
+                    if model.canSaveToPhotos {
+                        Button { Task { await saveSelected() } } label: { Image(systemName: "square.and.arrow.down") }
+                            .disabled(selected.isEmpty || saving)
+                            .accessibilityLabel(Text("Save to Photos"))
+                            .accessibilityIdentifier("saveSelected")
+                            .padding(.trailing, 12)
+                    }
                     Button(role: .destructive) { confirmingDelete = true } label: { Image(systemName: "trash") }
                         .disabled(selected.isEmpty)
                         .accessibilityLabel(Text("Delete"))
@@ -438,6 +446,24 @@ struct CollectionView: View {
     private var selectionBinding: Binding<Set<String>>? {
         guard selected != nil else { return nil }
         return Binding(get: { selected ?? [] }, set: { selected = $0 })
+    }
+
+    private func saveSelected() async {
+        guard let ids = selected, !ids.isEmpty else { return }
+        let photos = model.photos.filter { ids.contains($0.id) }
+        saving = true
+        defer { saving = false }
+        do {
+            let saved = try await SaveToPhotos.save(photos, from: model.api)
+            selected = nil
+            if saved == photos.count {
+                app.show(String(localized: "Saved \(saved) photos to Photos"))
+            } else {
+                app.show(String(localized: "Saved \(saved) of \(photos.count) photos to Photos"), tone: .problem)
+            }
+        } catch {
+            app.show(error.localizedDescription, tone: .problem)
+        }
     }
 
     private func deleteSelected() async {

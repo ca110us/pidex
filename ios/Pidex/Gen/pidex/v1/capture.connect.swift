@@ -35,6 +35,15 @@ internal protocol Pidex_V1_CaptureServiceClientInterface: Sendable {
 
     @available(iOS 13, *)
     func `getSessionSummary`(request: Pidex_V1_GetSessionSummaryRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_GetSessionSummaryResponse>
+
+    /// CreateFileUpload and CompleteFileUpload send a photo's other files after
+    /// the photo itself, the same way: the file as the camera made it, and a
+    /// Live Photo's motion. The photo is filed without waiting for them.
+    @available(iOS 13, *)
+    func `createFileUpload`(request: Pidex_V1_CreateFileUploadRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_CreateFileUploadResponse>
+
+    @available(iOS 13, *)
+    func `completeFileUpload`(request: Pidex_V1_CompleteFileUploadRequest, headers: Connect.Headers) async -> ResponseMessage<Pidex_V1_CompleteFileUploadResponse>
 }
 
 /// Concrete implementation of `Pidex_V1_CaptureServiceClientInterface`.
@@ -70,6 +79,16 @@ internal final class Pidex_V1_CaptureServiceClient: Pidex_V1_CaptureServiceClien
         return await self.client.unary(path: "/pidex.v1.CaptureService/GetSessionSummary", idempotencyLevel: .unknown, request: request, headers: headers)
     }
 
+    @available(iOS 13, *)
+    internal func `createFileUpload`(request: Pidex_V1_CreateFileUploadRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Pidex_V1_CreateFileUploadResponse> {
+        return await self.client.unary(path: "/pidex.v1.CaptureService/CreateFileUpload", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
+    @available(iOS 13, *)
+    internal func `completeFileUpload`(request: Pidex_V1_CompleteFileUploadRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Pidex_V1_CompleteFileUploadResponse> {
+        return await self.client.unary(path: "/pidex.v1.CaptureService/CompleteFileUpload", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
     internal enum Metadata {
         internal enum Methods {
             internal static let createUpload = Connect.MethodSpec(name: "CreateUpload", service: "pidex.v1.CaptureService", type: .unary)
@@ -77,6 +96,8 @@ internal final class Pidex_V1_CaptureServiceClient: Pidex_V1_CaptureServiceClien
             internal static let resolveAnchor = Connect.MethodSpec(name: "ResolveAnchor", service: "pidex.v1.CaptureService", type: .unary)
             internal static let identifyShot = Connect.MethodSpec(name: "IdentifyShot", service: "pidex.v1.CaptureService", type: .unary)
             internal static let getSessionSummary = Connect.MethodSpec(name: "GetSessionSummary", service: "pidex.v1.CaptureService", type: .unary)
+            internal static let createFileUpload = Connect.MethodSpec(name: "CreateFileUpload", service: "pidex.v1.CaptureService", type: .unary)
+            internal static let completeFileUpload = Connect.MethodSpec(name: "CompleteFileUpload", service: "pidex.v1.CaptureService", type: .unary)
         }
     }
 }
