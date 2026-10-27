@@ -328,7 +328,11 @@ func setup(t *testing.T, template string) *env {
 		calls.Add(1)
 		if strings.HasPrefix(req.Instructions, "You answer a question") {
 			askRequests.add(req)
-			return json.RawMessage(`{"answer":"Unit 203 has waterproofing photographed [1]."}`), nil
+			// A colour no description gives needs the photos.
+			if strings.Contains(req.Prompt, "Question: What colour") && len(req.Images) == 0 {
+				return json.RawMessage(`{"answer":"","need_photos":true}`), nil
+			}
+			return json.RawMessage(`{"answer":"Unit 203 has waterproofing photographed [1].","need_photos":false}`), nil
 		}
 		if strings.HasPrefix(req.Instructions, "You tell individual things apart") {
 			compares.Add(1)

@@ -292,7 +292,8 @@ func TestSearchByPlainLanguage(t *testing.T) {
 		t.Errorf("unknown tag: %v", err)
 	}
 
-	// Questions are answered from the photos found, with their thumbnails.
+	// Questions are answered from the photos found: from their words,
+	// without sending the photos again.
 	e.searchAnswers.push(plan("photos", "203", "", []string{"waterproofing"}, ""))
 	ask, err := client.AskPhotos(e.ctx, connect.NewRequest(&pidexv1.AskPhotosRequest{Question: "Has 203 been waterproofed?"}))
 	if err != nil {
@@ -302,19 +303,43 @@ func TestSearchByPlainLanguage(t *testing.T) {
 		t.Errorf("answer %q cited %v", ask.Msg.Answer, ids(ask.Msg.Cited))
 	}
 	req := e.askRequests.reqs[len(e.askRequests.reqs)-1]
-	if len(req.Images) != 1 || !strings.Contains(req.Prompt, "[1]") || !strings.Contains(req.Prompt, "Waterproofing membrane") {
+	if len(req.Images) != 0 || !strings.Contains(req.Prompt, "[1]") || !strings.Contains(req.Prompt, "Waterproofing membrane") {
 		t.Errorf("ask request: %d images, prompt %q", len(req.Images), req.Prompt)
 	}
 
-	// A broad question matches no description, yet is answered: from the
-	// latest photos and the register of everything on file.
-	e.searchAnswers.push(plan("photos", "", "", nil, "what do we have on file"))
+	// What no description says is looked for in the photos themselves.
+	asked := len(e.askRequests.reqs)
+	e.searchAnswers.push(plan("photos", "203", "", []string{"waterproofing"}, ""))
+	colour, err := client.AskPhotos(e.ctx, connect.NewRequest(&pidexv1.AskPhotosRequest{Question: "What colour is the membrane in 203?"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reqs := e.askRequests.reqs[asked:]; colour.Msg.Answer == "" || len(reqs) != 2 || len(reqs[0].Images) != 0 || len(reqs[1].Images) != 1 {
+		t.Errorf("a question the words cannot answer: answer %q after %d calls", colour.Msg.Answer, len(reqs))
+	}
+
+	// A question whose words match nothing is not answered from whatever
+	// photos there are: there is nothing to answer from.
+	asked = len(e.askRequests.reqs)
+	e.searchAnswers.push(plan("photos", "", "", nil, "a black cat"))
+	cat, err := client.AskPhotos(e.ctx, connect.NewRequest(&pidexv1.AskPhotosRequest{Question: "Do we have a black cat?"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cat.Msg.Answer != "" || len(cat.Msg.Cited) != 0 || len(e.askRequests.reqs) != asked {
+		t.Errorf("a question about nothing on file: answer %q from %d photos", cat.Msg.Answer, len(cat.Msg.Cited))
+	}
+
+	// A question about the whole collection is planned with no words, and
+	// answered from the latest photos and the register of everything on
+	// file.
+	e.searchAnswers.push(plan("photos", "", "", nil, ""))
 	broad, err := client.AskPhotos(e.ctx, connect.NewRequest(&pidexv1.AskPhotosRequest{Question: "What do we have on file?"}))
 	if err != nil {
 		t.Fatal(err)
 	}
 	req = e.askRequests.reqs[len(e.askRequests.reqs)-1]
-	if broad.Msg.Answer == "" || len(broad.Msg.Cited) == 0 || len(req.Images) == 0 {
+	if broad.Msg.Answer == "" || len(broad.Msg.Cited) == 0 {
 		t.Errorf("broad question: answer %q from %d photos", broad.Msg.Answer, len(broad.Msg.Cited))
 	}
 	for _, want := range []string{"Subject register:", "Unit (2 in total):", "Maple Court · 305: 1 photos; tags on its photos: In progress ×1, Tiling ×1",

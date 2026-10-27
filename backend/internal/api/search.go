@@ -155,11 +155,13 @@ func (s *searchService) askPhotos(ctx context.Context, sp *tracing.Span, req *co
 	return connect.NewResponse(out), nil
 }
 
-// findForAnswer finds the photos a question is answered from. Unlike a
-// search it always finds some when the scope has any: a question naming no
-// subject on file falls back to photos, and one whose words match nothing
-// to the latest photos in scope ("what do we have?" matches no description,
-// yet the photos answer it).
+// findForAnswer finds the photos a question is answered from: those the
+// search finds, as for a search. A question naming no subject on file is
+// answered from photos instead. A question whose words match nothing has
+// nothing to answer from: it finds no photos, rather than the latest ones,
+// so a collection the question is not about is not asked to look at its
+// photos (a question about the whole collection is planned with no words,
+// and finds the latest).
 func (s *Server) findForAnswer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, f search.Filters) (search.Filters, search.Result, error) {
 	f, res, err := s.Search.RunPlanned(ctx, teamID, cfg, f, search.Page{Limit: askPhotos})
 	if err != nil {
@@ -168,16 +170,6 @@ func (s *Server) findForAnswer(ctx context.Context, teamID uuid.UUID, cfg *teamc
 	if f.Mode == search.ModeMissing && res.SubjectNotFound {
 		f.Mode = search.ModePhotos
 		if res, err = s.Search.Run(ctx, teamID, cfg, f, askPhotos); err != nil {
-			return f, res, err
-		}
-	}
-	if len(res.PhotoIDs) == 0 && f.Mode == search.ModePhotos && (f.Text != "" || len(f.Tags) > 0) {
-		broad := f
-		broad.Text, broad.Request, broad.Tags, broad.TagsRequired = "", "", nil, false
-		if res.SubjectNotFound {
-			broad.SubjectQuery = ""
-		}
-		if res, err = s.Search.Run(ctx, teamID, cfg, broad, askPhotos); err != nil {
 			return f, res, err
 		}
 	}
@@ -336,7 +328,8 @@ func (s *Server) resultSubjects(ctx context.Context, teamID uuid.UUID, res searc
 }
 
 // answer asks the vision model a question about the given photos only,
-// numbered [1]..[n], with their thumbnails.
+// numbered [1]..[n]: from their descriptions first, and with their
+// thumbnails only when the words do not answer it.
 func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, question string, photos []dbq.Photo, subjects []*pidexv1.Subject, turns []search.Turn) (string, error) {
 	names := map[string]string{}
 	byID := map[uuid.UUID]string{}
@@ -367,7 +360,7 @@ func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.C
 		return "", err
 	}
 	b.WriteString("Photos:\n")
-	var images []ai.Image
+	var thumbs []*string
 	for i, p := range photos {
 		at := p.CreatedAt
 		if p.CapturedAt != nil {
@@ -390,19 +383,55 @@ func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.C
 			fmt.Fprintf(&b, ", tags: %s", strings.Join(ts, ", "))
 		}
 		fmt.Fprintf(&b, ". %s\n", described(p, pipeline.DecodeExtracted(p.Extracted), byID))
-		if p.ThumbKey != nil {
-			if data, err := s.Storage.Get(ctx, *p.ThumbKey, 2<<20); err == nil {
+		thumbs = append(thumbs, p.ThumbKey)
+	}
+	const rules = `The register lists every subject on file and is complete: use it for what, which and how many. A subject's identity rarely says what kind of thing it is; tell that from the tags on its photos and from the photos themselves, and count only the subjects that are of the kind asked about. Cite every statement drawn from photos with their numbers, like [2] or [1][3]; statements from the register need no number. Answer in the language of the question, in at most five short sentences. Do not give medical, legal or safety advice; describe what the photos show.`
+
+	// First from words: each photo was described when it was filed, and
+	// the register says what each subject looks like. Most questions are
+	// answered from those, without sending the photos again.
+	instructions := fmt.Sprintf(`You answer a question from a team that files work photos (%s). Use only the subject register, the photos' descriptions and the notes given. %s Descriptions are short and leave most details out: that one does not mention something never means it is not in the photo. Answer only when the descriptions or the register state what is asked, and set need_photos to false. When the question is about a detail they do not state (a colour, a mark, a part, whether something is there), do not guess and do not say it is absent: set need_photos to true and leave the answer empty.`, cfg.Name, rules)
+	raw, _, err := s.Processor.Vision.Structured(ctx, ai.CallMeta{TeamID: teamID, Purpose: "ask"}, ai.StructuredRequest{
+		Instructions: instructions, Prompt: b.String(), MaxOutputTokens: 1200,
+		Schema: map[string]any{
+			"type": "object", "additionalProperties": false, "required": []string{"answer", "need_photos"},
+			"properties": map[string]any{"answer": map[string]any{"type": "string"}, "need_photos": map[string]any{"type": "boolean"}},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	var first struct {
+		Answer     string `json:"answer"`
+		NeedPhotos bool   `json:"need_photos"`
+	}
+	if err := json.Unmarshal(raw, &first); err != nil {
+		return "", err
+	}
+	if !first.NeedPhotos && strings.TrimSpace(first.Answer) != "" {
+		return strings.TrimSpace(first.Answer), nil
+	}
+
+	// Then from the photos themselves: their thumbnails, in order.
+	var images []ai.Image
+	var without []string
+	for i, key := range thumbs {
+		if key != nil {
+			if data, err := s.Storage.Get(ctx, *key, 2<<20); err == nil {
 				images = append(images, ai.Image{Data: data, MIMEType: "image/jpeg"})
 				continue
 			}
 		}
-		// A photo without a thumbnail is described by text only; keep the
-		// numbering of images aligned by saying so.
-		fmt.Fprintf(&b, "    (no image for [%d])\n", i+1)
+		without = append(without, fmt.Sprintf("[%d]", i+1))
 	}
-	instructions := fmt.Sprintf(`You answer a question from a team that files work photos (%s). Use only the subject register, the photos and the notes given; images come in the order of the numbered photos that have one. The register lists every subject on file and is complete: use it for what, which and how many. A subject's identity rarely says what kind of thing it is; tell that from the tags on its photos and from the photos themselves, and count only the subjects that are of the kind asked about. Cite every statement drawn from photos with their numbers, like [2] or [1][3]; statements from the register need no number. If neither answers the question, say so plainly. Answer in the language of the question, in at most five short sentences. Do not give medical, legal or safety advice; describe what the photos show.`, cfg.Name)
-	raw, _, err := s.Processor.Vision.Structured(ctx, ai.CallMeta{TeamID: teamID, Purpose: "ask"}, ai.StructuredRequest{
-		Instructions: instructions, Prompt: b.String(), Images: images, MaxOutputTokens: 1200,
+	prompt := b.String()
+	if len(without) > 0 {
+		// The images stay aligned with the numbers they skip.
+		prompt += fmt.Sprintf("No image for %s.\n", strings.Join(without, " "))
+	}
+	instructions = fmt.Sprintf(`You answer a question from a team that files work photos (%s). Use only the subject register, the photos and the notes given; images come in the order of the numbered photos that have one. %s If neither the photos nor the register answer the question, say so plainly.`, cfg.Name, rules)
+	raw, _, err = s.Processor.Vision.Structured(ctx, ai.CallMeta{TeamID: teamID, Purpose: "ask_photos"}, ai.StructuredRequest{
+		Instructions: instructions, Prompt: prompt, Images: images, MaxOutputTokens: 1200,
 		Schema: map[string]any{
 			"type": "object", "additionalProperties": false, "required": []string{"answer"},
 			"properties": map[string]any{"answer": map[string]any{"type": "string"}},
