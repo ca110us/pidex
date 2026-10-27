@@ -144,7 +144,7 @@ func (s *searchService) askPhotos(ctx context.Context, sp *tracing.Span, req *co
 	if f.Mode == search.ModeMissing || len(photos) == 0 {
 		return connect.NewResponse(out), nil
 	}
-	answer, err := s.answer(ctx, pr.TeamID, cfg, m.Question, photos, out.Subjects, nil)
+	answer, err := s.answer(ctx, pr.TeamID, cfg, m.Question, photos, out.Subjects, search.Context{})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, err)
 	}
@@ -332,7 +332,7 @@ func (s *Server) resultSubjects(ctx context.Context, teamID uuid.UUID, res searc
 // answer asks the vision model a question about the given photos only,
 // numbered [1]..[n]: from their descriptions first, and with their
 // thumbnails only when the words do not answer it.
-func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, question string, photos []dbq.Photo, subjects []*pidexv1.Subject, turns []search.Turn) (string, error) {
+func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, question string, photos []dbq.Photo, subjects []*pidexv1.Subject, history search.Context) (string, error) {
 	names := map[string]string{}
 	byID := map[uuid.UUID]string{}
 	for _, sub := range subjects {
@@ -350,12 +350,15 @@ func (s *Server) answer(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.C
 		tagNames[t.Key] = t.Name
 	}
 	var b strings.Builder
-	if len(turns) > 0 {
+	if len(history.Turns) > 0 {
 		b.WriteString("Earlier in this conversation, oldest first:\n")
-		for _, t := range turns {
+		for _, t := range history.Turns {
 			fmt.Fprintf(&b, "- Q: %s\n  A: %s\n", t.Request, t.Reply)
 		}
 		b.WriteString("\n")
+	}
+	if e := search.ElsewherePrompt(history.Elsewhere); e != "" {
+		b.WriteString(e + "\n")
 	}
 	fmt.Fprintf(&b, "Question: %s\n\n", question)
 	if err := s.writeSubjectRegister(ctx, &b, teamID, cfg); err != nil {

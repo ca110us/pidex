@@ -131,6 +131,8 @@ func (s *chatService) sendMessage(ctx context.Context, sp *tracing.Span, req *co
 	sp.Set("conversation_id", conv.ID)
 	sp.Set("turn", len(earlier)/2+1)
 	history, previousPhotos := s.history(ctx, pr.TeamID, cfg, earlier)
+	history.Elsewhere = elsewhere(req.Msg.Elsewhere)
+	sp.Set("elsewhere", len(history.Elsewhere))
 
 	loc, err := time.LoadLocation(req.Msg.TimeZone)
 	if err != nil || req.Msg.TimeZone == "" {
@@ -154,6 +156,11 @@ func (s *chatService) sendMessage(ctx context.Context, sp *tracing.Span, req *co
 	case turn.Intent == search.IntentUnrelated:
 		// Not about the photos: nothing to look up or answer.
 		kind = "unrelated"
+	case turn.AboutPrevious && saidNothing(earlier):
+		// "Their photos" where the last reply here showed and said
+		// nothing: what it refers to was named elsewhere, or nowhere, and
+		// is not in this collection. Searching with no filters would show
+		// every photo.
 	case turn.AboutPrevious && len(previousPhotos) > 0 && turn.Intent == search.IntentPhotos:
 		// "Only the back ones": the photos just shown, narrowed.
 		f.Within = previousPhotos
@@ -196,7 +203,7 @@ func (s *chatService) sendMessage(ctx context.Context, sp *tracing.Span, req *co
 		if err != nil {
 			return nil, err
 		}
-		if answer, err = s.answer(ctx, pr.TeamID, cfg, text, photos, subjects, history.Turns); err != nil {
+		if answer, err = s.answer(ctx, pr.TeamID, cfg, text, photos, subjects, history); err != nil {
 			return nil, connect.NewError(connect.CodeUnavailable, err)
 		}
 		kind = "answer"
@@ -263,6 +270,43 @@ func (s *chatService) planTurn(ctx context.Context, teamID uuid.UUID, cfg *teamc
 		return fallback
 	}
 	return t
+}
+
+// Bounds on what other collections replied, as the app sends it.
+const (
+	elsewhereReplies = 8
+	elsewhereRunes   = 600
+)
+
+// elsewhere is what the app says other collections replied to the
+// previous message, bounded.
+func elsewhere(rs []*pidexv1.ElsewhereReply) []search.Elsewhere {
+	var out []search.Elsewhere
+	for _, r := range rs[:min(len(rs), elsewhereReplies)] {
+		reply := []rune(strings.TrimSpace(r.GetReply()))
+		if len(reply) == 0 {
+			continue
+		}
+		if len(reply) > elsewhereRunes {
+			reply = append(reply[:elsewhereRunes], '…')
+		}
+		out = append(out, search.Elsewhere{Collection: strings.TrimSpace(r.GetCollection()), Reply: string(reply)})
+	}
+	return out
+}
+
+// saidNothing: the last reply in the conversation showed no photos and
+// said nothing (it found nothing, or the message was not about photos).
+func saidNothing(msgs []dbq.ConversationMessage) bool {
+	for i := len(msgs) - 1; i >= 0; i-- {
+		if m := msgs[i]; m.Role == "assistant" {
+			missing := m.Intent != nil && *m.Intent == "missing"
+			return len(m.PhotoIds) == 0 && m.Text == "" && !missing
+		}
+	}
+	// Nothing was said here yet: what the request refers to was said
+	// elsewhere.
+	return true
 }
 
 // history is what the conversation established: the last search, the last

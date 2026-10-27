@@ -88,14 +88,38 @@ type Context struct {
 	Previous *Filters
 	// Turns are the last few exchanges, oldest first.
 	Turns []Turn
+	// Elsewhere is what other collections asked the same messages replied
+	// to the last one.
+	Elsewhere []Elsewhere
+}
+
+// Elsewhere is another collection's reply to the previous message.
+type Elsewhere struct {
+	Collection string
+	Reply      string
+}
+
+// ElsewherePrompt says what other collections replied, for a model that
+// reads a follow-up; "" when none did.
+func ElsewherePrompt(e []Elsewhere) string {
+	if len(e) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("The previous request was also put to the user's other collections, which replied:\n")
+	for _, r := range e {
+		fmt.Fprintf(&b, "- %s: %s\n", r.Collection, r.Reply)
+	}
+	return b.String()
 }
 
 // PlannedTurn is a request in a conversation, understood.
 type PlannedTurn struct {
 	Filters Filters
 	Intent  Intent
-	// AboutPrevious: the request is about the photos just shown ("the
-	// second one", "which of these"), not a new search.
+	// AboutPrevious: the request is about what was just shown or named
+	// ("the second one", "their photos"), here or by another collection,
+	// not a new search.
 	AboutPrevious bool
 }
 
@@ -120,7 +144,7 @@ func PlanTurn(ctx context.Context, m Model, teamID uuid.UUID, cfg *teamconfig.Co
 		RequireTags   bool   `json:"require_tags"`
 	}
 	_ = json.Unmarshal(raw, &extra)
-	t := PlannedTurn{Filters: f, Intent: IntentPhotos, AboutPrevious: extra.AboutPrevious && history.Previous != nil}
+	t := PlannedTurn{Filters: f, Intent: IntentPhotos, AboutPrevious: extra.AboutPrevious && (len(history.Turns) > 0 || len(history.Elsewhere) > 0)}
 	switch Intent(extra.Intent) {
 	case IntentAnswer, IntentUnrelated:
 		t.Intent = Intent(extra.Intent)
@@ -133,7 +157,7 @@ func PlanTurn(ctx context.Context, m Model, teamID uuid.UUID, cfg *teamconfig.Co
 // historyPrompt states the conversation so far and the last search, in the
 // form the plan is written in, so a follow-up can adjust it.
 func historyPrompt(h Context, loc *time.Location) string {
-	if h.Previous == nil && len(h.Turns) == 0 {
+	if h.Previous == nil && len(h.Turns) == 0 && len(h.Elsewhere) == 0 {
 		return ""
 	}
 	var b strings.Builder
@@ -154,6 +178,7 @@ func historyPrompt(h Context, loc *time.Location) string {
 		data, _ := json.Marshal(prev)
 		fmt.Fprintf(&b, "The previous search: %s\n", data)
 	}
+	b.WriteString(ElsewherePrompt(h.Elsewhere))
 	b.WriteString(`A follow-up that narrows, widens or adjusts the previous search ("only last week's", "and the back?", "without the phone") starts from the previous search and changes only what it asks to change. A follow-up that only swaps what a previous question was about ("and the tablet?" after "does the phone have a case?") asks the same question again: keep its intent. A new topic ignores the previous search.
 
 `)
@@ -210,7 +235,7 @@ Rules:
 - text: what the request still asks for that filters do not cover, in the request's language; "" if nothing is left.
 - require_tags: true only when the request explicitly limits results to photos showing those tags ("only the back", "just the damaged ones"); false when tags only describe what to look for, including a question whether such a photo exists ("is there a photo of it in the bag?").
 - intent: "answer" when the request wants words back (a yes or no, how many, what or which, a description, a comparison); "photos" when it asks to see or find photos; "unrelated" when it is not about the team's photos or what they show at all (greetings, small talk, questions about you or the app, general knowledge, requests to write or calculate something). A request naming a subject, a place, a time or anything photographed is never unrelated.
-- about_previous: true only when the request is about the photos just shown ("the second one", "which of these", "are they all intact?") rather than a new search.
+- about_previous: true when the request is about what the conversation just showed or named rather than a new search: "the second one", "which of these", "are they all intact?", "show me them", "their photos". It refers to what was shown or named here, or by one of the user's other collections when the conversation so far says so; it is true whichever did. When the subjects it refers to were named but not shown, put them in the filters as well (subject_query for one, or their subject type).
 - mode: "missing" only when the request asks which or how many subjects have no such photo yet ("which <subjects> have no <kind of> photo"); "photos" otherwise, including yes/no questions about one thing ("does <it> have <something>?"), which photos answer.
 `)
 	return b.String()

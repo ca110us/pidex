@@ -141,12 +141,14 @@ nonisolated final class APIClient: Sendable {
         return try Self.unwrap(await chat.getConversation(request: r, headers: headers))
     }
 
-    /// Sends a message; nil starts a new conversation.
-    func send(_ text: String, in conversationID: String?) async throws -> Pidex_V1_SendMessageResponse {
+    /// Sends a message; nil starts a new conversation. `elsewhere` is what
+    /// other collections asked the same messages replied to the last one.
+    func send(_ text: String, in conversationID: String?, elsewhere: [Pidex_V1_ElsewhereReply] = []) async throws -> Pidex_V1_SendMessageResponse {
         var r = Pidex_V1_SendMessageRequest()
         r.conversationID = conversationID ?? ""
         r.text = text
         r.timeZone = TimeZone.current.identifier
+        r.elsewhere = elsewhere
         return try Self.unwrap(await chat.sendMessage(request: r, headers: headers))
     }
 

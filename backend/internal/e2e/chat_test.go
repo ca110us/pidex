@@ -234,3 +234,39 @@ func TestConversationChecksWordsTakenForASubject(t *testing.T) {
 		t.Errorf("not found %v, photos %v", r.SubjectNotFound, ids(r.Photos))
 	}
 }
+
+// TestFollowUpAboutWhatAnotherCollectionNamed: asked of several
+// collections, "their photos" after another collection named four cats is
+// read against what that collection said, and a collection that showed
+// nothing shows nothing rather than every photo it has.
+func TestFollowUpAboutWhatAnotherCollectionNamed(t *testing.T) {
+	e := setup(t, "construction_renovation")
+	maple := e.addSubject("project", "Maple Court", map[string]string{"project_name": "Maple Court"}, nil)
+	e.addPhoto(fixturePhoto{subject: &maple, description: "Kitchen wall tiling in progress.", tags: []string{"tiling"}})
+	chat := pidexv1connect.NewChatServiceClient(e.server.Client(), e.server.URL, withToken(e.token))
+
+	e.searchAnswers.push(`{"mode":"photos","subject_query":"","subject_type":"","tags":[],"date_from":"","date_to":"","text":"猫","intent":"answer","about_previous":false}`)
+	first, err := chat.SendMessage(e.ctx, connect.NewRequest(&pidexv1.SendMessageRequest{Text: "我有几只猫", TimeZone: "UTC"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := len(first.Msg.Reply.Photos); n != 0 || first.Msg.Reply.Text != "" {
+		t.Fatalf("a renovation collection answered about cats: %d photos, %q", n, first.Msg.Reply.Text)
+	}
+
+	e.searchAnswers.push(`{"mode":"photos","subject_query":"","subject_type":"","tags":[],"date_from":"","date_to":"","text":"","intent":"photos","about_previous":true}`)
+	follow, err := chat.SendMessage(e.ctx, connect.NewRequest(&pidexv1.SendMessageRequest{
+		ConversationId: first.Msg.Conversation.Id, Text: "看看他们的照片", TimeZone: "UTC",
+		Elsewhere: []*pidexv1.ElsewhereReply{{Collection: "我家的猫", Reply: "您一共有四只猫，分别是羞羞、小虎、土土和圆圆。"}},
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := len(follow.Msg.Reply.Photos); n != 0 {
+		t.Errorf("\"their photos\" showed %d photos of a collection that named no one", n)
+	}
+	prompt := e.searchAnswers.prompts[len(e.searchAnswers.prompts)-1]
+	if !strings.Contains(prompt, "- 我家的猫: 您一共有四只猫") {
+		t.Errorf("the planner was not told what the other collection said:\n%s", prompt)
+	}
+}

@@ -305,6 +305,28 @@ nonisolated struct Pidex_V1_SendMessageRequest: Sendable {
   /// IANA time zone of the user, for "yesterday" or "last week".
   var timeZone: String = String()
 
+  /// When the app asks several collections at once, what the others
+  /// replied to the previous message, so a follow-up ("their photos") can
+  /// be read against what another collection named or showed.
+  var elsewhere: [Pidex_V1_ElsewhereReply] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Another collection's reply to the previous message.
+nonisolated struct Pidex_V1_ElsewhereReply: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The collection's name.
+  var collection: String = String()
+
+  /// Its answer, or what it showed ("4 photos of 土土, 圆圆").
+  var reply: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -710,7 +732,7 @@ nonisolated extension Pidex_V1_GetConversationResponse: SwiftProtobuf.Message, S
 
 nonisolated extension Pidex_V1_SendMessageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".SendMessageRequest"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}conversation_id\0\u{1}text\0\u{3}time_zone\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}conversation_id\0\u{1}text\0\u{3}time_zone\0\u{1}elsewhere\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -721,6 +743,7 @@ nonisolated extension Pidex_V1_SendMessageRequest: SwiftProtobuf.Message, SwiftP
       case 1: try { try decoder.decodeSingularStringField(value: &self.conversationID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.timeZone) }()
+      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.elsewhere) }()
       default: break
       }
     }
@@ -736,6 +759,9 @@ nonisolated extension Pidex_V1_SendMessageRequest: SwiftProtobuf.Message, SwiftP
     if !self.timeZone.isEmpty {
       try visitor.visitSingularStringField(value: self.timeZone, fieldNumber: 3)
     }
+    if !self.elsewhere.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.elsewhere, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -743,6 +769,42 @@ nonisolated extension Pidex_V1_SendMessageRequest: SwiftProtobuf.Message, SwiftP
     if lhs.conversationID != rhs.conversationID {return false}
     if lhs.text != rhs.text {return false}
     if lhs.timeZone != rhs.timeZone {return false}
+    if lhs.elsewhere != rhs.elsewhere {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Pidex_V1_ElsewhereReply: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".ElsewhereReply"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}collection\0\u{1}reply\0")
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.collection) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.reply) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.collection.isEmpty {
+      try visitor.visitSingularStringField(value: self.collection, fieldNumber: 1)
+    }
+    if !self.reply.isEmpty {
+      try visitor.visitSingularStringField(value: self.reply, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Pidex_V1_ElsewhereReply, rhs: Pidex_V1_ElsewhereReply) -> Bool {
+    if lhs.collection != rhs.collection {return false}
+    if lhs.reply != rhs.reply {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

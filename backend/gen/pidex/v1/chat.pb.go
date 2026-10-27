@@ -529,7 +529,11 @@ type SendMessageRequest struct {
 	ConversationId string `protobuf:"bytes,1,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	Text           string `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
 	// IANA time zone of the user, for "yesterday" or "last week".
-	TimeZone      string `protobuf:"bytes,3,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
+	TimeZone string `protobuf:"bytes,3,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
+	// When the app asks several collections at once, what the others
+	// replied to the previous message, so a follow-up ("their photos") can
+	// be read against what another collection named or showed.
+	Elsewhere     []*ElsewhereReply `protobuf:"bytes,4,rep,name=elsewhere,proto3" json:"elsewhere,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -585,6 +589,68 @@ func (x *SendMessageRequest) GetTimeZone() string {
 	return ""
 }
 
+func (x *SendMessageRequest) GetElsewhere() []*ElsewhereReply {
+	if x != nil {
+		return x.Elsewhere
+	}
+	return nil
+}
+
+// Another collection's reply to the previous message.
+type ElsewhereReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The collection's name.
+	Collection string `protobuf:"bytes,1,opt,name=collection,proto3" json:"collection,omitempty"`
+	// Its answer, or what it showed ("4 photos of 土土, 圆圆").
+	Reply         string `protobuf:"bytes,2,opt,name=reply,proto3" json:"reply,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ElsewhereReply) Reset() {
+	*x = ElsewhereReply{}
+	mi := &file_pidex_v1_chat_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ElsewhereReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ElsewhereReply) ProtoMessage() {}
+
+func (x *ElsewhereReply) ProtoReflect() protoreflect.Message {
+	mi := &file_pidex_v1_chat_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ElsewhereReply.ProtoReflect.Descriptor instead.
+func (*ElsewhereReply) Descriptor() ([]byte, []int) {
+	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ElsewhereReply) GetCollection() string {
+	if x != nil {
+		return x.Collection
+	}
+	return ""
+}
+
+func (x *ElsewhereReply) GetReply() string {
+	if x != nil {
+		return x.Reply
+	}
+	return ""
+}
+
 type SendMessageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Conversation  *Conversation          `protobuf:"bytes,1,opt,name=conversation,proto3" json:"conversation,omitempty"`
@@ -596,7 +662,7 @@ type SendMessageResponse struct {
 
 func (x *SendMessageResponse) Reset() {
 	*x = SendMessageResponse{}
-	mi := &file_pidex_v1_chat_proto_msgTypes[7]
+	mi := &file_pidex_v1_chat_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -608,7 +674,7 @@ func (x *SendMessageResponse) String() string {
 func (*SendMessageResponse) ProtoMessage() {}
 
 func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_chat_proto_msgTypes[7]
+	mi := &file_pidex_v1_chat_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -621,7 +687,7 @@ func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageResponse.ProtoReflect.Descriptor instead.
 func (*SendMessageResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{7}
+	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SendMessageResponse) GetConversation() *Conversation {
@@ -654,7 +720,7 @@ type DeleteConversationRequest struct {
 
 func (x *DeleteConversationRequest) Reset() {
 	*x = DeleteConversationRequest{}
-	mi := &file_pidex_v1_chat_proto_msgTypes[8]
+	mi := &file_pidex_v1_chat_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -666,7 +732,7 @@ func (x *DeleteConversationRequest) String() string {
 func (*DeleteConversationRequest) ProtoMessage() {}
 
 func (x *DeleteConversationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_chat_proto_msgTypes[8]
+	mi := &file_pidex_v1_chat_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -679,7 +745,7 @@ func (x *DeleteConversationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteConversationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteConversationRequest) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{8}
+	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteConversationRequest) GetId() string {
@@ -697,7 +763,7 @@ type DeleteConversationResponse struct {
 
 func (x *DeleteConversationResponse) Reset() {
 	*x = DeleteConversationResponse{}
-	mi := &file_pidex_v1_chat_proto_msgTypes[9]
+	mi := &file_pidex_v1_chat_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -709,7 +775,7 @@ func (x *DeleteConversationResponse) String() string {
 func (*DeleteConversationResponse) ProtoMessage() {}
 
 func (x *DeleteConversationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pidex_v1_chat_proto_msgTypes[9]
+	mi := &file_pidex_v1_chat_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -722,7 +788,7 @@ func (x *DeleteConversationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteConversationResponse.ProtoReflect.Descriptor instead.
 func (*DeleteConversationResponse) Descriptor() ([]byte, []int) {
-	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{9}
+	return file_pidex_v1_chat_proto_rawDescGZIP(), []int{10}
 }
 
 var File_pidex_v1_chat_proto protoreflect.FileDescriptor
@@ -761,11 +827,17 @@ const file_pidex_v1_chat_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x88\x01\n" +
 	"\x17GetConversationResponse\x12:\n" +
 	"\fconversation\x18\x01 \x01(\v2\x16.pidex.v1.ConversationR\fconversation\x121\n" +
-	"\bmessages\x18\x02 \x03(\v2\x15.pidex.v1.ChatMessageR\bmessages\"n\n" +
+	"\bmessages\x18\x02 \x03(\v2\x15.pidex.v1.ChatMessageR\bmessages\"\xa6\x01\n" +
 	"\x12SendMessageRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12\x1b\n" +
-	"\ttime_zone\x18\x03 \x01(\tR\btimeZone\"\xaf\x01\n" +
+	"\ttime_zone\x18\x03 \x01(\tR\btimeZone\x126\n" +
+	"\telsewhere\x18\x04 \x03(\v2\x18.pidex.v1.ElsewhereReplyR\telsewhere\"F\n" +
+	"\x0eElsewhereReply\x12\x1e\n" +
+	"\n" +
+	"collection\x18\x01 \x01(\tR\n" +
+	"collection\x12\x14\n" +
+	"\x05reply\x18\x02 \x01(\tR\x05reply\"\xaf\x01\n" +
 	"\x13SendMessageResponse\x12:\n" +
 	"\fconversation\x18\x01 \x01(\v2\x16.pidex.v1.ConversationR\fconversation\x12/\n" +
 	"\amessage\x18\x02 \x01(\v2\x15.pidex.v1.ChatMessageR\amessage\x12+\n" +
@@ -802,7 +874,7 @@ func file_pidex_v1_chat_proto_rawDescGZIP() []byte {
 }
 
 var file_pidex_v1_chat_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_pidex_v1_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_pidex_v1_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_pidex_v1_chat_proto_goTypes = []any{
 	(ChatRole)(0),                      // 0: pidex.v1.ChatRole
 	(ReplyKind)(0),                     // 1: pidex.v1.ReplyKind
@@ -813,43 +885,45 @@ var file_pidex_v1_chat_proto_goTypes = []any{
 	(*GetConversationRequest)(nil),     // 6: pidex.v1.GetConversationRequest
 	(*GetConversationResponse)(nil),    // 7: pidex.v1.GetConversationResponse
 	(*SendMessageRequest)(nil),         // 8: pidex.v1.SendMessageRequest
-	(*SendMessageResponse)(nil),        // 9: pidex.v1.SendMessageResponse
-	(*DeleteConversationRequest)(nil),  // 10: pidex.v1.DeleteConversationRequest
-	(*DeleteConversationResponse)(nil), // 11: pidex.v1.DeleteConversationResponse
-	(*timestamppb.Timestamp)(nil),      // 12: google.protobuf.Timestamp
-	(*SearchFilters)(nil),              // 13: pidex.v1.SearchFilters
-	(*Photo)(nil),                      // 14: pidex.v1.Photo
-	(*Subject)(nil),                    // 15: pidex.v1.Subject
+	(*ElsewhereReply)(nil),             // 9: pidex.v1.ElsewhereReply
+	(*SendMessageResponse)(nil),        // 10: pidex.v1.SendMessageResponse
+	(*DeleteConversationRequest)(nil),  // 11: pidex.v1.DeleteConversationRequest
+	(*DeleteConversationResponse)(nil), // 12: pidex.v1.DeleteConversationResponse
+	(*timestamppb.Timestamp)(nil),      // 13: google.protobuf.Timestamp
+	(*SearchFilters)(nil),              // 14: pidex.v1.SearchFilters
+	(*Photo)(nil),                      // 15: pidex.v1.Photo
+	(*Subject)(nil),                    // 16: pidex.v1.Subject
 }
 var file_pidex_v1_chat_proto_depIdxs = []int32{
-	12, // 0: pidex.v1.Conversation.created_at:type_name -> google.protobuf.Timestamp
-	12, // 1: pidex.v1.Conversation.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 0: pidex.v1.Conversation.created_at:type_name -> google.protobuf.Timestamp
+	13, // 1: pidex.v1.Conversation.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: pidex.v1.ChatMessage.role:type_name -> pidex.v1.ChatRole
 	1,  // 3: pidex.v1.ChatMessage.kind:type_name -> pidex.v1.ReplyKind
-	13, // 4: pidex.v1.ChatMessage.filters:type_name -> pidex.v1.SearchFilters
-	14, // 5: pidex.v1.ChatMessage.photos:type_name -> pidex.v1.Photo
-	15, // 6: pidex.v1.ChatMessage.subjects:type_name -> pidex.v1.Subject
-	15, // 7: pidex.v1.ChatMessage.missing:type_name -> pidex.v1.Subject
-	12, // 8: pidex.v1.ChatMessage.created_at:type_name -> google.protobuf.Timestamp
+	14, // 4: pidex.v1.ChatMessage.filters:type_name -> pidex.v1.SearchFilters
+	15, // 5: pidex.v1.ChatMessage.photos:type_name -> pidex.v1.Photo
+	16, // 6: pidex.v1.ChatMessage.subjects:type_name -> pidex.v1.Subject
+	16, // 7: pidex.v1.ChatMessage.missing:type_name -> pidex.v1.Subject
+	13, // 8: pidex.v1.ChatMessage.created_at:type_name -> google.protobuf.Timestamp
 	2,  // 9: pidex.v1.ListConversationsResponse.conversations:type_name -> pidex.v1.Conversation
 	2,  // 10: pidex.v1.GetConversationResponse.conversation:type_name -> pidex.v1.Conversation
 	3,  // 11: pidex.v1.GetConversationResponse.messages:type_name -> pidex.v1.ChatMessage
-	2,  // 12: pidex.v1.SendMessageResponse.conversation:type_name -> pidex.v1.Conversation
-	3,  // 13: pidex.v1.SendMessageResponse.message:type_name -> pidex.v1.ChatMessage
-	3,  // 14: pidex.v1.SendMessageResponse.reply:type_name -> pidex.v1.ChatMessage
-	4,  // 15: pidex.v1.ChatService.ListConversations:input_type -> pidex.v1.ListConversationsRequest
-	6,  // 16: pidex.v1.ChatService.GetConversation:input_type -> pidex.v1.GetConversationRequest
-	8,  // 17: pidex.v1.ChatService.SendMessage:input_type -> pidex.v1.SendMessageRequest
-	10, // 18: pidex.v1.ChatService.DeleteConversation:input_type -> pidex.v1.DeleteConversationRequest
-	5,  // 19: pidex.v1.ChatService.ListConversations:output_type -> pidex.v1.ListConversationsResponse
-	7,  // 20: pidex.v1.ChatService.GetConversation:output_type -> pidex.v1.GetConversationResponse
-	9,  // 21: pidex.v1.ChatService.SendMessage:output_type -> pidex.v1.SendMessageResponse
-	11, // 22: pidex.v1.ChatService.DeleteConversation:output_type -> pidex.v1.DeleteConversationResponse
-	19, // [19:23] is the sub-list for method output_type
-	15, // [15:19] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	9,  // 12: pidex.v1.SendMessageRequest.elsewhere:type_name -> pidex.v1.ElsewhereReply
+	2,  // 13: pidex.v1.SendMessageResponse.conversation:type_name -> pidex.v1.Conversation
+	3,  // 14: pidex.v1.SendMessageResponse.message:type_name -> pidex.v1.ChatMessage
+	3,  // 15: pidex.v1.SendMessageResponse.reply:type_name -> pidex.v1.ChatMessage
+	4,  // 16: pidex.v1.ChatService.ListConversations:input_type -> pidex.v1.ListConversationsRequest
+	6,  // 17: pidex.v1.ChatService.GetConversation:input_type -> pidex.v1.GetConversationRequest
+	8,  // 18: pidex.v1.ChatService.SendMessage:input_type -> pidex.v1.SendMessageRequest
+	11, // 19: pidex.v1.ChatService.DeleteConversation:input_type -> pidex.v1.DeleteConversationRequest
+	5,  // 20: pidex.v1.ChatService.ListConversations:output_type -> pidex.v1.ListConversationsResponse
+	7,  // 21: pidex.v1.ChatService.GetConversation:output_type -> pidex.v1.GetConversationResponse
+	10, // 22: pidex.v1.ChatService.SendMessage:output_type -> pidex.v1.SendMessageResponse
+	12, // 23: pidex.v1.ChatService.DeleteConversation:output_type -> pidex.v1.DeleteConversationResponse
+	20, // [20:24] is the sub-list for method output_type
+	16, // [16:20] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_pidex_v1_chat_proto_init() }
@@ -865,7 +939,7 @@ func file_pidex_v1_chat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pidex_v1_chat_proto_rawDesc), len(file_pidex_v1_chat_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

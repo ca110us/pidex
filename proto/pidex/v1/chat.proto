@@ -95,6 +95,18 @@ message SendMessageRequest {
   string text = 2;
   // IANA time zone of the user, for "yesterday" or "last week".
   string time_zone = 3;
+  // When the app asks several collections at once, what the others
+  // replied to the previous message, so a follow-up ("their photos") can
+  // be read against what another collection named or showed.
+  repeated ElsewhereReply elsewhere = 4;
+}
+
+// Another collection's reply to the previous message.
+message ElsewhereReply {
+  // The collection's name.
+  string collection = 1;
+  // Its answer, or what it showed ("4 photos of 土土, 圆圆").
+  string reply = 2;
 }
 
 message SendMessageResponse {

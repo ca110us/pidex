@@ -106,20 +106,22 @@ final class AskModel {
     }
 
     /// Sends a message to every collection asked, each building on its own
-    /// conversation so far.
+    /// conversation so far and told what the others replied last, so
+    /// "their photos" after one named four cats is read by all as those.
     func send(_ text: String) async {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !busy, !parties.isEmpty else { return }
         error = nil
+        let others = parties.indices.map(elsewhere(for:))
         let n = turns.count
         turns.append(Turn(id: UUID().uuidString, text: text, replies: parties.map {
             Reply(workspace: $0.workspace, library: $0.library)
         }))
         await withTaskGroup(of: (Int, Result<Pidex_V1_SendMessageResponse, Error>).self) { group in
             for (i, p) in parties.enumerated() {
-                let api = p.library.api, id = p.conversationID
+                let api = p.library.api, id = p.conversationID, said = others[i]
                 group.addTask {
-                    do { return (i, .success(try await api.send(text, in: id))) } catch { return (i, .failure(error)) }
+                    do { return (i, .success(try await api.send(text, in: id, elsewhere: said))) } catch { return (i, .failure(error)) }
                 }
             }
             for await (i, result) in group {
@@ -135,6 +137,26 @@ final class AskModel {
             }
         }
         if asksMany { saveGroup() }
+    }
+
+    /// What the other collections replied to the last message: their
+    /// answers, or whose photos they showed. Said to a model, so in English.
+    private func elsewhere(for i: Int) -> [Pidex_V1_ElsewhereReply] {
+        guard asksMany, let last = turns.last else { return [] }
+        return last.replies.compactMap { r in
+            guard r.workspace.id != parties[i].workspace.id, let m = r.message, let said = Self.said(m) else { return nil }
+            var e = Pidex_V1_ElsewhereReply()
+            e.collection = r.workspace.name
+            e.reply = said
+            return e
+        }
+    }
+
+    static func said(_ m: Pidex_V1_ChatMessage) -> String? {
+        if !m.text.isEmpty { return m.text }
+        guard !m.photos.isEmpty else { return nil }
+        let names = m.subjects.filter { s in m.photos.contains { $0.subjectID == s.id } }.map(\.displayName)
+        return names.isEmpty ? "Showed \(m.photos.count) photos" : "Showed \(m.photos.count) photos of \(names.joined(separator: ", "))"
     }
 
     /// A message and the reply that follows it, for each message sent.
