@@ -2011,6 +2011,16 @@
         }
       }
     },
+    "Keep Live Photos in “%@”?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要在“%@”里保留 Live 图吗？"
+          }
+        }
+      }
+    },
     "Keep them for later": {
       "localizations": {
         "zh-Hans": {
@@ -2077,6 +2087,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "改回根据照片生成"
+          }
+        }
+      }
+    },
+    "Live Photo": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live 图"
+          }
+        }
+      }
+    },
+    "Live Photos off": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live 图已关闭"
+          }
+        }
+      }
+    },
+    "Live Photos on": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live 图已打开"
           }
         }
       }
@@ -2697,6 +2737,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "照片按%@归档"
+          }
+        }
+      }
+    },
+    "Photos everyone takes for this collection keep the moments around them, without sound. Each photo then takes about twice the space.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有人为这个合集拍的照片都会保留前后几秒的动态画面，不录声音。每张照片占用的空间大约会翻倍。"
           }
         }
       }
@@ -3609,6 +3659,16 @@
         }
       }
     },
+    "This collection keeps no Live Photos. An owner or admin can turn them on.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个合集没有开启 Live 图，合集的所有者或管理员可以打开。"
+          }
+        }
+      }
+    },
     "This is where “%@” was set up. Say what to change, such as a missing tag or another way to tell them apart; nothing changes until you apply it.": {
       "localizations": {
         "zh-Hans": {
@@ -3685,6 +3745,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "试试看"
+          }
+        }
+      }
+    },
+    "Turn on for this collection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "为这个合集打开"
           }
         }
       }

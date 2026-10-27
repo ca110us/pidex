@@ -90,6 +90,13 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable {
         }
     }
 
+    /// Whether this camera can make Live Photos at all (not a simulator).
+    func motionSupported() async -> Bool {
+        await withCheckedContinuation { cont in
+            queue.async { cont.resume(returning: self.configured && self.output.isLivePhotoCaptureSupported) }
+        }
+    }
+
     /// The motion of a shot taken with it, as a QuickTime file the caller
     /// then owns; nil if none could be made.
     func motion(of id: Int64) async -> URL? {

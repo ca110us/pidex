@@ -122,4 +122,26 @@ struct ImageFeaturesTests {
         #expect(ImageFeatures.original(from: plain, maxEdge: 400) == nil)
         #expect(ImageFeatures.original(from: Data("not an image".utf8)) == nil)
     }
+
+    @Test func aLivePhotosStillKeepsWhatPairsItWithItsMotion() throws {
+        // Photos pairs a still with its motion by an id in Apple's maker
+        // notes; taking the location out must leave it.
+        let out = NSMutableData()
+        let dest = try #require(CGImageDestinationCreateWithData(out, UTType.heic.identifier as CFString, 1, nil))
+        CGImageDestinationAddImage(dest, gradient(width: 400, height: 300), [
+            kCGImagePropertyGPSDictionary: [kCGImagePropertyGPSLatitude: 38.9, kCGImagePropertyGPSLatitudeRef: "N"],
+            kCGImagePropertyMakerAppleDictionary: ["17": "6E3A3C41-AAAA-4C55-9D1B-1F6E0C2B5E77"],
+        ] as CFDictionary)
+        #expect(CGImageDestinationFinalize(dest))
+        let made = try #require(CGImageSourceCreateWithData(out as CFData, nil))
+        let before = CGImageSourceCopyPropertiesAtIndex(made, 0, nil) as? [CFString: Any] ?? [:]
+        let id = (before[kCGImagePropertyMakerAppleDictionary] as? [String: Any])?["17"] as? String
+        try #require(id != nil, "ImageIO wrote no maker notes to check")
+
+        let original = try #require(ImageFeatures.original(from: out as Data, maxEdge: 100))
+        let src = try #require(CGImageSourceCreateWithData(original.data as CFData, nil))
+        let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] ?? [:]
+        #expect(props[kCGImagePropertyGPSDictionary] == nil)
+        #expect((props[kCGImagePropertyMakerAppleDictionary] as? [String: Any])?["17"] as? String == id)
+    }
 }

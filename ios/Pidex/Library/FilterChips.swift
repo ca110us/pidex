@@ -101,6 +101,16 @@ struct Thumbnail: View {
             .overlay {
                 CachedThumbnail(id: photo.id, url: URL(string: photo.thumbnailURL.isEmpty ? photo.viewURL : photo.thumbnailURL))
             }
+            .overlay(alignment: .topTrailing) {
+                if photo.live {
+                    Image(systemName: "livephoto")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 2)
+                        .padding(5)
+                        .accessibilityLabel(Text("Live Photo"))
+                }
+            }
             .clipped()
             .accessibilityLabel(Text(verbatim: photo.description_p))
     }

@@ -14,6 +14,7 @@ struct CaptureView: View {
     @State private var switchProblem: String?
     @State private var choosing = false
     @State private var confirmingClose = false
+    @State private var askingLive = false
     @State private var naming = false
     @State private var newName = ""
 
@@ -111,9 +112,14 @@ struct CaptureView: View {
             guard !items.isEmpty else { return }
             Task {
                 importing = items.count
-                // The original file, so its day and place come with it.
+                // The original file, so its day and place come with it; a
+                // Live Photo with its motion, where the collection keeps it.
                 for item in items {
-                    if let data = try? await item.loadTransferable(type: Data.self) {
+                    if model.liveAllowed, item.supportedContentTypes.contains(.livePhoto),
+                       let live = try? await item.loadTransferable(type: PHLivePhoto.self),
+                       let files = await LiveImport.files(of: live) {
+                        await model.importPhoto(files.still, motion: files.motion)
+                    } else if let data = try? await item.loadTransferable(type: Data.self) {
                         await model.importPhoto(data)
                     }
                     importing -= 1
@@ -154,6 +160,9 @@ struct CaptureView: View {
             }
             .accessibilityIdentifier("workspaceChip")
             Spacer()
+            if model.liveSupported {
+                liveButton
+            }
             Button {
                 if model.shots.isEmpty { close() } else { confirmingClose = true }
             } label: {
@@ -168,6 +177,38 @@ struct CaptureView: View {
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
+    }
+
+    /// Live Photos on or off, as in the Camera app. A collection that keeps
+    /// none says so, and lets an owner or admin turn them on.
+    private var liveButton: some View {
+        Button {
+            if model.liveAllowed {
+                model.toggleLive()
+                app.show(model.takesLive ? String(localized: "Live Photos on") : String(localized: "Live Photos off"))
+            } else {
+                askingLive = true
+            }
+        } label: {
+            Image(systemName: model.takesLive ? "livephoto" : "livephoto.slash")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(model.takesLive ? Color.yellow : .white)
+                .padding(10)
+                .background(.black.opacity(0.5), in: Circle())
+        }
+        .accessibilityLabel(model.takesLive ? Text("Live Photos on") : Text("Live Photos off"))
+        .accessibilityIdentifier("liveToggle")
+        .confirmationDialog(Text("Keep Live Photos in “\(app.active?.name ?? "")”?"), isPresented: $askingLive, titleVisibility: .visible) {
+            if model.canAllowLive {
+                Button("Turn on for this collection") { Task { await model.allowLive() } }
+            }
+        } message: {
+            if model.canAllowLive {
+                Text("Photos everyone takes for this collection keep the moments around them, without sound. Each photo then takes about twice the space.")
+            } else {
+                Text("This collection keeps no Live Photos. An owner or admin can turn them on.")
+            }
+        }
     }
 
     private func close() {
@@ -479,6 +520,16 @@ struct ShotTray: View {
                         .background((frame ?? .black).opacity(0.85))
                         .foregroundStyle(.white)
                         .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 9, bottomTrailingRadius: 9))
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                if shot.motion != nil {
+                    Image(systemName: "livephoto")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.6), radius: 2)
+                        .padding(4)
+                        .accessibilityLabel(Text("Live Photo"))
                 }
             }
             .overlay(alignment: .bottomLeading) {

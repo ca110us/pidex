@@ -41,6 +41,20 @@ final class CaptureModel {
     /// Uploaded shots stay on the phone as their photos' originals; not
     /// for high-privacy teams, nor before the collection's setup is known.
     private var keepsOriginals = false
+    /// The collection keeps Live Photos' motion.
+    private(set) var liveAllowed = false
+    /// This camera can make Live Photos.
+    private(set) var liveSupported = false
+    /// Whether this phone takes Live Photos where they are kept: on unless
+    /// turned off, and remembered, as in the Camera app.
+    private(set) var liveOn = UserDefaults.standard.object(forKey: CaptureModel.liveKey) as? Bool ?? true
+    /// The person may change the collection's setup, so may let it keep
+    /// Live Photos.
+    private(set) var canAllowLive = false
+    private static let liveKey = "takesLivePhotos"
+
+    /// Shots taken now keep the moments around them.
+    var takesLive: Bool { liveAllowed && liveOn && liveSupported }
     private let tracker = LocationTracker()
     /// The collection was just made: until its first shot, the camera says
     /// how to start.
@@ -83,14 +97,47 @@ final class CaptureModel {
             recognizesByLook = !config.subjectTypes.isEmpty && config.subjectTypes.allSatisfy(\.byAppearance)
             filesByPlace = config.subjectTypes.isEmpty
             keepsOriginals = config.privacy != "high"
-            camera.keepMotion(config.livePhotos)
+            liveAllowed = config.livePhotos
+            camera.keepMotion(liveAllowed && liveOn)
+        }
+        if let role = try? await api.team().role {
+            canAllowLive = role == "owner" || role == "admin"
         }
         tracker.start()
         do {
             try await camera.start()
+            liveSupported = await camera.motionSupported()
             cameraState = .ready
         } catch {
             cameraState = .unavailable(error.localizedDescription)
+        }
+    }
+
+    /// Turns Live Photos on or off for this phone.
+    func toggleLive() {
+        liveOn.toggle()
+        UserDefaults.standard.set(liveOn, forKey: Self.liveKey)
+        camera.keepMotion(liveAllowed && liveOn)
+    }
+
+    /// Lets the collection keep Live Photos, for everyone who shoots for
+    /// it: a new version of its setup with them on.
+    func allowLive() async {
+        do {
+            let json = try await api.activeConfig().configJson
+            guard var config = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any] else {
+                throw CocoaError(.coderReadCorrupt)
+            }
+            config["live_photos"] = true
+            let data = try JSONSerialization.data(withJSONObject: config, options: [.sortedKeys])
+            _ = try await api.publishConfig(json: String(decoding: data, as: UTF8.self))
+            liveAllowed = true
+            liveOn = true
+            UserDefaults.standard.set(true, forKey: Self.liveKey)
+            camera.keepMotion(true)
+            lastError = nil
+        } catch {
+            lastError = ScenarioText.explain(error)
         }
     }
 
@@ -261,9 +308,19 @@ final class CaptureModel {
     ///
     /// It keeps the day and place the camera wrote into it, not the moment
     /// it was added.
-    func importPhoto(_ data: Data) async {
+    /// A Live Photo comes with its motion, kept where the collection keeps
+    /// Live Photos.
+    func importPhoto(_ data: Data, motion: URL? = nil) async {
         let meta = PhotoMetadata.read(data)
-        await handle(photoData: data, capturedAt: meta.date ?? Date(), location: meta.location)
+        let id = await handle(photoData: data, capturedAt: meta.date ?? Date(), location: meta.location)
+        guard let motion else { return }
+        guard liveAllowed, let id, let store, let i = shots.firstIndex(where: { $0.id == id }), shots[i].original != nil,
+              let name = try? store.adopt(motion, id: id, as: "mov") else {
+            try? FileManager.default.removeItem(at: motion)
+            return
+        }
+        shots[i].motion = name
+        persist()
     }
 
     /// Keeps a shot's motion once the camera has made it; dropped if the
