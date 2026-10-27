@@ -22,6 +22,9 @@ nonisolated struct PendingUpload: Codable, Sendable, Identifiable, Equatable {
     var identityPhotoID: String?
     /// Where it was taken. Optional so older queues still decode.
     var place: ShotPlace?
+    /// Once uploaded, the file stays on the phone as the photo's original
+    /// rather than being deleted (not for high-privacy teams).
+    var keepOriginal: Bool?
 
     var photoID: String?
     var bytesUploaded = false
@@ -41,10 +44,14 @@ nonisolated struct UploadStatus: Sendable, Equatable {
 
 /// Moves photos from the phone to the server, in order, one at a time.
 /// Each photo is written to disk before anything else happens; the file is
-/// deleted only after the server confirms it has the photo.
+/// deleted, or kept as the photo's original, only after the server confirms
+/// it has the photo.
 actor UploadQueue {
     private let directory: URL
     private var transport: UploadTransport?
+    /// Keeps an uploaded file as the original of a photo, by its id; false
+    /// if it was not kept.
+    private let keep: (@Sendable (URL, String) -> Bool)?
     private let onChange: @Sendable (UploadStatus) -> Void
     private let now: @Sendable () -> Date
     private var items: [PendingUpload] = []
@@ -60,9 +67,11 @@ actor UploadQueue {
         transport: UploadTransport?,
         now: @escaping @Sendable () -> Date = Date.init,
         autoDrain: Bool = true,
+        keep: (@Sendable (URL, String) -> Bool)? = nil,
         onChange: @escaping @Sendable (UploadStatus) -> Void = { _ in }
     ) throws {
         self.directory = directory
+        self.keep = keep
         self.autoDrain = autoDrain
         self.transport = transport
         self.now = now
@@ -83,7 +92,7 @@ actor UploadQueue {
     /// this one). `id` keeps a shot's own ID, so others can name it.
     func enqueue(jpeg: Data, sessionID: String, capturedAt: Date, onDevice: Pidex_V1_OnDeviceAnalysis,
                  lockedSubjectID: String?, subjectChosen: Bool = false, id: String? = nil, identityPhotoID: String? = nil,
-                 place: ShotPlace? = nil) throws {
+                 place: ShotPlace? = nil, keepOriginal: Bool = false) throws {
         let id = id ?? UUID().uuidString.lowercased()
         let fileName = id + ".jpg"
         try jpeg.write(to: directory.appending(path: fileName), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
@@ -93,7 +102,8 @@ actor UploadQueue {
             onDevice: try onDevice.serializedData(), lockedSubjectID: lockedSubjectID,
             subjectChosen: subjectChosen ? true : nil,
             identityPhotoID: lockedSubjectID == nil ? (identityPhotoID ?? id) : nil,
-            place: place
+            place: place,
+            keepOriginal: keepOriginal ? true : nil
         )
         items.append(item)
         try persist()
@@ -150,8 +160,12 @@ actor UploadQueue {
             guard let i = items.firstIndex(where: { $0.id == item.id }) else { continue }
             switch outcome {
             case .done:
-                items.remove(at: i)
-                try? FileManager.default.removeItem(at: directory.appending(path: item.fileName))
+                // As updated during the attempt: it now has the server's id.
+                let done = items.remove(at: i)
+                let file = directory.appending(path: done.fileName)
+                // The phone has the photo already: no need to fetch it again.
+                let kept = done.keepOriginal == true && done.photoID.map { keep?(file, $0) ?? false } ?? false
+                if !kept { try? FileManager.default.removeItem(at: file) }
                 lastError = nil
                 index = i
             case .retryLater(let updated, let reason):

@@ -67,7 +67,27 @@ final class LibraryModel {
             if !local.hasSynced { self.error = error.localizedDescription }
         }
         await showLocal()
+        if !offline { prefetchThumbnails() }
     }
+
+    private var prefetching = false
+
+    /// On Wi-Fi, the newest photos' thumbnails are fetched ahead, so the
+    /// collection can be browsed offline later.
+    private func prefetchThumbnails() {
+        guard let local, !prefetching, Unmetered.shared.now,
+              let ids = try? local.shownIDs(limit: Self.prefetched) else { return }
+        prefetching = true
+        let api = api
+        Task.detached(priority: .utility) {
+            await PhotoLinks.shared.know(ids, in: api)
+            await ImageCache.shared.prefetch(ids)
+            await MainActor.run { self.prefetching = false }
+        }
+    }
+
+    /// About 40 MB of thumbnails.
+    static let prefetched = 1000
 
     /// The newest photos from the phone's copy, unless a search is showing.
     private func showLocal() async {

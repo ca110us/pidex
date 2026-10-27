@@ -38,6 +38,9 @@ final class CaptureModel {
     /// The collection keeps photos by where and when they were taken (a
     /// trip): nobody to name, so every shot may go.
     private(set) var filesByPlace = false
+    /// Uploaded shots stay on the phone as their photos' originals; not
+    /// for high-privacy teams, nor before the collection's setup is known.
+    private var keepsOriginals = false
     private let tracker = LocationTracker()
     /// The collection was just made: until its first shot, the camera says
     /// how to start.
@@ -77,6 +80,7 @@ final class CaptureModel {
         if let json = try? await api.activeConfig().configJson, let config = try? ScenarioConfig(json: json) {
             recognizesByLook = !config.subjectTypes.isEmpty && config.subjectTypes.allSatisfy(\.byAppearance)
             filesByPlace = config.subjectTypes.isEmpty
+            keepsOriginals = config.privacy != "high"
         }
         tracker.start()
         do {
@@ -408,7 +412,8 @@ final class CaptureModel {
                     jpeg: jpeg, sessionID: session, capturedAt: shot.capturedAt,
                     onDevice: try Pidex_V1_OnDeviceAnalysis(serializedBytes: shot.onDevice),
                     lockedSubjectID: owner?.subjectID, subjectChosen: owner?.chosen ?? false,
-                    id: shot.id, identityPhotoID: owner?.identityShotID, place: shot.place
+                    id: shot.id, identityPhotoID: owner?.identityShotID, place: shot.place,
+                    keepOriginal: keepsOriginals
                 )
             } catch {
                 lastError = String(localized: "Could not send the photo: \(error.localizedDescription)")

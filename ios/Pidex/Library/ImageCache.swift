@@ -1,38 +1,22 @@
 import SwiftUI
 import UIKit
 
-/// Thumbnails by photo id, in memory and on disk. Signed links change on
-/// every fetch, so caching by URL would never hit; a photo id is stable, so
-/// a conversation or collection reopened shows its photos at once, offline
-/// too. A photo with no link, or a link expired, gets a fresh one.
+/// Photos' images by photo id: in memory, then on the phone (DiskImages),
+/// then from the server. Signed links change on every fetch, so caching by
+/// URL would never hit; a photo id is stable, so a conversation or
+/// collection reopened shows its photos at once, offline too. A photo with
+/// no link, or a link expired, gets a fresh one.
 actor ImageCache {
     static let shared = ImageCache()
 
     private let memory = NSCache<NSString, UIImage>()
-    private let directory: URL?
+    /// Originals are large: a few in memory.
+    private let originals = NSCache<NSString, UIImage>()
     private var inFlight: [String: Task<UIImage?, Never>] = [:]
 
     init() {
-        // Application Support, which the system does not clear for space as
-        // it does Caches: browsing offline needs them. Out of backups (the
-        // server has them), readable only while the phone is unlocked.
-        let files = FileManager.default
-        directory = try? files
-            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            .appending(path: "Thumbnails", directoryHint: .isDirectory)
-        if var directory {
-            let old = try? files.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-                .appending(path: "Thumbnails", directoryHint: .isDirectory)
-            if let old, !files.fileExists(atPath: directory.path), files.fileExists(atPath: old.path) {
-                try? files.moveItem(at: old, to: directory)
-            }
-            try? files.createDirectory(at: directory, withIntermediateDirectories: true)
-            try? files.setAttributes([.protectionKey: FileProtectionType.completeUnlessOpen], ofItemAtPath: directory.path)
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try? directory.setResourceValues(values)
-        }
         memory.countLimit = 500
+        originals.countLimit = 12
     }
 
     /// The image at url, else at a fresh link: none was given, or it expired.
@@ -49,31 +33,30 @@ actor ImageCache {
         return (data, image)
     }
 
-    /// Originals are large: a few are kept in memory, none on disk.
-    private let originals: NSCache<NSString, UIImage> = {
-        let c = NSCache<NSString, UIImage>()
-        c.countLimit = 12
-        return c
-    }()
-
-    func original(id: String, url: URL?) async -> UIImage? {
+    /// A photo in full. keep: it may stay on the phone once fetched (not
+    /// for high-privacy teams).
+    func original(id: String, url: URL?, keep: Bool) async -> UIImage? {
         if let hit = originals.object(forKey: id as NSString) { return hit }
-        guard let (_, image) = await download(id: id, url: url, original: true) else { return nil }
+        if let data = DiskImages.originals.data(id), let image = UIImage(data: data) {
+            originals.setObject(image, forKey: id as NSString)
+            return image
+        }
+        guard let (data, image) = await download(id: id, url: url, original: true) else { return nil }
+        if keep { DiskImages.originals.write(data, id: id) }
         originals.setObject(image, forKey: id as NSString)
         return image
     }
 
     func image(id: String, url: URL?) async -> UIImage? {
         if let hit = memory.object(forKey: id as NSString) { return hit }
-        let file = directory?.appending(path: id + ".jpg")
-        if let file, let data = try? Data(contentsOf: file), let image = UIImage(data: data) {
+        if let data = DiskImages.thumbnails.data(id), let image = UIImage(data: data) {
             memory.setObject(image, forKey: id as NSString)
             return image
         }
         if let pending = inFlight[id] { return await pending.value }
         let task = Task<UIImage?, Never> {
             guard let (data, image) = await self.download(id: id, url: url, original: false) else { return nil }
-            if let file { try? data.write(to: file, options: [.atomic, .completeFileProtectionUnlessOpen]) }
+            DiskImages.thumbnails.write(data, id: id)
             return image
         }
         inFlight[id] = task
@@ -81,6 +64,29 @@ actor ImageCache {
         inFlight[id] = nil
         if let image { memory.setObject(image, forKey: id as NSString) }
         return image
+    }
+
+    /// Fetches thumbnails not on the phone yet, a few at a time, so a
+    /// collection can be browsed offline.
+    func prefetch(_ ids: [String]) async {
+        let missing = ids.filter { memory.object(forKey: $0 as NSString) == nil && !DiskImages.thumbnails.contains($0) }
+        await withTaskGroup(of: Void.self) { group in
+            for (i, id) in missing.enumerated() {
+                if i >= 4 { await group.next() }
+                if Task.isCancelled { break }
+                group.addTask { _ = await self.image(id: id, url: nil) }
+            }
+        }
+    }
+
+    /// Forgets photos deleted, or of a collection removed from the phone.
+    func forget(_ ids: [String]) {
+        for id in ids {
+            memory.removeObject(forKey: id as NSString)
+            originals.removeObject(forKey: id as NSString)
+        }
+        DiskImages.thumbnails.remove(ids)
+        DiskImages.originals.remove(ids)
     }
 }
 

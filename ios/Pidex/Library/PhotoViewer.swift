@@ -37,7 +37,8 @@ struct PhotoViewer: View {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
                 ForEach(photos.indices, id: \.self) { i in
-                    PhotoPage(photo: photos[i], zoomed: $zoomed) {
+                    // High-privacy teams keep no originals on the phone.
+                    PhotoPage(photo: photos[i], keep: model.config?.privacy != "high", zoomed: $zoomed) {
                         withAnimation(.easeInOut(duration: 0.2)) { chrome.toggle() }
                     } onSwipeUp: {
                         showingInfo = true
@@ -146,6 +147,8 @@ struct PhotoViewer: View {
 /// One photo, its thumbnail at once and then the original.
 private struct PhotoPage: View {
     let photo: Pidex_V1_Photo
+    /// The original may stay on the phone once fetched.
+    let keep: Bool
     @Binding var zoomed: Bool
     let onTap: () -> Void
     let onSwipeUp: () -> Void
@@ -161,7 +164,7 @@ private struct PhotoPage: View {
             .task(id: photo.id) {
                 let thumb = URL(string: photo.thumbnailURL.isEmpty ? photo.viewURL : photo.thumbnailURL)
                 if image == nil { image = await ImageCache.shared.image(id: photo.id, url: thumb) }
-                if let full = await ImageCache.shared.original(id: photo.id, url: URL(string: photo.viewURL)) {
+                if let full = await ImageCache.shared.original(id: photo.id, url: URL(string: photo.viewURL), keep: keep) {
                     image = full
                 }
             }

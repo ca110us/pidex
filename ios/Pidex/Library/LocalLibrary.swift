@@ -92,6 +92,16 @@ nonisolated final class LocalLibrary: Sendable {
             }
             try Self.keep(Data(r.cursor.utf8), as: "cursor", in: db)
         }
+        // Deleted on the server: their images go from the phone too.
+        if !r.deletedPhotoIds.isEmpty {
+            let gone = r.deletedPhotoIds
+            Task { await ImageCache.shared.forget(gone) }
+        }
+    }
+
+    /// Every photo in the copy, shown or not.
+    func photoIDs() throws -> [String] {
+        try db.read { db in try String.fetchAll(db, sql: "SELECT id FROM photo") }
     }
 
     private static func save(_ p: Pidex_V1_Photo, in db: Database) throws {
@@ -124,6 +134,13 @@ nonisolated final class LocalLibrary: Sendable {
             try Data.fetchAll(db, sql: "SELECT data FROM photo WHERE shown ORDER BY at DESC, id DESC LIMIT ? OFFSET ?",
                               arguments: [limit, offset])
                 .compactMap { try? Pidex_V1_Photo(serializedBytes: $0) }
+        }
+    }
+
+    /// The newest shown photos' ids.
+    func shownIDs(limit: Int) throws -> [String] {
+        try db.read { db in
+            try String.fetchAll(db, sql: "SELECT id FROM photo WHERE shown ORDER BY at DESC, id DESC LIMIT ?", arguments: [limit])
         }
     }
 
@@ -195,12 +212,18 @@ nonisolated final class LocalLibrary: Sendable {
         }
     }
 
-    /// Forgets the copy of a collection removed from this phone.
+    /// Forgets the copy of a collection removed from this phone, with its
+    /// photos' images.
     static func erase(token: String) {
         let key = APIClient.storeKey(for: token)
         open.withLock { libraries in
-            libraries[key] = nil
             guard let dir = directory else { return }
+            let file = dir.appending(path: key + ".sqlite")
+            let library = libraries[key] ?? (FileManager.default.fileExists(atPath: file.path) ? try? LocalLibrary(file: file) : nil)
+            if let ids = try? library?.photoIDs(), !ids.isEmpty {
+                Task { await ImageCache.shared.forget(ids) }
+            }
+            libraries[key] = nil
             for suffix in ["", "-wal", "-shm"] {
                 try? FileManager.default.removeItem(at: dir.appending(path: key + ".sqlite" + suffix))
             }

@@ -2371,6 +2371,16 @@
         }
       }
     },
+    "None": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不保留"
+          }
+        }
+      }
+    },
     "Not filed": {
       "localizations": {
         "zh-Hans": {
@@ -2507,6 +2517,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "只有所有者和管理员可以修改这个工作区的场景。"
+          }
+        }
+      }
+    },
+    "Originals": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原图"
+          }
+        }
+      }
+    },
+    "Originals kept": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留原图"
           }
         }
       }
@@ -2691,6 +2721,16 @@
         }
       }
     },
+    "Photos you take, and photos you open in full, stay on this iPhone up to this size, so they open at once and offline; the least recently seen go first. High-privacy collections keep none. Thumbnails take up to 1 GB.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你拍的照片和打开看过的原图会保存在这台 iPhone 上，最多占用这么多空间，这样打开更快，没网也能看；超出时先移除最久没看的。高隐私合集不保留原图。缩略图最多占用 1 GB。"
+          }
+        }
+      }
+    },
     "Privacy is lowered: photo descriptions may now include names and IDs.": {
       "localizations": {
         "zh-Hans": {
@@ -2787,6 +2827,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "从这台 iPhone 上移除"
+          }
+        }
+      }
+    },
+    "Remove photos kept on this iPhone": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除这台 iPhone 上保存的照片"
+          }
+        }
+      }
+    },
+    "Remove photos kept on this iPhone?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除这台 iPhone 上保存的照片？"
           }
         }
       }
@@ -3181,6 +3241,16 @@
         }
       }
     },
+    "Storage on this iPhone": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这台 iPhone 上的存储"
+          }
+        }
+      }
+    },
     "Strict: files a photo only when the ID is certain, otherwise asks you.": {
       "localizations": {
         "zh-Hans": {
@@ -3401,6 +3471,16 @@
         }
       }
     },
+    "They stay on the server and are fetched again when shown.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照片仍保存在服务器上，再次查看时会重新下载。"
+          }
+        }
+      }
+    },
     "This cannot be undone": {
       "localizations": {
         "zh-Hans": {
@@ -3437,6 +3517,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "本次拍摄"
+          }
+        }
+      }
+    },
+    "Thumbnails": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "缩略图"
           }
         }
       }

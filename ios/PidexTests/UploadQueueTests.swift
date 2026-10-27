@@ -84,6 +84,23 @@ struct UploadQueueTests {
         #expect(sent.photoID.hasPrefix("photo-"))
     }
 
+    @Test func uploadedShotsStayAsOriginalsWhenKept() async throws {
+        let kept = FileManager.default.temporaryDirectory.appending(path: "kept-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: kept, withIntermediateDirectories: true)
+        let q = try UploadQueue(directory: dir, transport: transport, now: { [clock] in clock.now }, autoDrain: false,
+                                keep: { file, id in (try? FileManager.default.moveItem(at: file, to: kept.appending(path: id))) != nil })
+        try await q.enqueue(jpeg: Data(repeating: 7, count: 64), sessionID: "s1", capturedAt: clock.now,
+                            onDevice: analysis(), lockedSubjectID: "subject-1", id: "a", keepOriginal: true)
+        // A high-privacy collection's shot is deleted once uploaded.
+        try await q.enqueue(jpeg: Data(repeating: 8, count: 64), sessionID: "s1", capturedAt: clock.now,
+                            onDevice: analysis(), lockedSubjectID: "subject-1", id: "b")
+        await q.drainOnce()
+
+        #expect(await q.pending.isEmpty)
+        #expect(try jpegFiles().isEmpty)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: kept.path) == ["photo-a"])
+    }
+
     @Test func networkFailureKeepsPhotoAndBacksOff() async throws {
         let q = try makeQueue()
         try await enqueue(q)

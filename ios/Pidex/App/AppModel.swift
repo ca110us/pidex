@@ -39,7 +39,7 @@ final class AppModel {
             let dir = try FileManager.default
                 .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
                 .appending(path: "PendingUploads", directoryHint: .isDirectory)
-            uploads = try UploadQueue(directory: dir, transport: nil, onChange: { [weak self] status in
+            uploads = try UploadQueue(directory: dir, transport: nil, keep: { DiskImages.originals.adopt($0, id: $1) }, onChange: { [weak self] status in
                 Task { @MainActor in self?.uploadStatus = status }
             })
         } catch {
