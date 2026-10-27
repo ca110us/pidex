@@ -1,8 +1,20 @@
 # Pidex
 
-**Snap it. It files itself.** Pidex is a camera app for work photos, with a server behind it. People just take photos; Pidex works out who or what each photo shows (a patient, a flat, a vehicle, a cat), files it there, tags it, and later finds it again from a plain sentence such as "Maple Court waterproofing last week" or "the cat with the black nose".
+**A work-photo camera that files who or what you shot, and finds it again from a plain sentence.**
 
-Nothing in the engine is tied to an industry. What a subject is, how it is identified and which tags exist all come from each collection's configuration, which people write by describing what they photograph in their own words (`backend/internal/teamconfig/templates/` holds examples for an orthopaedic ward, a renovation business and a household with pets).
+People only take photos. Pidex works out who or what each photo shows (a patient, a flat, a vehicle, a cat), files it under that subject, tags it, and later finds it from a sentence such as "Maple Court waterproofing last week" or "the cat with the black nose".
+
+Nothing in the engine is tied to an industry. What a subject is, how it is identified and which tags exist all come from each collection's configuration. People write that configuration by describing what they photograph in their own words. `backend/internal/teamconfig/templates/` holds examples for an orthopaedic ward, a renovation business and a household with pets.
+
+## Why
+
+Teams that photograph the same things over and over (wards, building sites, rentals, workshops) end up with thousands of photos in a camera roll or a shared drive, sorted by date. Finding "the second-floor bathroom before tiling" means scrolling.
+
+Pidex is not a cloud album. It files each photo under the subject it shows, at the moment it is taken:
+
+- **By subject, not by date.** A wristband, a serial number or a door number is read on the phone. Subjects without a code (pets, mugs, plants) are matched by their look against the ones already on file.
+- **Asks a person when unsure.** A doubtful match becomes a one-tap question ("Looks like Tutu: is it?"). It never guesses silently. Look-alikes are filed automatically only after people have confirmed the model often enough, and one mistake takes that trust back.
+- **Search that cites its sources.** Every answer in the chat is a stored photo, checked against what was asked.
 
 ## What it does
 
@@ -12,17 +24,18 @@ Nothing in the engine is tied to an industry. What a subject is, how it is ident
 - **Set up by conversation.** A new collection is described in a chat; a model drafts the configuration, the server validates it, and later changes are made the same way, with every version kept.
 - **Any language, any industry.** The app is in English and Simplified Chinese; each collection's names, tags and descriptions are in the language it was described in.
 
-## How it fits together
+## Architecture
 
 ```
-iOS app (SwiftUI)                         Server (Go)                              Models (OpenRouter or direct)
-  camera, on-device OCR/barcodes  ──────▶  Connect API (Protobuf, also JSON)        vision: describe, read, tag
-  shot tray, upload queue                  pipeline: barcode → reuse → model        matcher: compare looks
-  collections, chat, review               River jobs on Postgres                    search planner and checker
-                                           Postgres 17 + pgvector, S3 storage        text embeddings
-                                                    │
-                                                    ▼
-                                           Look service (Python, vision/): a photo → what its subject looks like, as a vector
+iOS app (SwiftUI)                    Server (Go, one binary)                        Models
+  camera, on-device OCR/barcodes       Connect API (Protobuf, also JSON)              vision: describe, read, tag
+  shot tray, offline upload queue ──▶  pipeline:                                ──▶   matcher: compare looks
+  local catalog, offline search          barcode → dedupe/reuse → model → review      search planner and checker
+  review, chat, collections            River jobs on Postgres                         text embeddings
+                                       Postgres 17 + pgvector, S3 storage             (OpenRouter or direct Gemini)
+                                                │
+                                                ▼
+                                       Look service (Python, optional): a photo → a DINOv2 vector of its subject
 ```
 
 - `proto/pidex/v1/`: the API, shared by Go and Swift (Kotlin later).
@@ -30,6 +43,44 @@ iOS app (SwiftUI)                         Server (Go)                           
 - `vision/`: the look service, which tells individuals apart by image (DINOv2); optional, the server works without it.
 - `ios/`: the iPhone app, generated from `ios/project.yml` with XcodeGen.
 - `design/brand/`: the icon and colours; `eval/`: evaluation sets; `reports/`, `research_notes/`: product research.
+
+## Stack
+
+| Layer | Technologies |
+| --- | --- |
+| iOS app | Swift, SwiftUI, AVFoundation, Vision (on-device OCR and barcodes), a local SQLite catalog (GRDB), English and Simplified Chinese |
+| API | Protobuf and Connect (`buf` generates Go and Swift), callable as JSON too |
+| Server | Go, pgx, sqlc, goose migrations, River job queue |
+| Storage | Postgres 17 with pgvector, S3-compatible object storage |
+| Models | OpenRouter or Gemini directly (Gemini Flash Lite by default for vision and search), Claude for drafting configurations |
+| Look service | Python, FastAPI, DINOv2 |
+
+## Status
+
+A personal side project, built and used by one person, and still a work in progress. It runs end to end: the iPhone app, the server, the pipeline and the evaluations below. There is no hosted version. An Android app is not started.
+
+## Quick start
+
+Requires Go 1.26+, Docker and buf for the server; Xcode 26 and XcodeGen for the app.
+
+```sh
+make up                                   # Postgres with pgvector (55432) and the look service (8090); the first build downloads ~1.5 GB
+make migrate
+make seed TEAM="My team" EMAIL=you@example.com TEMPLATE=household_pets   # prints an API token (cbk_...)
+export OPENROUTER_API_KEY=...             # optional: without a key, photos are filed by barcode only
+make serve                                # API on :8080, background processing, a built-in dev S3
+make ios-project && open ios/Pidex.xcodeproj
+```
+
+Run the app, enter the server address and the token, and take photos. To run on a phone, see [iOS App](#ios-app).
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+The rest of this file is the developer manual: layout, local setup, model configuration and evaluation, and how each part works.
 
 ## Layout
 
@@ -60,21 +111,6 @@ design/brand/           Icon originals and render script (`swift design/brand/re
 eval/                   Evaluation labels and sources (photos are downloaded, not committed)
 reports/, research_notes/  Product research reports
 ```
-
-## Quick start
-
-Requires Go 1.26+, Docker and buf for the server; Xcode 26 and XcodeGen for the app.
-
-```sh
-make up                                   # Postgres with pgvector (55432) and the look service (8090); the first build downloads ~1.5 GB
-make migrate
-make seed TEAM="My team" EMAIL=you@example.com TEMPLATE=household_pets   # prints an API token (cbk_...)
-export OPENROUTER_API_KEY=...             # optional: without a key, photos are filed by barcode only
-make serve                                # API on :8080, background processing, a built-in dev S3
-make ios-project && open ios/Pidex.xcodeproj
-```
-
-Run the app, enter the server address and the token, and take photos. To run on a phone, see [iOS App](#ios-app).
 
 ## Running locally
 
