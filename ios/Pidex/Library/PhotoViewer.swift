@@ -69,6 +69,12 @@ struct PhotoViewer: View {
         .scrollDisabled(zoomed)
         .ignoresSafeArea()
         .background(chrome ? Theme.paper : .black)
+        // Over the pages, not in one, so the badge keeps clear of the bars.
+        .overlay {
+            if let photo, photo.live, photo.originalKept, !zoomed {
+                LiveBadge(photo: photo, showsBadge: chrome).id(photo.id)
+            }
+        }
         .accessibilityIdentifier("photoViewer")
         .navigationTitle("Photo")
         .navigationBarTitleDisplayMode(.inline)
@@ -179,11 +185,6 @@ private struct PhotoPage: View {
     var body: some View {
         ZoomableImage(image: image, zoomed: $zoomed, onTap: onTap, onSwipeUp: onSwipeUp, onSwipeDown: onSwipeDown)
             .overlay { if image == nil { ProgressView() } }
-            .overlay {
-                if photo.live && photo.originalKept && !zoomed {
-                    LiveBadge(photo: photo, placeholder: image)
-                }
-            }
             .accessibilityElement()
             .accessibilityLabel(Text(verbatim: photo.description_p))
             .accessibilityAddTraits(.isImage)

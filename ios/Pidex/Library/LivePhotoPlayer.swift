@@ -4,51 +4,57 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// A Live Photo's motion, played once over the photo when its badge is
-/// tapped. Its two files are fetched only then: they are large.
+/// tapped; the badge sits at the top leading corner, clear of the bars, as
+/// in Photos. Its two files are fetched only then: they are large.
 struct LiveBadge: View {
     let photo: Pidex_V1_Photo
-    let placeholder: UIImage?
+    /// The badge shows with the viewer's bars; a motion playing plays on.
+    var showsBadge = true
     @State private var live: PHLivePhoto?
     @State private var loading = false
     @State private var playing = false
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .topLeading) {
+            // Over the whole page, as the photo is fitted: the still under
+            // it shows where the motion does not cover.
             if playing, let live {
                 LivePhotoPlayer(live: live) { playing = false }
-                    .background(.black)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }
-            Button {
-                Task { await play() }
-            } label: {
-                HStack(spacing: 4) {
-                    if loading {
-                        ProgressView().controlSize(.mini)
-                    } else {
-                        Image(systemName: "livephoto")
+            if showsBadge {
+                Button {
+                    Task { await play() }
+                } label: {
+                    HStack(spacing: 4) {
+                        if loading {
+                            ProgressView().controlSize(.mini)
+                        } else {
+                            Image(systemName: "livephoto")
+                        }
+                        Text("LIVE")
                     }
-                    Text("LIVE")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .glassSurface(Capsule())
                 }
-                .font(.caption.weight(.semibold))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .glassSurface(Capsule())
+                .buttonStyle(.plain)
+                .disabled(loading || playing)
+                .padding(.leading, 16)
+                .padding(.top, 12)
+                .accessibilityLabel(Text("Play Live Photo"))
+                .accessibilityIdentifier("playLive")
             }
-            .buttonStyle(.plain)
-            .disabled(loading || playing)
-            .padding(.leading, 16)
-            .padding(.bottom, 40)
-            .accessibilityLabel(Text("Play Live Photo"))
-            .accessibilityIdentifier("playLive")
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func play() async {
         if live == nil {
             loading = true
-            live = await LiveFiles.livePhoto(photo, placeholder: placeholder)
+            live = await LiveFiles.livePhoto(photo)
             loading = false
         }
         if live != nil { playing = true }
@@ -87,7 +93,7 @@ private struct LivePhotoPlayer: UIViewRepresentable {
 
 /// A Live Photo's still and motion, fetched to temporary files.
 private enum LiveFiles {
-    static func livePhoto(_ photo: Pidex_V1_Photo, placeholder: UIImage?) async -> PHLivePhoto? {
+    static func livePhoto(_ photo: Pidex_V1_Photo) async -> PHLivePhoto? {
         guard let stillURL = await PhotoLinks.shared.link(for: photo.id, .original),
               let movieURL = await PhotoLinks.shared.link(for: photo.id, .live),
               let (still, _) = try? await URLSession.shared.data(from: stillURL),
@@ -103,7 +109,7 @@ private enum LiveFiles {
               (try? FileManager.default.moveItem(at: movie, to: movieFile)) != nil else { return nil }
         return await withCheckedContinuation { cont in
             var done = false
-            PHLivePhoto.request(withResourceFileURLs: [stillFile, movieFile], placeholderImage: placeholder,
+            PHLivePhoto.request(withResourceFileURLs: [stillFile, movieFile], placeholderImage: nil,
                                 targetSize: .zero, contentMode: .aspectFit) { live, info in
                 // Called again as it gets better; the first full one, once.
                 let degraded = info[PHLivePhotoInfoIsDegradedKey] as? Bool ?? false
