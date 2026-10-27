@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"pidex/internal/tracing"
 )
 
 type Image struct {
@@ -71,6 +73,8 @@ type CallRecord struct {
 	CallMeta
 	Usage Usage
 	Err   error
+	// traced is set by a Router, which traces its calls itself.
+	traced bool
 }
 
 type Recorder interface {
@@ -82,7 +86,7 @@ type RecorderFunc func(ctx context.Context, rec CallRecord)
 func (f RecorderFunc) Record(ctx context.Context, rec CallRecord) { f(ctx, rec) }
 
 // Router tries each model in order until one returns valid JSON. Every
-// attempt, failed or not, is recorded.
+// attempt, failed or not, is recorded, and traced as a model call.
 type Router struct {
 	models []VisionModel
 	rec    Recorder
@@ -110,9 +114,15 @@ func (r *Router) Structured(ctx context.Context, meta CallMeta, req StructuredRe
 		return nil, Usage{}, ErrNoModel
 	}
 	var errs []error
-	for _, m := range r.models {
+	for i, m := range r.models {
+		callCtx, sp := tracing.Start(ctx, meta.Purpose, tracing.LLM)
+		sp.Model(m.Provider(), m.Model())
+		noteCall(sp, meta)
+		sp.Set("attempt", i+1)
+		sp.Set("images", len(req.Images))
+		sp.Input(prompt(req))
 		start := time.Now()
-		out, usage, err := m.Structured(ctx, req)
+		out, usage, err := m.Structured(callCtx, req)
 		usage.Provider, usage.Model = m.Provider(), m.Model()
 		if usage.Latency == 0 {
 			usage.Latency = time.Since(start)
@@ -120,8 +130,13 @@ func (r *Router) Structured(ctx context.Context, meta CallMeta, req StructuredRe
 		if err == nil && !json.Valid(out) {
 			err = fmt.Errorf("model returned invalid JSON")
 		}
+		if out != nil {
+			sp.Output(answer(out))
+		}
+		noteUsage(sp, usage)
+		sp.End(err)
 		if r.rec != nil {
-			r.rec.Record(ctx, CallRecord{CallMeta: meta, Usage: usage, Err: err})
+			r.rec.Record(ctx, CallRecord{CallMeta: meta, Usage: usage, Err: err, traced: true})
 		}
 		if err == nil {
 			return out, usage, nil

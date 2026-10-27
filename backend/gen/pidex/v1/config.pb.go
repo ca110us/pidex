@@ -565,7 +565,10 @@ type DraftConfigRequest struct {
 	// How the user said subjects are told apart: "code" (they carry a label,
 	// tag or number) or "appearance" (they carry none). Empty lets the model
 	// choose from the description.
-	IdentifyBy    string `protobuf:"bytes,4,opt,name=identify_by,json=identifyBy,proto3" json:"identify_by,omitempty"`
+	IdentifyBy string `protobuf:"bytes,4,opt,name=identify_by,json=identifyBy,proto3" json:"identify_by,omitempty"`
+	// The setup conversation this draft is part of, chosen by the app, so
+	// the drafts of one conversation can be read together in traces.
+	SessionId     string `protobuf:"bytes,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -624,6 +627,13 @@ func (x *DraftConfigRequest) GetForNewTeam() bool {
 func (x *DraftConfigRequest) GetIdentifyBy() string {
 	if x != nil {
 		return x.IdentifyBy
+	}
+	return ""
+}
+
+func (x *DraftConfigRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
 	}
 	return ""
 }
@@ -1228,14 +1238,16 @@ const file_pidex_v1_config_proto_rawDesc = "" +
 	"\x15PublishConfigResponse\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\x05R\aversion\x12\x1f\n" +
 	"\vconfig_json\x18\x02 \x01(\tR\n" +
-	"configJson\"\xa3\x01\n" +
+	"configJson\"\xc2\x01\n" +
 	"\x12DraftConfigRequest\x12 \n" +
 	"\vdescription\x18\x01 \x01(\tR\vdescription\x12(\n" +
 	"\x10base_config_json\x18\x02 \x01(\tR\x0ebaseConfigJson\x12 \n" +
 	"\ffor_new_team\x18\x03 \x01(\bR\n" +
 	"forNewTeam\x12\x1f\n" +
 	"\videntify_by\x18\x04 \x01(\tR\n" +
-	"identifyBy\"\xa7\x01\n" +
+	"identifyBy\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x05 \x01(\tR\tsessionId\"\xa7\x01\n" +
 	"\x13DraftConfigResponse\x12\x1f\n" +
 	"\vconfig_json\x18\x01 \x01(\tR\n" +
 	"configJson\x12\x18\n" +

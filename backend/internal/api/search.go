@@ -18,6 +18,7 @@ import (
 	"pidex/internal/search"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 type searchService struct{ *Server }
@@ -33,13 +34,26 @@ const (
 	planTimeout = 6 * time.Second
 )
 
+// A search in words is a trace, with the model calls that read and checked
+// it; one by filters (chips, paging) calls no model and is not traced.
 func (s *searchService) SearchPhotos(ctx context.Context, req *connect.Request[pidexv1.SearchPhotosRequest]) (*connect.Response[pidexv1.SearchPhotosResponse], error) {
+	if req.Msg.Filters != nil || strings.TrimSpace(req.Msg.Query) == "" {
+		return s.searchPhotos(ctx, nil, req)
+	}
+	return traced(ctx, "search", func(ctx context.Context, sp *tracing.Span) (*connect.Response[pidexv1.SearchPhotosResponse], error) {
+		return s.searchPhotos(ctx, sp, req)
+	})
+}
+
+func (s *searchService) searchPhotos(ctx context.Context, sp *tracing.Span, req *connect.Request[pidexv1.SearchPhotosRequest]) (*connect.Response[pidexv1.SearchPhotosResponse], error) {
 	pr := principalFrom(ctx)
 	m := req.Msg
+	sp.Input(map[string]any{"query": m.Query})
 	cfg, _, err := s.Configs.Active(ctx, pr.TeamID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
+	tracing.Allow(ctx, cfg.Privacy != teamconfig.PrivacyHigh)
 	f, err := s.filters(ctx, pr.TeamID, cfg, m.Query, m.Filters, m.TimeZone)
 	if err != nil {
 		return nil, err
@@ -82,16 +96,28 @@ func (s *searchService) SearchPhotos(ctx context.Context, req *connect.Request[p
 	if out.Subjects, out.Missing, err = s.resultSubjects(ctx, pr.TeamID, res, photos); err != nil {
 		return nil, err
 	}
+	sp.Set("photos", len(photos))
+	sp.Set("total", out.Total)
+	sp.Set("subject_not_found", res.SubjectNotFound)
+	sp.Output(map[string]any{"filters": f, "photo_ids": res.PhotoIDs, "total": out.Total})
 	return connect.NewResponse(out), nil
 }
 
 func (s *searchService) AskPhotos(ctx context.Context, req *connect.Request[pidexv1.AskPhotosRequest]) (*connect.Response[pidexv1.AskPhotosResponse], error) {
+	return traced(ctx, "ask", func(ctx context.Context, sp *tracing.Span) (*connect.Response[pidexv1.AskPhotosResponse], error) {
+		return s.askPhotos(ctx, sp, req)
+	})
+}
+
+func (s *searchService) askPhotos(ctx context.Context, sp *tracing.Span, req *connect.Request[pidexv1.AskPhotosRequest]) (*connect.Response[pidexv1.AskPhotosResponse], error) {
 	pr := principalFrom(ctx)
 	m := req.Msg
+	sp.Input(map[string]any{"question": m.Question})
 	cfg, _, err := s.Configs.Active(ctx, pr.TeamID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
+	tracing.Allow(ctx, cfg.Privacy != teamconfig.PrivacyHigh)
 	if cfg.Privacy == teamconfig.PrivacyHigh {
 		return nil, connect.NewError(connect.CodeFailedPrecondition,
 			errors.New("questions are off for high-privacy teams; search finds the photos without a model reading them"))
@@ -124,6 +150,8 @@ func (s *searchService) AskPhotos(ctx context.Context, req *connect.Request[pide
 	if out.Cited, err = s.photosProto(ctx, s.Q, photos); err != nil {
 		return nil, err
 	}
+	sp.Set("photos", len(photos))
+	sp.Output(map[string]any{"answer": answer, "photo_ids": res.PhotoIDs, "filters": f})
 	return connect.NewResponse(out), nil
 }
 

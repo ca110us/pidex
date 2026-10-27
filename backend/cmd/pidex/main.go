@@ -28,6 +28,7 @@ import (
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 const usage = `usage:
@@ -54,6 +55,17 @@ func main() {
 		log.Error("configuration", "err", err)
 		os.Exit(2)
 	}
+	flush, err := tracing.Setup(ctx, tracing.Config{
+		APIKey: cfg.BraintrustAPIKey, APIURL: cfg.BraintrustAPIURL, Project: cfg.BraintrustProject,
+		ProjectID: cfg.BraintrustProjectID, Content: cfg.BraintrustContent, Service: "pidex " + os.Args[1],
+	})
+	if err != nil {
+		log.Error("configuration", "err", err)
+		os.Exit(2)
+	}
+	if cfg.BraintrustAPIKey != "" {
+		log.Info("tracing model calls to Braintrust", "project", cfg.BraintrustProject, "content", cfg.BraintrustContent)
+	}
 	switch os.Args[1] {
 	case "serve":
 		err = serve(ctx, cfg, log)
@@ -73,6 +85,12 @@ func main() {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(2)
 	}
+	// Traces still buffered go before the process does.
+	flushCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	if ferr := flush(flushCtx); ferr != nil {
+		log.Warn("flush traces", "err", ferr)
+	}
+	cancel()
 	if err != nil {
 		log.Error(os.Args[1]+" failed", "err", err)
 		os.Exit(1)
@@ -298,7 +316,7 @@ func serve(ctx context.Context, cfg appconfig.Config, log *slog.Logger) error {
 	defer pool.Close()
 	q := dbq.New(pool)
 	configs := configstore.New(q)
-	rec := &ai.DBRecorder{Q: q, Log: log}
+	rec := ai.TracedRecorder{Next: &ai.DBRecorder{Q: q, Log: log}}
 
 	ms, err := models(ctx, cfg, rec, log)
 	if err != nil {

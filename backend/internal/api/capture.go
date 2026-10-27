@@ -22,6 +22,7 @@ import (
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 type captureService struct{ *Server }
@@ -297,6 +298,16 @@ const maxShotBytes = 2 << 20
 // resolves what it read against known subjects, as the pipeline will once
 // the shot is uploaded.
 func (s *captureService) IdentifyShot(ctx context.Context, req *connect.Request[pidexv1.IdentifyShotRequest]) (*connect.Response[pidexv1.IdentifyShotResponse], error) {
+	return traced(ctx, "identify shot", func(ctx context.Context, sp *tracing.Span) (*connect.Response[pidexv1.IdentifyShotResponse], error) {
+		res, err := s.identifyShot(ctx, req)
+		if err == nil {
+			sp.Set("anchor", res.Msg.GetAnchor().GetState().String())
+		}
+		return res, err
+	})
+}
+
+func (s *captureService) identifyShot(ctx context.Context, req *connect.Request[pidexv1.IdentifyShotRequest]) (*connect.Response[pidexv1.IdentifyShotResponse], error) {
 	pr := principalFrom(ctx)
 	if err := requireWrite(pr); err != nil {
 		return nil, err
@@ -308,6 +319,7 @@ func (s *captureService) IdentifyShot(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
+	tracing.Allow(ctx, cfg.Privacy != teamconfig.PrivacyHigh)
 	ocr := ""
 	for _, t := range req.Msg.OnDevice.GetText() {
 		ocr += t.GetText() + "\n"

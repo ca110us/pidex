@@ -61,6 +61,16 @@ type Config struct {
 	VisionPriceIn  float64
 	VisionPriceOut float64
 
+	// Braintrust receives a trace of each conversation turn, search and
+	// photo processed, with every model call in it. No key, no traces.
+	BraintrustAPIKey    string
+	BraintrustAPIURL    string
+	BraintrustProject   string
+	BraintrustProjectID string
+	// BraintrustContent sends what people wrote and models answered, for
+	// teams whose privacy is not high; off, only timings, tokens and ids.
+	BraintrustContent bool
+
 	Workers        int
 	MaxImageEdge   int
 	MaxUploadBytes int64
@@ -89,6 +99,11 @@ func FromEnv() (Config, error) {
 		SearchModel:        os.Getenv("SEARCH_MODEL"),
 		TextEmbeddingModel: os.Getenv("TEXT_EMBEDDING_MODEL"),
 		EmbeddingModel:     os.Getenv("EMBEDDING_MODEL"),
+
+		BraintrustAPIKey:    os.Getenv("BRAINTRUST_API_KEY"),
+		BraintrustAPIURL:    env("BRAINTRUST_API_URL", "https://api.braintrust.dev"),
+		BraintrustProject:   env("BRAINTRUST_PROJECT", "pidex"),
+		BraintrustProjectID: os.Getenv("BRAINTRUST_PROJECT_ID"),
 	}
 	for _, m := range strings.Split(os.Getenv("VISION_FALLBACK_MODELS"), ",") {
 		if m = strings.TrimSpace(m); m != "" {
@@ -152,6 +167,9 @@ func FromEnv() (Config, error) {
 	}
 	var err error
 	if c.S3PathStyle, err = boolEnv("S3_PATH_STYLE", true); err != nil {
+		return c, err
+	}
+	if c.BraintrustContent, err = boolEnv("BRAINTRUST_LOG_CONTENT", true); err != nil {
 		return c, err
 	}
 	if c.Workers, err = intEnv("WORKERS", 8); err != nil {

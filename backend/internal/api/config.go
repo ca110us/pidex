@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"pidex/internal/configgen"
 	"pidex/internal/configstore"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 type configService struct{ *Server }
@@ -78,9 +80,22 @@ func (s *configService) PublishConfig(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(&pidexv1.PublishConfigResponse{Version: row.Version, ConfigJson: string(row.Config)}), nil
 }
 
+// Each draft is a trace; the drafts of one setup conversation share its
+// session id.
 func (s *configService) DraftConfig(ctx context.Context, req *connect.Request[pidexv1.DraftConfigRequest]) (*connect.Response[pidexv1.DraftConfigResponse], error) {
+	return traced(ctx, "config draft", func(ctx context.Context, sp *tracing.Span) (*connect.Response[pidexv1.DraftConfigResponse], error) {
+		return s.draftConfig(ctx, sp, req)
+	})
+}
+
+func (s *configService) draftConfig(ctx context.Context, sp *tracing.Span, req *connect.Request[pidexv1.DraftConfigRequest]) (*connect.Response[pidexv1.DraftConfigResponse], error) {
 	pr := principalFrom(ctx)
 	m := req.Msg
+	sp.Set("session_id", m.SessionId)
+	sp.Set("for_new_team", m.ForNewTeam)
+	sp.Set("identify_by", m.IdentifyBy)
+	sp.Set("has_base", m.BaseConfigJson != "")
+	sp.Input(map[string]any{"description": m.Description})
 	if !m.ForNewTeam && !pr.CanAdmin() {
 		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("only owners and admins can change the config"))
 	}
@@ -97,6 +112,9 @@ func (s *configService) DraftConfig(ctx context.Context, req *connect.Request[pi
 			return nil, internal(err)
 		}
 	}
+	// A description is the admin's own words, not the team's photos; a
+	// high-privacy team keeps them out of traces all the same.
+	tracing.Allow(ctx, active == nil || active.Privacy != teamconfig.PrivacyHigh)
 	base := active
 	if m.BaseConfigJson != "" {
 		var err error
@@ -120,6 +138,7 @@ func (s *configService) DraftConfig(ctx context.Context, req *connect.Request[pi
 		return nil, internal(err)
 	}
 	out := &pidexv1.DraftConfigResponse{ConfigJson: string(data), Summary: draft.Summary, TestTips: draft.TestTips}
+	sp.Output(map[string]any{"summary": draft.Summary, "test_tips": draft.TestTips, "config": json.RawMessage(data)})
 	if active != nil {
 		for _, c := range configgen.Compare(active, draft.Config) {
 			out.Warnings = append(out.Warnings, &pidexv1.ConfigChange{

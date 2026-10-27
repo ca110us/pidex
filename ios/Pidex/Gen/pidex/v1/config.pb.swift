@@ -304,6 +304,10 @@ nonisolated struct Pidex_V1_DraftConfigRequest: Sendable {
   /// choose from the description.
   var identifyBy: String = String()
 
+  /// The setup conversation this draft is part of, chosen by the app, so
+  /// the drafts of one conversation can be read together in traces.
+  var sessionID: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -771,7 +775,7 @@ nonisolated extension Pidex_V1_PublishConfigResponse: SwiftProtobuf.Message, Swi
 
 nonisolated extension Pidex_V1_DraftConfigRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".DraftConfigRequest"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}description\0\u{3}base_config_json\0\u{3}for_new_team\0\u{3}identify_by\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}description\0\u{3}base_config_json\0\u{3}for_new_team\0\u{3}identify_by\0\u{3}session_id\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -783,6 +787,7 @@ nonisolated extension Pidex_V1_DraftConfigRequest: SwiftProtobuf.Message, SwiftP
       case 2: try { try decoder.decodeSingularStringField(value: &self.baseConfigJson) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.forNewTeam) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.identifyBy) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.sessionID) }()
       default: break
       }
     }
@@ -801,6 +806,9 @@ nonisolated extension Pidex_V1_DraftConfigRequest: SwiftProtobuf.Message, SwiftP
     if !self.identifyBy.isEmpty {
       try visitor.visitSingularStringField(value: self.identifyBy, fieldNumber: 4)
     }
+    if !self.sessionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.sessionID, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -809,6 +817,7 @@ nonisolated extension Pidex_V1_DraftConfigRequest: SwiftProtobuf.Message, SwiftP
     if lhs.baseConfigJson != rhs.baseConfigJson {return false}
     if lhs.forNewTeam != rhs.forNewTeam {return false}
     if lhs.identifyBy != rhs.identifyBy {return false}
+    if lhs.sessionID != rhs.sessionID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

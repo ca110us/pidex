@@ -74,6 +74,9 @@ message DraftConfigRequest {
   // tag or number) or "appearance" (they carry none). Empty lets the model
   // choose from the description.
   string identify_by = 4;
+  // The setup conversation this draft is part of, chosen by the app, so
+  // the drafts of one conversation can be read together in traces.
+  string session_id = 5;
 }
 
 message DraftConfigResponse {

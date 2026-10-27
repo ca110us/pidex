@@ -11,6 +11,7 @@ import (
 
 	"pidex/internal/ai"
 	"pidex/internal/store/dbq"
+	"pidex/internal/tracing"
 )
 
 // A subject told apart by look gets a profile: what it looks like in full,
@@ -52,11 +53,18 @@ func (p *Processor) ProfileSubjects(ctx context.Context) error {
 	return nil
 }
 
-func (p *Processor) profileSubject(ctx context.Context, s dbq.SubjectsToProfileRow) error {
+// Each subject profiled is a trace of its own: subjects of many teams are
+// profiled in one run.
+func (p *Processor) profileSubject(ctx context.Context, s dbq.SubjectsToProfileRow) (err error) {
+	ctx, sp := tracing.Start(ctx, "subject profile", tracing.Task)
+	defer func() { sp.End(err) }()
+	sp.Tag("subject profile")
+	sp.Set("subject_id", s.ID)
 	cfg, _, err := p.Configs.Active(ctx, s.TeamID)
 	if err != nil {
 		return err
 	}
+	traceTeam(ctx, s.TeamID, cfg)
 	st, ok := cfg.SubjectType(s.TypeKey)
 	if !ok || !st.ByAppearance() {
 		return nil

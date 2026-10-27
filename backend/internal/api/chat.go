@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 type chatService struct{ *Server }
@@ -89,9 +91,19 @@ func (s *chatService) DeleteConversation(ctx context.Context, req *connect.Reque
 // SendMessage reads the message in the light of the conversation so far:
 // a follow-up adjusts the last search, a question about "these" is about
 // the photos just shown, and earlier answers inform the next one.
+//
+// Each turn is a trace: the message, how it was read, what was searched,
+// checked and answered, and every model call on the way.
 func (s *chatService) SendMessage(ctx context.Context, req *connect.Request[pidexv1.SendMessageRequest]) (*connect.Response[pidexv1.SendMessageResponse], error) {
+	return traced(ctx, "chat turn", func(ctx context.Context, sp *tracing.Span) (*connect.Response[pidexv1.SendMessageResponse], error) {
+		return s.sendMessage(ctx, sp, req)
+	})
+}
+
+func (s *chatService) sendMessage(ctx context.Context, sp *tracing.Span, req *connect.Request[pidexv1.SendMessageRequest]) (*connect.Response[pidexv1.SendMessageResponse], error) {
 	pr := principalFrom(ctx)
 	text := strings.TrimSpace(req.Msg.Text)
+	sp.Input(map[string]any{"text": text})
 	if text == "" || len(text) > maxQueryLen {
 		return nil, invalid("a message must be 1 to %d characters", maxQueryLen)
 	}
@@ -99,6 +111,7 @@ func (s *chatService) SendMessage(ctx context.Context, req *connect.Request[pide
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
+	tracing.Allow(ctx, cfg.Privacy != teamconfig.PrivacyHigh)
 
 	var conv dbq.Conversation
 	var earlier []dbq.ConversationMessage
@@ -115,6 +128,8 @@ func (s *chatService) SendMessage(ctx context.Context, req *connect.Request[pide
 			return nil, internal(err)
 		}
 	}
+	sp.Set("conversation_id", conv.ID)
+	sp.Set("turn", len(earlier)/2+1)
 	history, previousPhotos := s.history(ctx, pr.TeamID, cfg, earlier)
 
 	loc, err := time.LoadLocation(req.Msg.TimeZone)
@@ -123,6 +138,8 @@ func (s *chatService) SendMessage(ctx context.Context, req *connect.Request[pide
 	}
 	turn := s.planTurn(ctx, pr.TeamID, cfg, text, time.Now().In(loc), history)
 	canAnswer := cfg.Privacy != teamconfig.PrivacyHigh && !s.Processor.Vision.Empty()
+	sp.Set("intent", turn.Intent)
+	sp.Set("about_previous", turn.AboutPrevious)
 
 	var (
 		f        = turn.Filters
@@ -189,6 +206,10 @@ func (s *chatService) SendMessage(ctx context.Context, req *connect.Request[pide
 	if err != nil {
 		return nil, internal(err)
 	}
+	sp.Set("reply", kind)
+	sp.Set("photos", len(photoIDs))
+	sp.Set("total", max(total, len(photoIDs)))
+	sp.Output(map[string]any{"kind": kind, "answer": answer, "photo_ids": photoIDs, "filters": json.RawMessage(filtersJSON)})
 	var userRow, replyRow dbq.ConversationMessage
 	err = store.WithTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		q := s.Q.WithTx(tx)

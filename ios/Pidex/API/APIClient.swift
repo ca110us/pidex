@@ -263,13 +263,14 @@ nonisolated final class APIClient: Sendable {
     /// Asks the server's model for a config. `base` is the config to change;
     /// nil means the team's active config, or a new one when `forNewTeam`.
     /// `identifyBy` is "code", "appearance", or empty to let the description
-    /// decide.
-    func draftConfig(description: String, base: String?, forNewTeam: Bool, identifyBy: String = "") async throws -> Pidex_V1_DraftConfigResponse {
+    /// decide. `sessionID` names the conversation the draft is part of.
+    func draftConfig(description: String, base: String?, forNewTeam: Bool, identifyBy: String = "", sessionID: String = "") async throws -> Pidex_V1_DraftConfigResponse {
         var r = Pidex_V1_DraftConfigRequest()
         r.description_p = description
         r.baseConfigJson = base ?? ""
         r.forNewTeam = forNewTeam
         r.identifyBy = identifyBy
+        r.sessionID = sessionID
         return try Self.unwrap(await config.draftConfig(request: r, headers: headers))
     }
 

@@ -19,6 +19,7 @@ import (
 	"pidex/internal/search"
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
+	"pidex/internal/tracing"
 )
 
 type ProcessPhotoArgs struct {
@@ -72,7 +73,9 @@ type nameDescriptionWorker struct {
 }
 
 func (w *nameDescriptionWorker) Work(ctx context.Context, job *river.Job[NameDescriptionArgs]) error {
-	return w.p.NameDescription(ctx, job.Args.PhotoID)
+	return traced(ctx, "name description", job.Args.PhotoID, job.Attempt, func(ctx context.Context) error {
+		return w.p.NameDescription(ctx, job.Args.PhotoID)
+	})
 }
 
 // EmbedLookArgs sends a photo to the look service (pipeline.EmbedLook).
@@ -147,7 +150,9 @@ func (w *profileSubjectsWorker) Work(ctx context.Context, _ *river.Job[ProfileSu
 }
 
 func (w *indexPhotoWorker) Work(ctx context.Context, job *river.Job[IndexPhotoArgs]) error {
-	return w.ix.IndexPhoto(ctx, job.Args.PhotoID)
+	return traced(ctx, "index photo", job.Args.PhotoID, job.Attempt, func(ctx context.Context) error {
+		return w.ix.IndexPhoto(ctx, job.Args.PhotoID)
+	})
 }
 
 func (w *processPhotoWorker) Timeout(*river.Job[ProcessPhotoArgs]) time.Duration {
@@ -155,7 +160,9 @@ func (w *processPhotoWorker) Timeout(*river.Job[ProcessPhotoArgs]) time.Duration
 }
 
 func (w *processPhotoWorker) Work(ctx context.Context, job *river.Job[ProcessPhotoArgs]) error {
-	err := w.p.ProcessPhoto(ctx, job.Args.PhotoID)
+	err := traced(ctx, "process photo", job.Args.PhotoID, job.Attempt, func(ctx context.Context) error {
+		return w.p.ProcessPhoto(ctx, job.Args.PhotoID)
+	})
 	if err != nil && job.Attempt >= job.MaxAttempts {
 		if markErr := w.p.MarkFailed(ctx, job.Args.PhotoID, err); markErr != nil {
 			w.p.Log.Error("mark photo failed", "photo", job.Args.PhotoID, "err", markErr)
@@ -165,6 +172,18 @@ func (w *processPhotoWorker) Work(ctx context.Context, job *river.Job[ProcessPho
 		return err
 	}
 	_, err = river.ClientFromContext[pgx.Tx](ctx).Insert(ctx, IndexPhotoArgs{PhotoID: job.Args.PhotoID}, nil)
+	return err
+}
+
+// traced works a job on one photo as the root of a trace, with every
+// model call it makes.
+func traced(ctx context.Context, name string, photoID uuid.UUID, attempt int, work func(context.Context) error) error {
+	ctx, sp := tracing.Start(ctx, name, tracing.Task)
+	sp.Tag(name)
+	sp.Set("photo_id", photoID)
+	sp.Set("attempt", attempt)
+	err := work(ctx)
+	sp.End(err)
 	return err
 }
 

@@ -31,6 +31,9 @@ struct SetupChatView: View {
     @State private var loading = false
     @State private var showingDetails: ScenarioConfig?
     @State private var canChange = true
+    /// Names this conversation to the server, so its drafts are read
+    /// together in traces.
+    @State private var sessionID = UUID().uuidString.lowercased()
 
     private var isCreate: Bool { if case .create = mode { true } else { false } }
 
@@ -302,7 +305,8 @@ struct SetupChatView: View {
             // How subjects are told apart is worked out from the words;
             // the draft shows it, to change.
             let draft = try await api.draftConfig(
-                description: text, base: latestDraft?.configJson, forNewTeam: isCreate, identifyBy: ""
+                description: text, base: latestDraft?.configJson, forNewTeam: isCreate, identifyBy: "",
+                sessionID: sessionID
             )
             var answer = Pidex_V1_SetupMessage()
             answer.role = .assistant

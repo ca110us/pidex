@@ -37,6 +37,7 @@ import (
 	"pidex/internal/store"
 	"pidex/internal/store/dbq"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 type Processor struct {
@@ -99,6 +100,7 @@ func (p *Processor) ProcessPhoto(ctx context.Context, photoID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
+	traceTeam(ctx, photo.TeamID, cfg)
 	if photo, err = q.MarkPhotoProcessing(ctx, photoID); err != nil {
 		return fmt.Errorf("mark processing: %w", err)
 	}
@@ -681,6 +683,7 @@ func (p *Processor) NameDescription(ctx context.Context, photoID uuid.UUID) erro
 	if err != nil {
 		return err
 	}
+	traceTeam(ctx, photo.TeamID, cfg)
 	res, _, _, err := p.analyze(ctx, photo, cfg)
 	if err != nil {
 		return err
@@ -691,4 +694,12 @@ func (p *Processor) NameDescription(ctx context.Context, photoID uuid.UUID) erro
 	_, err = p.Pool.Exec(ctx, `UPDATE photos SET extracted = jsonb_set(extracted, '{named_description}', to_jsonb($2::text)) WHERE id = $1`,
 		photo.ID, res.Appearance.NamedDescription)
 	return err
+}
+
+// traceTeam notes the team in the trace of the job at hand, and lets the
+// trace carry what models were told and said unless the team's privacy is
+// high.
+func traceTeam(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config) {
+	tracing.From(ctx).Set("team_id", teamID)
+	tracing.Allow(ctx, cfg.Privacy != teamconfig.PrivacyHigh)
 }

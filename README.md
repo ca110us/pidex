@@ -53,6 +53,7 @@ iOS app (SwiftUI)                    Server (Go, one binary)                    
 | Server | Go, pgx, sqlc, goose migrations, River job queue |
 | Storage | Postgres 17 with pgvector, S3-compatible object storage |
 | Models | OpenRouter or Gemini directly (Gemini Flash Lite by default for vision and search), Claude for drafting configurations |
+| Observability | OpenTelemetry traces of every conversation turn and model call, sent to Braintrust |
 | Look service | Python, FastAPI, DINOv2 |
 
 ## Status
@@ -159,6 +160,35 @@ export OPENROUTER_API_KEY=...      # put this in ~/.zshrc; do not commit it to t
 > Compliance note: real patient photos must go through a channel covered by a BAA or similar agreement. OpenRouter is a reseller. It is suitable for development, testing and non-medical scenarios. For medical customers in production, connect directly to a contracted vendor (set `AI_PROVIDER=gemini`, or another direct provider added later).
 
 Every model call is recorded in the `ai_calls` table (token counts, cost, latency, success or failure).
+
+### Tracing model calls (Braintrust)
+
+With a Braintrust key set, the server sends a trace of each piece of work that calls a model, over OpenTelemetry (`backend/internal/tracing`). Each trace holds every model call made for that work.
+
+| Trace | Started by | Steps inside |
+| --- | --- | --- |
+| `chat turn` | each message in a conversation | `search_plan` (reading the message), `search photos` (the database search), `search_check` (checking what was found), `ask` (the answer) |
+| `search` | a library search in words (searches by chips or paging call no model and are not traced) | `search_plan`, `search photos`, `search_check` |
+| `ask` | a question about photos | `search_plan`, `search photos`, `ask` |
+| `config draft` | each draft in a setup conversation | `config_draft`, with retries |
+| `identify shot` | the camera asking who a shot shows | `identify_shot`, `appearance_match` |
+| `process photo`, `name description`, `index photo` | the background jobs for each uploaded photo | `analyze`, `identity_escalation`, `appearance_match`, embeddings |
+| `subject profile` | each subject profiled by look | `subject_profile`, `profile_embed` |
+
+- Each model call is an `llm` span. It records the provider and model, the instructions and prompt as chat messages, the JSON the model returned, token counts, cost (`cost_usd`), latency, and the error if the call failed. When a fallback model is used, each attempt is a separate span.
+- Metadata holds `team_id`, `user_id`, `photo_id` and `purpose`. A conversation turn also has `conversation_id` and `turn`, and a config draft has `session_id`. Filter on these in Braintrust to read a whole conversation turn by turn.
+- Images are never sent, only their type and size (`[image 1: image/jpeg, 182 KB]`).
+- What people wrote and what models answered is sent only for teams whose privacy is not `high`. For teams with high privacy, and whenever `BRAINTRUST_LOG_CONTENT=false`, traces keep only their structure, timings, tokens, cost and ids.
+
+| Variable | Description |
+| --- | --- |
+| `BRAINTRUST_API_KEY` | Turns tracing on. Without it nothing is sent |
+| `BRAINTRUST_PROJECT` | The project traces are logged to, created on first use. Default `pidex` |
+| `BRAINTRUST_PROJECT_ID` | Optional. A project id, used instead of the name |
+| `BRAINTRUST_API_URL` | Default `https://api.braintrust.dev`. Use `https://api-eu.braintrust.dev` for the EU region, or a self-hosted data plane |
+| `BRAINTRUST_LOG_CONTENT` | Default `true`. `false` sends no prompts or answers for any team |
+
+> Compliance note: Braintrust is a separate processor. Before sending traces with content for medical teams, have a BAA with Braintrust, or set `BRAINTRUST_LOG_CONTENT=false`.
 
 ### Model evaluation
 

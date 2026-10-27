@@ -14,6 +14,7 @@ import (
 
 	"pidex/internal/ai"
 	"pidex/internal/teamconfig"
+	"pidex/internal/tracing"
 )
 
 // Searcher applies filters in the database and ranks by meaning.
@@ -135,7 +136,25 @@ func (s *Searcher) Run(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Co
 
 // RunPage is Run from the offset-th match on, for paging through more
 // matches than a page shows. Each page searches again: matches are not kept.
+// Within a traced turn it is a step of the trace: the filters, and what
+// they found.
 func (s *Searcher) RunPage(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, f Filters, p Page) (Result, error) {
+	if tracing.From(ctx) == nil {
+		return s.runPage(ctx, teamID, cfg, f, p)
+	}
+	ctx, sp := tracing.Start(ctx, "search photos", tracing.Tool)
+	sp.Input(f)
+	res, err := s.runPage(ctx, teamID, cfg, f, p)
+	sp.Set("photos", len(res.PhotoIDs))
+	sp.Set("total", res.Total)
+	sp.Set("subject_not_found", res.SubjectNotFound)
+	sp.Set("missing", len(res.MissingIDs))
+	sp.Output(map[string]any{"photo_ids": res.PhotoIDs, "total": res.Total})
+	sp.End(err)
+	return res, err
+}
+
+func (s *Searcher) runPage(ctx context.Context, teamID uuid.UUID, cfg *teamconfig.Config, f Filters, p Page) (Result, error) {
 	limit, offset := p.Limit, p.Offset
 	var res Result
 	subjects := f.SubjectIDs
